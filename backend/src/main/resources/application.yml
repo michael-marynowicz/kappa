@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sprint-reporter
+  mvc:
+    cors:
+      allowed-origins: "http://localhost:4200"
+
+jira:
+  base-url: https://jira.amadeus.com/agile
+  user-email: mmarynowicz
+  pat: "MTQ4MDYxMzM5NTE2OpWqlDlYv+JwGyg+R4iRbyPO9J6h"
+  project-key: ROC
+  board-id: 30025
+  mock-mode: false
+  # Jira usernames of team members to include (leave empty to get all sprint issues)
+  team-members:
+    - mmarynowicz
+    - hotmani
+    - cmarin
+    - astihlova
+    - melhentour
+    - yrebai
+    - claselva
+    - sduran
+
+logging:
+  level:
+    com.company.sprintreporter: DEBUG
+    org.springframework.web: INFO

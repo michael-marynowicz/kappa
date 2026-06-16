@@ -1,0 +1,33 @@
+import { ApplicationConfig } from "@angular/core";
+import { provideRouter } from "@angular/router";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXsrfConfiguration,
+} from "@angular/common/http";
+import { provideAnimations } from "@angular/platform-browser/animations";
+
+import { routes } from "./app.routes";
+import { authInterceptor } from "./core/interceptors/auth.interceptor";
+import { organizationInterceptor } from "./core/interceptors/organization.interceptor";
+import { errorInterceptor } from "./core/interceptors/error.interceptor";
+import { securityInterceptor } from "./core/interceptors/security.interceptor";
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(
+      withInterceptors([
+        authInterceptor,
+        organizationInterceptor,
+        securityInterceptor,
+        errorInterceptor,
+      ]),
+      withXsrfConfiguration({
+        cookieName: "XSRF-TOKEN",
+        headerName: "X-XSRF-TOKEN",
+      }),
+    ),
+    provideAnimations(),
+  ],
+};

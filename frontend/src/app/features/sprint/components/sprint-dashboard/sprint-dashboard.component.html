@@ -1,0 +1,242 @@
+<div class="dashboard">
+  <!-- Header -->
+  <header class="dashboard__header">
+    <div class="header__brand">
+      <div class="brand-icon">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1 class="brand-title">Kappa</h1>
+        <p class="brand-subtitle">Sprint intelligence workspace</p>
+      </div>
+    </div>
+
+    @if (!state.exportGated()) {
+      <button
+        class="btn-export"
+        (click)="onExportCsv()"
+        title="Export full sprint report as CSV"
+      >
+        <svg
+          class="btn-export__icon"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M8 1v9M8 10l-3-3M8 10l3-3"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span>Export CSV</span>
+      </button>
+    } @else {
+      <button
+        class="btn-export btn-export--premium"
+        (click)="onUpgrade()"
+        title="Upgrade to Premium to export CSV"
+      >
+        <svg
+          class="btn-export__icon"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M8 1v9M8 10l-3-3M8 10l3-3"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span>Export CSV</span>
+        <span class="premium-badge">★ Premium</span>
+      </button>
+    }
+  </header>
+
+  <!-- Global Error Banner -->
+  @if (state.error()) {
+    <div class="error-banner" role="alert">
+      <span class="error-banner__icon">⚠</span>
+      <span class="error-banner__message">{{ state.error() }}</span>
+      <button class="error-banner__close" (click)="state.clearError()">
+        ✕
+      </button>
+    </div>
+  }
+
+  <!-- Sprint Hero -->
+  <section class="dashboard__hero" aria-label="Current sprint context">
+    <p class="hero-kicker">Agile reporting automation</p>
+    @if (currentSprintName) {
+      <h2 class="hero-title">{{ currentSprintName }}</h2>
+      <p class="hero-meta">Current sprint</p>
+    }
+  </section>
+
+  <!-- KPI Summary Cards -->
+  <app-sprint-summary-card [summary]="state.summary()" />
+
+  <!-- Tab Bar -->
+  <div class="tab-bar" role="tablist" aria-label="Dashboard tabs">
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeTab === 'board'"
+      [attr.aria-selected]="activeTab === 'board'"
+      (click)="activeTab = 'board'"
+    >
+      <span class="tab-btn__icon">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+        </svg>
+      </span>
+      <span>Board</span>
+    </button>
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeTab === 'metrics'"
+      [attr.aria-selected]="activeTab === 'metrics'"
+      (click)="activeTab = 'metrics'"
+    >
+      <span class="tab-btn__icon">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      </span>
+      <span>Metrics</span>
+    </button>
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeTab === 'capacity'"
+      [attr.aria-selected]="activeTab === 'capacity'"
+      (click)="activeTab = 'capacity'"
+    >
+      <span class="tab-btn__icon">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
+      <span>Capacity</span>
+    </button>
+  </div>
+
+  <!-- Tab: Board (Issues Table) -->
+  @if (activeTab === "board") {
+    <main class="dashboard__content">
+      @if (state.loading()) {
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading sprint data…</p>
+        </div>
+      } @else {
+        <app-sprint-issue-table
+          [issues]="state.issues()"
+          [savingIssueKey]="state.savingIssueKey()"
+          (updateRemainingSp)="onUpdateRemainingStoryPoints($event)"
+        />
+      }
+    </main>
+  }
+
+  <!-- Tab: Metrics (Analytics) -->
+  @if (activeTab === "metrics") {
+    <main class="dashboard__content">
+      <div
+        class="feature-gate"
+        [class.feature-gate--disabled]="state.metricsGated()"
+      >
+        <app-sprint-analytics
+          [metrics]="state.metrics()"
+          [iterations]="state.iterations()"
+          [iterationsGated]="state.iterationsGated()"
+          [capacityGated]="state.iterationsGated()"
+        />
+        @if (state.metricsGated()) {
+          <app-premium-overlay message="Metrics require a Premium plan" />
+        }
+      </div>
+    </main>
+  }
+
+  <!-- Tab: Capacity -->
+  @if (activeTab === "capacity") {
+    <main class="dashboard__content">
+      <app-capacity-grid />
+    </main>
+  }
+
+  <footer class="dashboard__footer">
+    <p>
+      Kappa · Powered by Jira API ·
+      {{ today | date: "MMMM d, y" }}
+    </p>
+  </footer>
+</div>

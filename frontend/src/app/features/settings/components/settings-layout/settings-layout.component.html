@@ -1,0 +1,43 @@
+<div class="settings">
+  <header class="settings__header">
+    <h1 class="settings__title">Settings</h1>
+    <p class="settings__subtitle">Manage your organization configuration</p>
+  </header>
+
+  <nav class="settings__tabs">
+    <a
+      class="settings-tab"
+      routerLink="jira"
+      routerLinkActive="settings-tab--active"
+    >
+      Jira Configuration
+    </a>
+    <a
+      class="settings-tab"
+      routerLink="billing"
+      routerLinkActive="settings-tab--active"
+    >
+      Billing & Subscription
+    </a>
+    <a
+      class="settings-tab"
+      routerLink="language"
+      routerLinkActive="settings-tab--active"
+    >
+      Language
+    </a>
+    @if (isAdmin) {
+      <a
+        class="settings-tab"
+        routerLink="members"
+        routerLinkActive="settings-tab--active"
+      >
+        Members
+      </a>
+    }
+  </nav>
+
+  <div class="settings__content">
+    <router-outlet />
+  </div>
+</div>

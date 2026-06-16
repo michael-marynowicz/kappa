@@ -1,0 +1,139 @@
+<div class="jira-config">
+  <h2 class="section-title">Jira Integration</h2>
+  <p class="section-desc">
+    Connect your Jira instance to sync sprint data automatically.
+  </p>
+
+  @if (error()) {
+    <div class="config-error" role="alert">{{ error() }}</div>
+  }
+
+  @if (success()) {
+    <div class="config-success" role="status">{{ success() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="config-loading">Loading configuration…</div>
+  } @else {
+    <form class="config-form" (ngSubmit)="onSave()" #jiraForm="ngForm">
+      <div class="form-group">
+        <label class="form-label" for="baseUrl">Jira Base URL</label>
+        <input
+          class="form-input"
+          id="baseUrl"
+          type="url"
+          name="baseUrl"
+          [(ngModel)]="form.baseUrl"
+          required
+          placeholder="https://your-org.atlassian.net"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="authType">Auth Type</label>
+          <select
+            class="form-input"
+            id="authType"
+            name="authType"
+            [(ngModel)]="form.authType"
+            required
+          >
+            <option value="PAT">Personal Access Token (PAT)</option>
+            <option value="BASIC">Basic Auth (email + token)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="userEmail">User Email</label>
+          <input
+            class="form-input"
+            id="userEmail"
+            type="email"
+            name="userEmail"
+            [(ngModel)]="form.userEmail"
+            required
+            placeholder="you@company.com"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="apiToken">API Token</label>
+        <input
+          class="form-input"
+          id="token"
+          type="password"
+          name="token"
+          [(ngModel)]="form.token"
+          required
+          placeholder="••••••••"
+        />
+        <span class="form-hint"
+          >Generate from Atlassian Account Settings → Security → API
+          Tokens</span
+        >
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="projectKey">Project Key</label>
+          <input
+            class="form-input"
+            id="projectKey"
+            type="text"
+            name="projectKey"
+            [(ngModel)]="form.projectKey"
+            required
+            placeholder="PROJ"
+            maxlength="10"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="boardId">Board ID</label>
+          <input
+            class="form-input"
+            id="boardId"
+            type="number"
+            name="boardId"
+            [(ngModel)]="form.boardId"
+            required
+            placeholder="123"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="btn-primary"
+          type="submit"
+          [disabled]="jiraForm.invalid || saving()"
+        >
+          {{ saving() ? "Saving…" : "Save Configuration" }}
+        </button>
+        <button
+          class="btn-secondary"
+          type="button"
+          (click)="onTestConnection()"
+          [disabled]="testing()"
+        >
+          {{ testing() ? "Testing…" : "Test Connection" }}
+        </button>
+      </div>
+    </form>
+
+    @if (config()?.connected) {
+      <div class="sync-section">
+        <div class="sync-status">
+          <span class="sync-dot sync-dot--connected"></span>
+          <span>Connected</span>
+          @if (config()?.lastSyncAt) {
+            <span class="sync-time">Last sync: {{ config()!.lastSyncAt }}</span>
+          }
+        </div>
+        <button class="btn-secondary" (click)="onSync()" [disabled]="syncing()">
+          {{ syncing() ? "Syncing…" : "Sync Now" }}
+        </button>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,162 @@
+<div class="verify-page">
+  <div class="verify-card">
+    <!-- Loading -->
+    @if (state() === "loading") {
+      <div class="verify-state">
+        <div class="verify-icon verify-icon--loading">
+          <div class="spinner-large"></div>
+        </div>
+        <h2 class="verify-title">Verifying your email…</h2>
+        <p class="verify-desc">Please wait while we validate your link.</p>
+      </div>
+    }
+
+    <!-- Success (no org join) -->
+    @if (state() === "success") {
+      <div class="verify-state">
+        <div class="verify-icon verify-icon--success">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <h2 class="verify-title">Email verified successfully</h2>
+        <p class="verify-desc">
+          Your email has been confirmed. You now have full access to all
+          features.
+        </p>
+        <button class="btn-primary" (click)="goToDashboard()">
+          Go to Dashboard
+        </button>
+      </div>
+    }
+
+    <!-- Joined Organization -->
+    @if (state() === "joined") {
+      <div class="verify-state">
+        <div class="verify-icon verify-icon--success">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <h2 class="verify-title">
+          Welcome to
+          {{ result()?.organizationId ? "the team" : "your organization" }}!
+        </h2>
+        <p class="verify-desc">
+          Your email has been verified and your account is now linked to the
+          organization as
+          <strong class="role-highlight">{{ result()?.role }}</strong
+          >.
+        </p>
+        <button class="btn-primary" (click)="goToDashboard()">
+          Go to Dashboard
+        </button>
+      </div>
+    }
+
+    <!-- Invalid Token -->
+    @if (state() === "invalid") {
+      <div class="verify-state">
+        <div class="verify-icon verify-icon--error">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2 class="verify-title">Invalid verification link</h2>
+        <p class="verify-desc">
+          This link is invalid or has already been used. Please request a new
+          verification email.
+        </p>
+        <a class="btn-secondary" routerLink="/auth/login">Back to Login</a>
+      </div>
+    }
+
+    <!-- Expired Token -->
+    @if (state() === "expired") {
+      <div class="verify-state">
+        <div class="verify-icon verify-icon--warning">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <h2 class="verify-title">Link expired</h2>
+        <p class="verify-desc">
+          This verification link has expired. Click below to receive a new one.
+        </p>
+        @if (resent()) {
+          <div class="resent-message">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            A new verification email has been sent.
+          </div>
+        } @else {
+          <button
+            class="btn-primary"
+            (click)="resendVerification()"
+            [disabled]="resending()"
+          >
+            @if (resending()) {
+              <span class="btn-spinner"></span>
+              Sending…
+            } @else {
+              Resend Verification Email
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+</div>

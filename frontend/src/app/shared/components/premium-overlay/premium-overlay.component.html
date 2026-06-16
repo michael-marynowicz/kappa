@@ -1,0 +1,25 @@
+<div class="premium-overlay" (click)="onUpgradeClick($event)">
+  <div class="premium-overlay__backdrop"></div>
+  <div class="premium-overlay__content">
+    <div class="premium-overlay__watermark">Premium</div>
+    <div class="premium-overlay__card">
+      <svg
+        class="premium-overlay__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+        />
+      </svg>
+      <p class="premium-overlay__message">
+        {{ message || "This feature requires a Premium plan" }}
+      </p>
+      <button class="premium-overlay__cta" (click)="onUpgradeClick($event)">
+        Upgrade to Premium
+      </button>
+    </div>
+  </div>
+</div>

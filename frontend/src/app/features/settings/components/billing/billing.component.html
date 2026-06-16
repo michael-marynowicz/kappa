@@ -1,0 +1,144 @@
+<div class="billing">
+  <h2 class="section-title">Billing & Subscription</h2>
+  <p class="section-desc">Manage your subscription plan and billing.</p>
+
+  @if (subState.error()) {
+    <div class="billing-error" role="alert">
+      {{ subState.error() }}
+      <button class="error-close" (click)="subState.clearError()">✕</button>
+    </div>
+  }
+
+  <!-- Current Plan -->
+  @if (subState.subscription(); as sub) {
+    <div class="current-plan">
+      <div class="plan-info">
+        <span
+          class="plan-badge"
+          [class]="'plan-badge--' + sub.status.toLowerCase()"
+        >
+          {{ sub.status }}
+        </span>
+        <h3 class="plan-name">{{ sub.planName }}</h3>
+        @if (sub.currentPeriodEnd) {
+          <p class="plan-period">
+            {{ sub.cancelAtPeriodEnd ? "Cancels" : "Renews" }} on
+            {{ sub.currentPeriodEnd }}
+          </p>
+        }
+      </div>
+      @if (sub.status === "ACTIVE" && !sub.cancelAtPeriodEnd) {
+        <button class="btn-danger" (click)="onCancel()">
+          Cancel Subscription
+        </button>
+      }
+    </div>
+  } @else if (!subState.loading()) {
+    <div class="no-plan">
+      <p class="no-plan__text">No active subscription</p>
+      <p class="no-plan__hint">Choose a plan below to get started.</p>
+    </div>
+  }
+
+  <!-- Plans -->
+  <h3 class="plans-title">Available Plans</h3>
+  <div class="plans-grid">
+    @for (plan of subState.plans(); track plan.code) {
+      <div
+        class="plan-card"
+        [class.plan-card--current]="
+          subState.subscription()?.planCode === plan.code
+        "
+      >
+        <div class="plan-card__header">
+          <h4 class="plan-card__name">{{ plan.name }}</h4>
+          <p class="plan-card__price">
+            {{ plan.priceMonthly | currency: "USD" : "symbol" : "1.0-0" }}
+            <span class="plan-card__period">/mo</span>
+          </p>
+        </div>
+        <p class="plan-card__desc">{{ plan.description }}</p>
+        <ul class="plan-card__features">
+          @for (feature of plan.features; track feature) {
+            <li class="feature-item">✓ {{ feature | humanize }}</li>
+          }
+        </ul>
+        @if (subState.subscription()?.planCode === plan.code) {
+          <span class="plan-card__current">Current Plan</span>
+        } @else {
+          <button
+            class="btn-plan"
+            (click)="onSelectPlan(plan.code)"
+            [disabled]="subState.loading()"
+          >
+            {{ subState.loading() ? "Processing…" : "Upgrade" }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Promo Code -->
+  <div class="promo-section">
+    <h3 class="plans-title">Have a promo code?</h3>
+    <div class="promo-form">
+      <input
+        class="form-input"
+        type="text"
+        [(ngModel)]="promoCode"
+        placeholder="Enter promo code"
+        maxlength="50"
+      />
+      <button
+        class="btn-secondary"
+        (click)="onRedeem()"
+        [disabled]="!promoCode.trim() || subState.loading()"
+      >
+        Redeem
+      </button>
+    </div>
+  </div>
+
+  <!-- Cancel Confirmation Modal -->
+  @if (showCancelModal) {
+    <div class="modal-backdrop" (click)="showCancelModal = false">
+      <div
+        class="modal"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-labelledby="cancel-title"
+        aria-modal="true"
+      >
+        <div class="modal__icon">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h3 class="modal__title" id="cancel-title">Cancel Subscription?</h3>
+        <p class="modal__desc">
+          Your access continues until the end of the current billing period. You
+          can resubscribe at any time.
+        </p>
+        <div class="modal__actions">
+          <button class="btn-secondary" (click)="showCancelModal = false">
+            Keep Plan
+          </button>
+          <button class="btn-danger" (click)="confirmCancel()">
+            Yes, Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

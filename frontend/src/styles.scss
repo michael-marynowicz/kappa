@@ -1,0 +1,234 @@
+/* ============================================================
+   Kappa — Global Design System
+   Modern, warm dark theme with glassmorphism
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0f1117;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245, 158, 11, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: #e4e7ef;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: content-box;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================================
+   Scrollable containers — fade-edge hint
+   ============================================================ */
+.scroll-container {
+  overflow-x: auto;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: sticky;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(to left, #0f1117 0%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+/* ============================================================
+   Feature Gate — Premium States
+   ============================================================ */
+
+/* Container wrapper for gated sections */
+.feature-gate {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Disabled state: greyed out with reduced interaction */
+.feature-gate--disabled {
+  position: relative;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.55;
+  filter: grayscale(0.3);
+  cursor: not-allowed;
+
+  /* Re-enable pointer events on the overlay itself */
+  .premium-overlay {
+    pointer-events: auto;
+  }
+}
+
+/* Buttons / interactive elements disabled by feature-button directive */
+button.feature-gate--disabled,
+a.feature-gate--disabled {
+  pointer-events: auto; // allow redirect to billing
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  cursor: not-allowed;
+  position: relative;
+
+  &::after {
+    content: '★';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 0.65rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.4);
+  }
+}
+
+/* Smooth global transitions */
+a,
+button,
+input,
+select {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   Page Layout Utilities
+   ============================================================ */
+.page-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #e4e7ef;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #8b92a8;
+  margin: 4px 0 0;
+}
+
+/* ============================================================
+   Error Banner
+   ============================================================ */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  color: #f87171;
+  margin-bottom: 20px;
+  animation: slideDown 200ms ease;
+
+  button {
+    background: none;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Responsive Table Wrapper
+   ============================================================ */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+
+  /* Fade hint on right edge */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(to left, rgba(15, 17, 23, 0.9), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+}

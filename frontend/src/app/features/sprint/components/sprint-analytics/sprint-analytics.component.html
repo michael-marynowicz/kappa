@@ -1,0 +1,425 @@
+<section class="analytics-section">
+  <div class="analytics-inner" *ngIf="metrics">
+    <!-- Charts grid -->
+    <div class="charts-grid" [class.charts-grid--focused]="focusView !== 'all'">
+      <!-- 1. Velocity Chart -->
+      <div
+        class="chart-card"
+        @cardAnimation
+        *ngIf="focusView === 'all' || focusView === 'velocity'"
+        [class.chart-card--focused]="focusView === 'velocity'"
+      >
+        <p class="chart-title">Velocity</p>
+        <p class="chart-subtitle">
+          Committed · Delivered · Work · Leftover · Ratio
+        </p>
+        <div class="bar-chart">
+          <div class="bar-row" *ngFor="let bar of velocityBars">
+            <span class="bar-label">{{ bar.label }}</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                [style.width.%]="barWidth(bar.value, bar.max)"
+                [style.background]="bar.color"
+              ></div>
+            </div>
+            <span class="bar-value">{{ bar.value }}</span>
+          </div>
+        </div>
+        <div class="velocity-ratio" *ngIf="metrics.ratio != null">
+          <span class="velocity-ratio__label">Delivered / Committed Ratio</span>
+          <span
+            class="velocity-ratio__value"
+            [style.color]="ratioColor(metrics.ratio)"
+            [attr.aria-label]="
+              metrics.ratio >= 85
+                ? 'Good ratio'
+                : metrics.ratio >= 70
+                  ? 'Moderate ratio'
+                  : 'Low ratio'
+            "
+          >
+            {{ metrics.ratio | number: "1.1-1" }}%
+            <span class="velocity-ratio__hint">
+              {{ metrics.ratio >= 85 ? "●" : metrics.ratio >= 70 ? "◐" : "○" }}
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Capacity & Team Availability (Premium) -->
+      <div
+        class="chart-card feature-gate"
+        @cardAnimation
+        [class.feature-gate--disabled]="capacityGated"
+        [class.chart-card--focused]="focusView === 'capacity'"
+        *ngIf="focusView === 'all' || focusView === 'capacity'"
+      >
+        <p class="chart-title">Capacity & Team Availability</p>
+        <p class="chart-subtitle">Planned vs Real · EFT by role</p>
+
+        <!-- Capacity bars -->
+        <div class="capacity-section">
+          <div class="capacity-bars">
+            <div class="capacity-bar-group">
+              <div class="capacity-bar-header">
+                <span class="capacity-bar-label">Planned</span>
+                <span class="capacity-bar-val">{{
+                  metrics.capacity.plannedCapacity
+                }}</span>
+              </div>
+              <div class="bar-track bar-track--tall">
+                <div
+                  class="bar-fill"
+                  [style.width.%]="
+                    barWidth(metrics.capacity.plannedCapacity, capacityMax)
+                  "
+                  style="background: #60a5fa"
+                ></div>
+              </div>
+            </div>
+            <div class="capacity-bar-group">
+              <div class="capacity-bar-header">
+                <span class="capacity-bar-label">Real</span>
+                <span
+                  class="capacity-bar-val"
+                  [style.color]="capacityDeltaColor"
+                  >{{ metrics.capacity.realCapacity }}</span
+                >
+              </div>
+              <div class="bar-track bar-track--tall">
+                <div
+                  class="bar-fill"
+                  [style.width.%]="
+                    barWidth(metrics.capacity.realCapacity, capacityMax)
+                  "
+                  [style.background]="capacityDeltaColor"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="capacity-delta">
+            <span class="capacity-delta__label">Delta</span>
+            <span
+              class="capacity-delta__value"
+              [style.color]="capacityDeltaColor"
+            >
+              {{ capacityDelta >= 0 ? "+" : "" }}{{ capacityDelta }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Team Availability EFT -->
+        <div class="team-availability">
+          <p class="chart-subtitle" style="margin-top: 14px">
+            Team Availability (EFT)
+          </p>
+          <div class="eft-grid">
+            <div class="eft-cell">
+              <span class="eft-icon" style="color: #60a5fa">⟨/⟩</span>
+              <span class="eft-value">{{ metrics.teamAvailability.dev }}</span>
+              <span class="eft-role">DEV</span>
+            </div>
+            <div class="eft-cell">
+              <span class="eft-icon" style="color: #a78bfa">◈</span>
+              <span class="eft-value">{{ metrics.teamAvailability.pda }}</span>
+              <span class="eft-role">PDA</span>
+            </div>
+            <div class="eft-cell">
+              <span class="eft-icon" style="color: #34d399">✓</span>
+              <span class="eft-value">{{ metrics.teamAvailability.qa }}</span>
+              <span class="eft-role">QA</span>
+            </div>
+            <div class="eft-cell eft-cell--total">
+              <span class="eft-icon" style="color: #f59e0b">Σ</span>
+              <span class="eft-value">{{ totalEft | number: "1.1-1" }}</span>
+              <span class="eft-role">TOTAL</span>
+            </div>
+          </div>
+        </div>
+        <app-premium-overlay
+          *ngIf="capacityGated"
+          message="Capacity & Team Availability requires a Premium plan"
+        />
+      </div>
+
+      <!-- 3. Story Points by Topic -->
+      <div
+        class="chart-card"
+        @cardAnimation
+        *ngIf="focusView === 'all' || focusView === 'topics'"
+        [class.chart-card--focused]="focusView === 'topics'"
+      >
+        <p class="chart-title">Story Points by Topic</p>
+        <p class="chart-subtitle">Distribution across epics / topics</p>
+
+        <!-- Compact view (grid mode) -->
+        <div
+          class="donut-wrapper"
+          *ngIf="topicSegments.length > 0 && focusView === 'all'"
+        >
+          <svg
+            viewBox="0 0 120 120"
+            class="donut-svg"
+            role="img"
+            [attr.aria-label]="
+              'Story points distribution by topic - total ' +
+              totalTopicSP +
+              ' SP'
+            "
+          >
+            <title>Story Points by Topic: {{ totalTopicSP }} SP total</title>
+            <circle
+              cx="60"
+              cy="60"
+              r="48"
+              fill="none"
+              stroke="#1e2230"
+              stroke-width="18"
+            />
+            <circle
+              *ngFor="let seg of topicSegments"
+              cx="60"
+              cy="60"
+              r="48"
+              fill="none"
+              [attr.stroke]="seg.color"
+              stroke-width="18"
+              [attr.stroke-dasharray]="seg.dash"
+              [attr.stroke-dashoffset]="seg.offset"
+              stroke-linecap="butt"
+              transform="rotate(-90 60 60)"
+            />
+            <text x="60" y="55" text-anchor="middle" class="donut-center-label">
+              {{ totalTopicSP }}
+            </text>
+            <text x="60" y="70" text-anchor="middle" class="donut-center-sub">
+              SP
+            </text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item" *ngFor="let seg of topicSegments">
+              <span class="legend-dot" [style.background]="seg.color"></span>
+              <span class="legend-text"
+                >{{ seg.pct }} — {{ seg.label }} ·
+                {{ seg.storyPoints }} SP</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Expanded view (focus mode) — epic list with expandable issues -->
+        <div
+          class="topics-expanded"
+          *ngIf="epicGroups.length > 0 && focusView === 'topics'"
+        >
+          <!-- Stacked proportion bar -->
+          <div class="stacked-bar">
+            <div
+              class="stacked-bar__segment"
+              *ngFor="let grp of epicGroups; let i = index"
+              [style.flex-grow]="grp.totalStoryPoints"
+              [style.background]="epicColor(i)"
+              [class.stacked-bar__segment--active]="highlightedTopic === i"
+              [class.stacked-bar__segment--dimmed]="
+                highlightedTopic >= 0 && highlightedTopic !== i
+              "
+              [title]="grp.epicName + ' — ' + grp.totalStoryPoints + ' SP'"
+              (mouseenter)="highlightedTopic = i"
+              (mouseleave)="highlightedTopic = -1"
+            ></div>
+          </div>
+          <p class="stacked-bar__total">
+            {{ totalTopicSP }} story points répartis sur
+            {{ epicGroups.length }} epics
+          </p>
+
+          <!-- Epic accordion list -->
+          <div class="epic-list">
+            <div
+              class="epic-item"
+              *ngFor="let grp of epicGroups; let i = index"
+              [class.epic-item--expanded]="isEpicExpanded(grp.epicName)"
+            >
+              <div
+                class="epic-item__header"
+                (click)="toggleEpic(grp.epicName)"
+                (keydown.enter)="toggleEpic(grp.epicName)"
+                (keydown.space)="
+                  toggleEpic(grp.epicName); $event.preventDefault()
+                "
+                tabindex="0"
+                role="button"
+                [attr.aria-expanded]="isEpicExpanded(grp.epicName)"
+                [class.epic-item__header--active]="highlightedTopic === i"
+                [class.epic-item__header--dimmed]="
+                  highlightedTopic >= 0 && highlightedTopic !== i
+                "
+                (mouseenter)="highlightedTopic = i"
+                (mouseleave)="highlightedTopic = -1"
+              >
+                <span
+                  class="epic-item__chevron"
+                  [class.epic-item__chevron--open]="
+                    isEpicExpanded(grp.epicName)
+                  "
+                  >▸</span
+                >
+                <span
+                  class="epic-item__dot"
+                  [style.background]="epicColor(i)"
+                ></span>
+                <span class="epic-item__name">{{ grp.epicName }}</span>
+                <span class="epic-item__count"
+                  >{{ grp.issueCount }} issue{{
+                    grp.issueCount > 1 ? "s" : ""
+                  }}</span
+                >
+                <span class="epic-item__sp">{{ grp.totalStoryPoints }} SP</span>
+                <span class="epic-item__pct"
+                  >{{ grp.completionPercentage | number: "1.0-0" }}%</span
+                >
+                <div class="epic-item__progress">
+                  <div
+                    class="epic-item__progress-fill"
+                    [style.width.%]="grp.completionPercentage"
+                    [style.background]="epicColor(i)"
+                  ></div>
+                </div>
+              </div>
+              <div
+                class="epic-item__issues"
+                *ngIf="isEpicExpanded(grp.epicName)"
+              >
+                <div class="issue-row" *ngFor="let issue of grp.issues">
+                  <span class="issue-row__key">{{ issue.issueKey }}</span>
+                  <span class="issue-row__summary">{{ issue.summary }}</span>
+                  <span
+                    class="issue-row__status"
+                    [style.color]="statusColor(issue.status)"
+                    >{{ issue.status }}</span
+                  >
+                  <span class="issue-row__sp"
+                    >{{ issue.doneStoryPoints }}/{{
+                      issue.totalStoryPoints
+                    }}
+                    SP</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-empty" *ngIf="topicSegments.length === 0">
+          <p>No topic data available</p>
+        </div>
+      </div>
+
+      <!-- 4. Iteration Comparison -->
+      <div
+        class="chart-card chart-card--wide feature-gate"
+        @cardAnimation
+        [class.feature-gate--disabled]="iterationsGated"
+        *ngIf="focusView === 'all'"
+      >
+        <p class="chart-title">Iteration Comparison</p>
+        <p class="chart-subtitle">Cross-sprint velocity & delivery</p>
+
+        <!-- Real data -->
+        <div class="iteration-chart" *ngIf="iterationBars.length > 0">
+          <div class="iteration-row iteration-row--header">
+            <span class="iter-col iter-col--name">Sprint</span>
+            <span class="iter-col iter-col--bar">Delivered / Committed</span>
+            <span class="iter-col iter-col--vel">Velocity</span>
+            <span class="iter-col iter-col--ratio">Ratio</span>
+          </div>
+          <div
+            class="iteration-row"
+            *ngFor="let it of iterationBars; let last = last"
+            [class.iteration-row--current]="last"
+          >
+            <span class="iter-col iter-col--name">{{ it.sprint }}</span>
+            <div class="iter-col iter-col--bar">
+              <div class="iter-stacked-bar">
+                <div
+                  class="iter-bar iter-bar--committed"
+                  [style.width.%]="100"
+                ></div>
+                <div
+                  class="iter-bar iter-bar--delivered"
+                  [style.width.%]="barWidth(it.delivered, it.committed)"
+                ></div>
+              </div>
+              <span class="iter-bar-labels">
+                <span style="color: #34d399">{{ it.delivered }}</span> /
+                <span style="color: #60a5fa">{{ it.committed }}</span>
+              </span>
+            </div>
+            <span class="iter-col iter-col--vel">{{ it.velocity }}</span>
+            <span
+              class="iter-col iter-col--ratio"
+              [style.color]="ratioColor(it.ratio === '—' ? null : +it.ratio)"
+            >
+              {{ it.ratio }}{{ it.ratio !== "—" ? "%" : "" }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Placeholder rows when gated (no real data available) -->
+        <div
+          class="iteration-chart"
+          *ngIf="iterationBars.length === 0 && iterationsGated"
+        >
+          <div class="iteration-row iteration-row--header">
+            <span class="iter-col iter-col--name">Sprint</span>
+            <span class="iter-col iter-col--bar">Delivered / Committed</span>
+            <span class="iter-col iter-col--vel">Velocity</span>
+            <span class="iter-col iter-col--ratio">Ratio</span>
+          </div>
+          <div class="iteration-row" *ngFor="let ph of placeholderIterations">
+            <span class="iter-col iter-col--name">{{ ph.sprint }}</span>
+            <div class="iter-col iter-col--bar">
+              <div class="iter-stacked-bar">
+                <div
+                  class="iter-bar iter-bar--committed"
+                  [style.width.%]="100"
+                ></div>
+                <div
+                  class="iter-bar iter-bar--delivered"
+                  [style.width.%]="ph.pct"
+                ></div>
+              </div>
+              <span class="iter-bar-labels">
+                <span style="color: #34d399">{{ ph.delivered }}</span> /
+                <span style="color: #60a5fa">{{ ph.committed }}</span>
+              </span>
+            </div>
+            <span class="iter-col iter-col--vel">{{ ph.velocity }}</span>
+            <span class="iter-col iter-col--ratio" style="color: #34d399">{{
+              ph.ratio
+            }}</span>
+          </div>
+        </div>
+
+        <div
+          class="chart-empty"
+          *ngIf="iterationBars.length === 0 && !iterationsGated"
+        >
+          <p>No iteration history available</p>
+        </div>
+        <app-premium-overlay
+          *ngIf="iterationsGated"
+          message="Iteration comparison requires a Premium plan"
+        />
+      </div>
+    </div>
+    <!-- /charts-grid -->
+  </div>
+  <!-- /analytics-inner -->
+
+  <div class="analytics-empty" *ngIf="!metrics">
+    <div class="loading-spinner"></div>
+    <p>Loading analytics…</p>
+  </div>
+</section>

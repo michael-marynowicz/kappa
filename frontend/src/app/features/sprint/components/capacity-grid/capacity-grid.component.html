@@ -1,0 +1,273 @@
+<section class="capacity-section">
+  <!-- Error (non-gated errors only) -->
+  <div
+    class="cap-error"
+    *ngIf="capState.error() && !capState.gated()"
+    role="alert"
+  >
+    <span>⚠ {{ capState.error() }}</span>
+    <button (click)="capState.clearError()">✕</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="cap-loading" *ngIf="capState.loading()">
+    <div class="loading-spinner"></div>
+    <p>Loading capacity…</p>
+  </div>
+
+  <!-- Gated: show placeholder grid with premium overlay -->
+  <div
+    class="feature-gate"
+    [class.feature-gate--disabled]="capState.gated()"
+    *ngIf="capState.gated() && !capState.loading()"
+  >
+    <div class="cap-grid-wrapper">
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="col-name">Member</th>
+            <th class="col-role">Role</th>
+            <th class="col-sprint">Sprint 1</th>
+            <th class="col-sprint">Sprint 2</th>
+            <th class="col-sprint">Sprint 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>——</td>
+            <td>DEV</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>——</td>
+            <td>QA</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>——</td>
+            <td>PDA</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <app-premium-overlay message="Capacity planning requires a Premium plan" />
+  </div>
+
+  <!-- Grid -->
+  <div
+    class="cap-grid-wrapper"
+    *ngIf="!capState.loading() && !capState.gated() && capState.grid() as grid"
+  >
+    <!-- Add member form -->
+    <div class="cap-add-row">
+      <input
+        class="cap-input cap-input--name"
+        [(ngModel)]="newMemberName"
+        placeholder="Team member name…"
+        maxlength="100"
+        (keydown.enter)="onAddMember()"
+      />
+      <select class="cap-select" [(ngModel)]="newMemberRole">
+        <option value="DEV">DEV</option>
+        <option value="PDA">PDA</option>
+        <option value="QA">QA</option>
+      </select>
+      <button
+        class="cap-btn cap-btn--add"
+        (click)="onAddMember()"
+        [disabled]="!newMemberName.trim()"
+      >
+        + Add member
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div class="cap-empty" *ngIf="grid.members.length === 0">
+      <span class="cap-empty__icon">👥</span>
+      <p class="cap-empty__text">
+        No team members yet — add one above to start planning capacity.
+      </p>
+    </div>
+
+    <!-- Table -->
+    <div class="cap-table-scroll" *ngIf="grid.members.length > 0">
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="col-name">Member</th>
+            <th class="col-role">Role</th>
+            <th class="col-sprint" *ngFor="let s of grid.sprints">
+              {{ s }}
+              <span class="col-sprint__days">{{ grid.daysPerSprint[s] }}d</span>
+            </th>
+            <th class="col-total">Total Avail.</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let m of grid.members; trackBy: trackMember"
+            [class.row-editing]="editingMemberId === m.id"
+          >
+            <!-- Name -->
+            <td class="col-name">
+              <span *ngIf="editingMemberId !== m.id">{{ m.name }}</span>
+              <input
+                *ngIf="editingMemberId === m.id"
+                class="cap-input cap-input--inline"
+                [(ngModel)]="editName"
+                maxlength="100"
+              />
+            </td>
+
+            <!-- Role -->
+            <td class="col-role">
+              <span
+                class="role-badge"
+                [class]="'role-badge--' + m.role.toLowerCase()"
+                *ngIf="editingMemberId !== m.id"
+                >{{ m.role }}</span
+              >
+              <select
+                *ngIf="editingMemberId === m.id"
+                class="cap-select cap-select--inline"
+                [(ngModel)]="editRole"
+              >
+                <option value="DEV">DEV</option>
+                <option value="PDA">PDA</option>
+                <option value="QA">QA</option>
+              </select>
+            </td>
+
+            <!-- Days off cells -->
+            <td class="col-sprint" *ngFor="let s of grid.sprints">
+              <div
+                class="day-cell"
+                [class.day-cell--saving]="
+                  capState.savingCell() === m.id + ':' + s
+                "
+              >
+                <input
+                  type="number"
+                  class="day-input"
+                  [min]="0"
+                  [max]="grid.daysPerSprint[s]"
+                  [ngModel]="getDaysOff(m.id, s)"
+                  (ngModelChange)="onDaysOffChange(m.id, s, $event)"
+                />
+                <span class="day-avail"
+                  >{{ grid.daysPerSprint[s] - getDaysOff(m.id, s) }}d
+                  avail</span
+                >
+              </div>
+            </td>
+
+            <!-- Total available -->
+            <td class="col-total">
+              <span class="total-value">{{ getTotalAvailable(m.id) }}d</span>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions">
+              <ng-container *ngIf="editingMemberId !== m.id">
+                <button
+                  class="cap-btn-icon"
+                  title="Edit"
+                  (click)="startEdit(m)"
+                >
+                  ✎
+                </button>
+                <button
+                  class="cap-btn-icon cap-btn-icon--danger"
+                  title="Delete"
+                  (click)="onDelete(m)"
+                >
+                  ✕
+                </button>
+              </ng-container>
+              <ng-container *ngIf="editingMemberId === m.id">
+                <button
+                  class="cap-btn-icon cap-btn-icon--ok"
+                  title="Save"
+                  (click)="saveEdit(m)"
+                >
+                  ✓
+                </button>
+                <button
+                  class="cap-btn-icon"
+                  title="Cancel"
+                  (click)="cancelEdit()"
+                >
+                  ✕
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- Footer totals by role -->
+        <tfoot>
+          <tr class="footer-row">
+            <td class="col-name footer-label" colspan="2">DEV availability</td>
+            <td class="col-sprint" *ngFor="let s of grid.sprints">
+              <span class="footer-val footer-val--dev"
+                >{{ getAvailByRole("DEV", s) }}d</span
+              >
+            </td>
+            <td class="col-total">
+              <span class="footer-val footer-val--dev"
+                >{{ getTotalByRole("DEV") }}d</span
+              >
+            </td>
+            <td></td>
+          </tr>
+          <tr class="footer-row">
+            <td class="col-name footer-label" colspan="2">PDA availability</td>
+            <td class="col-sprint" *ngFor="let s of grid.sprints">
+              <span class="footer-val footer-val--pda"
+                >{{ getAvailByRole("PDA", s) }}d</span
+              >
+            </td>
+            <td class="col-total">
+              <span class="footer-val footer-val--pda"
+                >{{ getTotalByRole("PDA") }}d</span
+              >
+            </td>
+            <td></td>
+          </tr>
+          <tr class="footer-row">
+            <td class="col-name footer-label" colspan="2">QA availability</td>
+            <td class="col-sprint" *ngFor="let s of grid.sprints">
+              <span class="footer-val footer-val--qa"
+                >{{ getAvailByRole("QA", s) }}d</span
+              >
+            </td>
+            <td class="col-total">
+              <span class="footer-val footer-val--qa"
+                >{{ getTotalByRole("QA") }}d</span
+              >
+            </td>
+            <td></td>
+          </tr>
+          <tr class="footer-row footer-row--total">
+            <td class="col-name footer-label" colspan="2">Team total</td>
+            <td class="col-sprint" *ngFor="let s of grid.sprints">
+              <span class="footer-val">{{ getSprintTotal(s) }}d</span>
+            </td>
+            <td class="col-total">
+              <span class="footer-val">{{ getGrandTotal() }}d</span>
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>

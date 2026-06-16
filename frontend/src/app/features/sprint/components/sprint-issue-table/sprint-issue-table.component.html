@@ -1,0 +1,160 @@
+<div class="table-container">
+  <div class="table-header">
+    <h2 class="table-title">Sprint Issues</h2>
+    <span class="table-count">{{ issues.length }} issues</span>
+  </div>
+
+  @if (issues.length === 0) {
+    <div class="empty-state">
+      <p class="empty-state__icon">◎</p>
+      <p class="empty-state__text">No issues found for this sprint.</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="issues-table" aria-label="Sprint issues">
+        <thead>
+          <tr>
+            <th class="col-key">Key</th>
+            <th class="col-summary">Summary</th>
+            <th class="col-assignee">Assignee</th>
+            <th class="col-type">Type</th>
+            <th class="col-status">Status</th>
+            <th class="col-sp col-sp--total">Total SP</th>
+            <th class="col-sp col-sp--remaining">Remaining SP</th>
+            <th class="col-sp col-sp--done">Done SP</th>
+            <th class="col-actions">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (issue of issues; track issue.issueKey) {
+            <tr
+              class="issue-row"
+              [class.issue-row--editing]="isEditing(issue.issueKey)"
+              [class.issue-row--saving]="savingIssueKey === issue.issueKey"
+            >
+              <!-- Issue Key -->
+              <td class="col-key">
+                <span class="issue-key">{{ issue.issueKey }}</span>
+              </td>
+
+              <!-- Summary -->
+              <td class="col-summary">
+                <span class="summary-text" [title]="issue.summary">{{
+                  issue.summary
+                }}</span>
+              </td>
+
+              <!-- Assignee -->
+              <td class="col-assignee">
+                <span class="assignee">{{
+                  issue.assignee ?? "Unassigned"
+                }}</span>
+              </td>
+
+              <!-- Issue Type -->
+              <td class="col-type">
+                <span
+                  class="issue-type"
+                  [class]="'issue-type--' + (issue.issueType | lowercase)"
+                >
+                  {{ issue.issueType }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td class="col-status">
+                <app-status-badge [status]="issue.status" />
+              </td>
+
+              <!-- Total SP -->
+              <td class="col-sp col-sp--total">
+                <span class="sp-value">{{
+                  issue.totalStoryPoints ?? "—"
+                }}</span>
+              </td>
+
+              <!-- Remaining SP — Editable -->
+              <td class="col-sp col-sp--remaining">
+                @if (isEditing(issue.issueKey)) {
+                  <input
+                    class="sp-input"
+                    type="number"
+                    min="0"
+                    [max]="issue.totalStoryPoints ?? 999"
+                    [(ngModel)]="editingState()!.value"
+                    (keydown.enter)="confirmEdit(issue)"
+                    (keydown.escape)="cancelEdit()"
+                    #spInput
+                    autofocus
+                    [attr.aria-label]="
+                      'Remaining story points for ' + issue.issueKey
+                    "
+                  />
+                } @else {
+                  <span
+                    class="sp-value sp-value--editable"
+                    (click)="startEdit(issue)"
+                    title="Click to edit remaining SP"
+                    tabindex="0"
+                    (keydown.enter)="startEdit(issue)"
+                    role="button"
+                    [attr.aria-label]="
+                      'Edit remaining SP for ' + issue.issueKey
+                    "
+                  >
+                    {{ issue.remainingStoryPoints ?? "—" }}
+                    <span class="edit-hint">✎</span>
+                  </span>
+                }
+              </td>
+
+              <!-- Done SP (computed) -->
+              <td class="col-sp col-sp--done">
+                <span class="sp-value sp-value--done">{{
+                  issue.doneStoryPoints ?? "—"
+                }}</span>
+              </td>
+
+              <!-- Actions -->
+              <td class="col-actions">
+                @if (savingIssueKey === issue.issueKey) {
+                  <span class="saving-indicator">Saving…</span>
+                } @else if (isEditing(issue.issueKey)) {
+                  <div class="action-buttons">
+                    <button
+                      class="btn-action btn-action--confirm"
+                      (click)="confirmEdit(issue)"
+                      title="Save"
+                      aria-label="Save remaining SP"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      class="btn-action btn-action--cancel"
+                      (click)="cancelEdit()"
+                      title="Cancel"
+                      aria-label="Cancel editing"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                } @else {
+                  <button
+                    class="btn-action btn-action--edit"
+                    (click)="startEdit(issue)"
+                    title="Edit remaining SP"
+                    [attr.aria-label]="
+                      'Edit remaining SP for ' + issue.issueKey
+                    "
+                  >
+                    Edit SP
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

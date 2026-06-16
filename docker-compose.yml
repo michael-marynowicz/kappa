@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sprint-reporter-backend
+    ports:
+      - "8080:8080"
+    environment:
+      JIRA_MOCK_MODE: "true"
+      # Uncomment and fill in for real Jira integration:
+      # JIRA_BASE_URL: https://yourcompany.atlassian.net
+      # JIRA_USER_EMAIL: you@company.com
+      # JIRA_API_TOKEN: your_api_token
+      # JIRA_SPRINT_ID: 42
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sprint-reporter-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy

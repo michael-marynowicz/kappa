@@ -1,0 +1,46 @@
+<div class="metrics-page">
+  <header class="metrics__header">
+    <h1 class="page-title">Metrics & Analytics</h1>
+    <p class="page-subtitle">
+      Sprint velocity, capacity, and historical comparisons
+    </p>
+  </header>
+
+  <!-- Segmented control -->
+  <nav class="chart-switcher" aria-label="Chart view selector">
+    @for (opt of viewOptions; track opt.value) {
+      <button
+        class="chart-switcher__btn"
+        [class.chart-switcher__btn--active]="focusView() === opt.value"
+        (click)="focusView.set(opt.value)"
+        [attr.aria-pressed]="focusView() === opt.value"
+      >
+        {{ opt.label }}
+      </button>
+    }
+  </nav>
+
+  @if (state.error()) {
+    <div class="error-banner" role="alert">
+      <span>⚠ {{ state.error() }}</span>
+      <button (click)="state.clearError()">✕</button>
+    </div>
+  }
+
+  <div
+    class="feature-gate"
+    [class.feature-gate--disabled]="state.metricsGated()"
+  >
+    <app-sprint-analytics
+      [metrics]="state.metrics()"
+      [iterations]="state.iterations()"
+      [epicGroups]="state.epicGroups()"
+      [iterationsGated]="state.iterationsGated()"
+      [capacityGated]="state.iterationsGated()"
+      [focusView]="focusView()"
+    />
+    @if (state.metricsGated()) {
+      <app-premium-overlay message="Metrics require a Premium plan" />
+    }
+  </div>
+</div>
