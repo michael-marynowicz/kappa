@@ -24,12 +24,15 @@ export class RegisterComponent {
   organizationName = "";
   showPassword = false;
 
+  private readonly EMAIL_REGEX =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   invitationCheck: InvitationCheck | null = null;
   checkingInvitation = false;
 
   onEmailBlur(): void {
     const email = this.email.trim();
-    if (!email?.includes("@")) {
+    if (!this.EMAIL_REGEX.test(email)) {
       this.invitationCheck = null;
       return;
     }

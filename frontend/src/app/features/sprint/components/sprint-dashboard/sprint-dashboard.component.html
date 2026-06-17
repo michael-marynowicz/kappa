@@ -104,6 +104,16 @@
     }
   </section>
 
+  @if (dashboardError) {
+    <div class="dashboard-error" role="alert">
+      <span class="dashboard-error__icon">⚠</span>
+      <span class="dashboard-error__message">{{ dashboardError }}</span>
+      <button class="dashboard-error__retry" (click)="retryActiveTab()">
+        Reessayer
+      </button>
+    </div>
+  }
+
   <!-- KPI Summary Cards -->
   <app-sprint-summary-card [summary]="state.summary()" />
 

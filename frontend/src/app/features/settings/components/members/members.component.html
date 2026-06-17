@@ -270,10 +270,15 @@
       <div class="invite-form__fields">
         <input
           class="form-input"
+          [class.form-input--invalid]="
+            inviteEmailField.invalid && inviteEmailField.touched
+          "
           type="email"
           name="inviteEmail"
           [(ngModel)]="inviteEmail"
+          #inviteEmailField="ngModel"
           required
+          pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
           placeholder="colleague@company.com"
           autocomplete="off"
           [disabled]="inviting"
@@ -291,7 +296,7 @@
         <button
           class="btn-invite"
           type="submit"
-          [disabled]="!inviteEmail.trim() || inviting"
+          [disabled]="inviteForm.invalid || inviting"
         >
           @if (inviting) {
             <span class="btn-spinner"></span>
@@ -314,6 +319,13 @@
           }
         </button>
       </div>
+      @if (inviteEmailField.invalid && inviteEmailField.touched) {
+        @if (inviteEmailField.errors?.["required"]) {
+          <p class="invite-form__error">Email is required.</p>
+        } @else if (inviteEmailField.errors?.["pattern"]) {
+          <p class="invite-form__error">Please enter a valid email address.</p>
+        }
+      }
     </form>
   </section>
 

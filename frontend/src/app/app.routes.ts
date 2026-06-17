@@ -4,6 +4,12 @@ import { adminGuard } from "./core/guards/admin.guard";
 import { subscriptionGuard } from "./core/guards/subscription.guard";
 
 export const routes: Routes = [
+  // Public landing page
+  {
+    path: "home",
+    loadComponent: () =>
+      import("./features/home/home.component").then((m) => m.HomeComponent),
+  },
   // Public auth routes
   {
     path: "auth",
@@ -73,6 +79,6 @@ export const routes: Routes = [
   },
   {
     path: "**",
-    redirectTo: "",
+    redirectTo: "home",
   },
 ];

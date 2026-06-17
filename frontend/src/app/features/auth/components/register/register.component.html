@@ -58,29 +58,63 @@
             <label class="form-label" for="firstName">First Name</label>
             <input
               class="form-input"
+              [class.is-invalid]="
+                firstNameField.invalid && firstNameField.touched
+              "
               id="firstName"
               type="text"
               name="firstName"
               [(ngModel)]="firstName"
+              #firstNameField="ngModel"
               required
+              minlength="2"
               maxlength="50"
+              pattern="[A-Za-z\u00C0-\u024F'\- ]+"
               placeholder="Jane"
               autocomplete="given-name"
             />
+            @if (firstNameField.invalid && firstNameField.touched) {
+              @if (firstNameField.errors?.["required"]) {
+                <span class="form-error">First name is required.</span>
+              } @else if (firstNameField.errors?.["minlength"]) {
+                <span class="form-error">At least 2 characters required.</span>
+              } @else if (firstNameField.errors?.["pattern"]) {
+                <span class="form-error"
+                  >Letters, spaces, hyphens and apostrophes only.</span
+                >
+              }
+            }
           </div>
           <div class="form-group">
             <label class="form-label" for="lastName">Last Name</label>
             <input
               class="form-input"
+              [class.is-invalid]="
+                lastNameField.invalid && lastNameField.touched
+              "
               id="lastName"
               type="text"
               name="lastName"
               [(ngModel)]="lastName"
+              #lastNameField="ngModel"
               required
+              minlength="2"
               maxlength="50"
+              pattern="[A-Za-z\u00C0-\u024F'\- ]+"
               placeholder="Doe"
               autocomplete="family-name"
             />
+            @if (lastNameField.invalid && lastNameField.touched) {
+              @if (lastNameField.errors?.["required"]) {
+                <span class="form-error">Last name is required.</span>
+              } @else if (lastNameField.errors?.["minlength"]) {
+                <span class="form-error">At least 2 characters required.</span>
+              } @else if (lastNameField.errors?.["pattern"]) {
+                <span class="form-error"
+                  >Letters, spaces, hyphens and apostrophes only.</span
+                >
+              }
+            }
           </div>
         </div>
 
@@ -88,16 +122,28 @@
           <label class="form-label" for="email">Email</label>
           <input
             class="form-input"
+            [class.is-invalid]="emailField.invalid && emailField.touched"
             id="email"
             type="email"
             name="email"
             [(ngModel)]="email"
+            #emailField="ngModel"
             required
-            email
+            pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
             placeholder="you@company.com"
             autocomplete="email"
             (blur)="onEmailBlur()"
           />
+          @if (emailField.invalid && emailField.touched) {
+            @if (emailField.errors?.["required"]) {
+              <span class="form-error">Email is required.</span>
+            } @else if (emailField.errors?.["pattern"]) {
+              <span class="form-error"
+                >Please enter a valid email address (e.g.
+                you&#64;company.com).</span
+              >
+            }
+          }
           @if (checkingInvitation) {
             <span class="form-hint form-hint--loading">Checking…</span>
           }
@@ -132,13 +178,19 @@
           <div class="input-wrapper">
             <input
               class="form-input"
+              [class.is-invalid]="
+                passwordField.invalid && passwordField.touched
+              "
               id="password"
               [type]="showPassword ? 'text' : 'password'"
               name="password"
               [(ngModel)]="password"
+              #passwordField="ngModel"
               required
               minlength="8"
-              placeholder="Min. 8 characters"
+              maxlength="128"
+              pattern="^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$"
+              placeholder="Min. 8 characters, 1 letter & 1 number"
               autocomplete="new-password"
             />
             <button
@@ -183,6 +235,17 @@
               }
             </button>
           </div>
+          @if (passwordField.invalid && passwordField.touched) {
+            @if (passwordField.errors?.["required"]) {
+              <span class="form-error">Password is required.</span>
+            } @else if (passwordField.errors?.["minlength"]) {
+              <span class="form-error">At least 8 characters required.</span>
+            } @else if (passwordField.errors?.["pattern"]) {
+              <span class="form-error"
+                >Must contain at least one letter and one number.</span
+              >
+            }
+          }
         </div>
 
         @if (!isInvited) {
@@ -192,15 +255,25 @@
             >
             <input
               class="form-input"
+              [class.is-invalid]="orgNameField.invalid && orgNameField.touched"
               id="organizationName"
               type="text"
               name="organizationName"
               [(ngModel)]="organizationName"
+              #orgNameField="ngModel"
               required
+              minlength="2"
               maxlength="100"
               placeholder="Your company name"
               autocomplete="organization"
             />
+            @if (orgNameField.invalid && orgNameField.touched) {
+              @if (orgNameField.errors?.["required"]) {
+                <span class="form-error">Organization name is required.</span>
+              } @else if (orgNameField.errors?.["minlength"]) {
+                <span class="form-error">At least 2 characters required.</span>
+              }
+            }
           </div>
         }
 

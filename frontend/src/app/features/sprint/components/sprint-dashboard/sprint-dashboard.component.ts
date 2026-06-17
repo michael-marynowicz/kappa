@@ -60,4 +60,55 @@ export class SprintDashboardComponent implements OnInit {
   onUpgrade(): void {
     this.router.navigate(["/settings/billing"]);
   }
+
+  get boardError(): string | null {
+    return this.state.issuesError();
+  }
+
+  get metricsError(): string | null {
+    return this.state.metricsError() ?? this.state.iterationsError();
+  }
+
+  get capacityError(): string | null {
+    return this.capState.error();
+  }
+
+  get dashboardError(): string | null {
+    if (this.activeTab === "metrics") {
+      return this.metricsError;
+    }
+
+    if (this.activeTab === "capacity") {
+      return this.capacityError;
+    }
+
+    return this.boardError;
+  }
+
+  retryBoard(): void {
+    this.state.loadIssues();
+  }
+
+  retryMetrics(): void {
+    this.state.loadMetrics();
+    this.state.loadIterations();
+  }
+
+  retryCapacity(): void {
+    this.capState.loadGrid();
+  }
+
+  retryActiveTab(): void {
+    if (this.activeTab === "metrics") {
+      this.retryMetrics();
+      return;
+    }
+
+    if (this.activeTab === "capacity") {
+      this.retryCapacity();
+      return;
+    }
+
+    this.retryBoard();
+  }
 }

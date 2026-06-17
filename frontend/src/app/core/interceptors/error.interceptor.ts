@@ -3,6 +3,10 @@ import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { catchError, throwError } from "rxjs";
 
+const AUTH_ENDPOINT_PATTERNS = ["/api/v1/auth", "/api/v1/session"];
+const AUTH_FAILURE_CODES = new Set(["AUTH_EXPIRED", "AUTH_INVALID"]);
+const INTEGRATION_UNAVAILABLE_STATUS = new Set([424, 502, 503, 504]);
+
 /**
  * Functional HTTP interceptor: standardizes error handling across all API calls.
  * Maps HttpErrorResponse to human-readable error messages.
@@ -43,6 +47,50 @@ function isFeatureGated(error: HttpErrorResponse): boolean {
   );
 }
 
+function normalizeErrorCode(error: HttpErrorResponse): string | null {
+  const code =
+    error.error?.code ?? error.error?.errorCode ?? error.error?.error ?? null;
+  return typeof code === "string" ? code.toUpperCase() : null;
+}
+
+function isAuthEndpoint(url: string): boolean {
+  return AUTH_ENDPOINT_PATTERNS.some((pattern) => url.includes(pattern));
+}
+
+function isAuthFailure(error: HttpErrorResponse, requestUrl: string): boolean {
+  const errorCode = normalizeErrorCode(error);
+  if (errorCode && AUTH_FAILURE_CODES.has(errorCode)) {
+    return true;
+  }
+
+  return (
+    (error.status === 401 || error.status === 403) && isAuthEndpoint(requestUrl)
+  );
+}
+
+function isIntegrationUnavailable(error: HttpErrorResponse): boolean {
+  return INTEGRATION_UNAVAILABLE_STATUS.has(error.status);
+}
+
+function toAppError(
+  error: HttpErrorResponse,
+  message: string,
+): {
+  status: number;
+  code: string | null;
+  message: string;
+  integrationFailure: boolean;
+  retryable: boolean;
+} {
+  return {
+    status: error.status,
+    code: normalizeErrorCode(error),
+    message,
+    integrationFailure: isIntegrationUnavailable(error),
+    retryable: isIntegrationUnavailable(error),
+  };
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
@@ -69,25 +117,29 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       if (error.status === 0) {
         message = "Unable to connect to the server. Is the backend running?";
-      } else if (error.status === 401) {
-        // Token invalid/expired → redirect to login
+      } else if (isAuthFailure(error, req.url)) {
+        // Strict logout policy: only auth/session failures or explicit AUTH_* codes.
         localStorage.removeItem("sr_token");
         localStorage.removeItem("sr_refresh_token");
         localStorage.removeItem("sr_token_expiry");
         router.navigate(["/auth/login"]);
         message = STATUS_MESSAGES[401];
+      } else if (isIntegrationUnavailable(error)) {
+        message =
+          "Impossible de charger les donnees Jira. Verifie la configuration Jira (token/base URL/projet) ou reessaie plus tard.";
       } else {
         // Backend error format: { status, error, message, details[], timestamp }
         const sanitized = sanitizeErrorMessage(error.error?.message);
-        message = sanitized
-          ? sanitized
-          : (STATUS_MESSAGES[error.status] ?? `Server error: ${error.status}`);
+        message =
+          sanitized ??
+          STATUS_MESSAGES[error.status] ??
+          `Server error: ${error.status}`;
       }
 
       // Log full error for debugging but never expose to user
       console.error(`[HTTP ${error.status}] ${req.method} ${req.url}`);
 
-      return throwError(() => new Error(message));
+      return throwError(() => toAppError(error, message));
     }),
   );
 };

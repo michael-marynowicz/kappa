@@ -29,6 +29,9 @@ export class SprintStateService {
   private readonly _loading = signal<boolean>(false);
   private readonly _metricsLoading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _issuesError = signal<string | null>(null);
+  private readonly _metricsError = signal<string | null>(null);
+  private readonly _iterationsError = signal<string | null>(null);
   private readonly _savingIssueKey = signal<string | null>(null);
   private readonly _metricsGated = signal(false);
   private readonly _iterationsGated = signal(false);
@@ -41,6 +44,9 @@ export class SprintStateService {
   readonly loading = this._loading.asReadonly();
   readonly metricsLoading = this._metricsLoading.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly issuesError = this._issuesError.asReadonly();
+  readonly metricsError = this._metricsError.asReadonly();
+  readonly iterationsError = this._iterationsError.asReadonly();
   readonly savingIssueKey = this._savingIssueKey.asReadonly();
   readonly metricsGated = this._metricsGated.asReadonly();
   readonly iterationsGated = this._iterationsGated.asReadonly();
@@ -66,14 +72,14 @@ export class SprintStateService {
 
   loadIssues(): void {
     this._loading.set(true);
-    this._error.set(null);
+    this._issuesError.set(null);
     this.apiService.getSprintIssues().subscribe({
       next: (issues) => {
         this._issues.set(issues);
         this._loading.set(false);
       },
       error: (err) => {
-        this._error.set(err.message ?? "Failed to load sprint issues");
+        this._issuesError.set(err.message ?? "Failed to load sprint issues");
         this._loading.set(false);
       },
     });
@@ -81,6 +87,7 @@ export class SprintStateService {
 
   loadMetrics(): void {
     this._metricsLoading.set(true);
+    this._metricsError.set(null);
     this.apiService.getMetrics().subscribe({
       next: (m) => {
         this._metrics.set(m);
@@ -91,7 +98,7 @@ export class SprintStateService {
         if (isFeatureGatedError(err)) {
           this._metricsGated.set(true);
         } else {
-          this._error.set(err.message ?? "Failed to load metrics");
+          this._metricsError.set(err.message ?? "Failed to load metrics");
         }
         this._metricsLoading.set(false);
       },
@@ -99,6 +106,7 @@ export class SprintStateService {
   }
 
   loadIterations(): void {
+    this._iterationsError.set(null);
     this.apiService.getIterationHistory().subscribe({
       next: (data) => {
         this._iterations.set(data);
@@ -108,7 +116,9 @@ export class SprintStateService {
         if (isFeatureGatedError(err)) {
           this._iterationsGated.set(true);
         } else {
-          this._error.set(err.message ?? "Failed to load iteration history");
+          this._iterationsError.set(
+            err.message ?? "Failed to load iteration history",
+          );
         }
       },
     });
@@ -149,12 +159,12 @@ export class SprintStateService {
   exportCsv(): void {
     this.apiService.exportCsv().subscribe({
       next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
+        const url = globalThis.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = `sprint-report-${new Date().toISOString().split("T")[0]}.csv`;
         a.click();
-        window.URL.revokeObjectURL(url);
+        globalThis.URL.revokeObjectURL(url);
       },
       error: (err) => {
         if (isFeatureGatedError(err)) {
@@ -168,5 +178,8 @@ export class SprintStateService {
 
   clearError(): void {
     this._error.set(null);
+    this._issuesError.set(null);
+    this._metricsError.set(null);
+    this._iterationsError.set(null);
   }
 }

@@ -50,8 +50,9 @@ export class AuthStateService {
   login(request: LoginRequest): void {
     this._loading.set(true);
     this._error.set(null);
+    const shouldRedirectToHome = this.router.url.startsWith("/auth");
     this.api.login(request).subscribe({
-      next: (res) => this.handleAuthSuccess(res),
+      next: (res) => this.handleAuthSuccess(res, shouldRedirectToHome),
       error: (err) => {
         this._error.set(err.message ?? "Login failed");
         this._loading.set(false);
@@ -104,14 +105,19 @@ export class AuthStateService {
     this._registerSuccess.set(null);
   }
 
-  private handleAuthSuccess(res: AuthResponse): void {
+  private handleAuthSuccess(
+    res: AuthResponse,
+    shouldRedirectToHome = true,
+  ): void {
     this.storeToken(res.accessToken, res.refreshToken, res.expiresIn);
     this._user.set(res.user);
     this._loading.set(false);
     this.permissionService.loadPermissions();
     this.orgState.loadOrganization();
     this.subState.loadSubscription();
-    this.router.navigate(["/"]);
+    if (shouldRedirectToHome && this.router.url.startsWith("/auth")) {
+      this.router.navigate(["/"]);
+    }
   }
 
   private storeToken(

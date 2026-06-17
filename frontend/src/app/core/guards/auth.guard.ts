@@ -10,7 +10,7 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(["/auth/login"]);
+  return router.createUrlTree(["/home"]);
 };
 
 export const guestGuard: CanActivateFn = () => {

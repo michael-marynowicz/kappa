@@ -31,6 +31,8 @@ export class MembersComponent implements OnInit {
   inviteEmail = "";
   inviteRole = "MEMBER";
   inviting = false;
+  private readonly emailRegex =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   get maxMembers(): number | null {
     const plans = this.subState.plans();
@@ -79,6 +81,10 @@ export class MembersComponent implements OnInit {
   onInvite(): void {
     const email = this.inviteEmail.trim();
     if (!email) return;
+    if (!this.emailRegex.test(email)) {
+      this.error.set("Please enter a valid email address.");
+      return;
+    }
 
     this.inviting = true;
     this.error.set(null);

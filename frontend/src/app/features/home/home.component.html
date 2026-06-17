@@ -1,0 +1,520 @@
+<div class="lp">
+  <!-- ══════════════════════════ NAVBAR ══════════════════════════ -->
+  <header class="lp-nav" role="banner">
+    <div class="lp-nav__inner">
+      <a class="lp-nav__brand" routerLink="/home" aria-label="Kappa — home">
+        <div class="lp-nav__brand-icon" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <span class="lp-nav__brand-name">Kappa</span>
+      </a>
+
+      <nav class="lp-nav__links" aria-label="Sections">
+        <a class="lp-nav__link" href="#features" (click)="scrollTo('features', $event)">Features</a>
+        <a class="lp-nav__link" href="#benefits" (click)="scrollTo('benefits', $event)">Benefits</a>
+        <a class="lp-nav__link" href="#integration" (click)="scrollTo('integration', $event)">Integration</a>
+      </nav>
+
+      <div class="lp-nav__actions">
+        <a class="lp-nav__login" routerLink="/auth/login">Sign in</a>
+        <a class="lp-nav__signup" routerLink="/auth/register">
+          Sign up free
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════ HERO ══════════════════════════ -->
+  <section class="lp-hero" aria-labelledby="hero-title">
+    <div class="lp-hero__bg" aria-hidden="true">
+      <div class="orb orb--1"></div>
+      <div class="orb orb--2"></div>
+      <div class="orb orb--3"></div>
+      <div class="grid-lines"></div>
+    </div>
+
+    <div class="lp-hero__content">
+      <div class="lp-hero__badge">
+        <span class="badge-dot"></span>
+        Powered by Jira API — no plugins required
+      </div>
+
+      <h1 id="hero-title" class="lp-hero__h1">
+        Sprint intelligence,<br />
+        <em class="lp-hero__accent">fully automated</em>
+      </h1>
+
+      <p class="lp-hero__desc">
+        Kappa connects to your Jira workspace and turns raw issue data into
+        beautiful dashboards, velocity charts, and capacity plans — in under
+        five minutes.
+      </p>
+
+      <div class="lp-hero__ctas">
+        <a class="btn-primary" routerLink="/auth/register">
+          Get started free
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </a>
+        <a class="btn-ghost" routerLink="/auth/login"
+          >Sign in to your workspace</a
+        >
+      </div>
+
+      <!-- ── Dashboard mock-up ── -->
+      <div class="lp-hero__visual" aria-hidden="true">
+        <!-- Main app frame -->
+        <div class="hv-frame">
+          <div class="hv-topbar">
+            <div class="hv-dots"><span></span><span></span><span></span></div>
+            <span class="hv-topbar__title">Kappa · Sprint Dashboard</span>
+          </div>
+          <div class="hv-body">
+            <div class="hv-kpi-row">
+              <div class="hv-kpi">
+                <span class="hv-kpi__lbl">Total SP</span>
+                <span class="hv-kpi__val">148</span>
+              </div>
+              <div class="hv-kpi hv-kpi--green">
+                <span class="hv-kpi__lbl">Done</span>
+                <span class="hv-kpi__val">112</span>
+              </div>
+              <div class="hv-kpi">
+                <span class="hv-kpi__lbl">Remaining</span>
+                <span class="hv-kpi__val">36</span>
+              </div>
+              <div class="hv-kpi hv-kpi--indigo">
+                <span class="hv-kpi__lbl">Completion</span>
+                <span class="hv-kpi__val">76%</span>
+              </div>
+            </div>
+
+            <div class="hv-progress-hd">
+              <span>Sprint 24 · Frontend Team</span>
+              <span class="hv-progress-pct">76%</span>
+            </div>
+            <div class="hv-track">
+              <div class="hv-fill" style="width: 76%"></div>
+            </div>
+
+            <div class="hv-issues">
+              <div class="hv-issue">
+                <span class="hv-key">KAPPA-142</span>
+                <span class="hv-title"
+                  >Auth interceptor — strict logout policy</span
+                >
+                <span class="hv-badge hv-badge--done">Done</span>
+              </div>
+              <div class="hv-issue">
+                <span class="hv-key">KAPPA-143</span>
+                <span class="hv-title">Sprint velocity chart redesign</span>
+                <span class="hv-badge hv-badge--progress">In Progress</span>
+              </div>
+              <div class="hv-issue">
+                <span class="hv-key">KAPPA-144</span>
+                <span class="hv-title"
+                  >Capacity CSV export premium feature</span
+                >
+                <span class="hv-badge hv-badge--todo">To Do</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating velocity card -->
+        <div class="hv-float hv-float--velocity">
+          <p class="hv-float__lbl">Avg Velocity</p>
+          <p class="hv-float__val">84 <span>SP/sprint</span></p>
+          <p class="hv-float__trend">▲ 12% vs last sprint</p>
+        </div>
+
+        <!-- Floating capacity card -->
+        <div class="hv-float hv-float--capacity">
+          <p class="hv-float__lbl">Team Capacity</p>
+          <div class="hv-minibars">
+            <div class="hv-minibar" style="--h: 65%"></div>
+            <div class="hv-minibar" style="--h: 82%"></div>
+            <div class="hv-minibar" style="--h: 48%"></div>
+            <div class="hv-minibar" style="--h: 91%"></div>
+            <div class="hv-minibar" style="--h: 72%"></div>
+          </div>
+        </div>
+      </div>
+      <!-- /visual -->
+    </div>
+    <!-- /content -->
+  </section>
+
+  <!-- ══════════════════════════ FEATURES ══════════════════════════ -->
+  <section id="features" class="lp-features">
+    <div class="lp-wrap">
+      <header class="lp-section-hd">
+        <span class="lp-tag">Features</span>
+        <h2 class="lp-section-hd__title">Everything your team needs</h2>
+        <p class="lp-section-hd__desc">
+          From real-time sprint boards to historical analytics, Kappa covers the
+          full agile lifecycle — without a single manual copy-paste.
+        </p>
+      </header>
+
+      <div class="feat-grid">
+        @for (f of features; track f.title) {
+          <article class="feat-card feat-card--{{ f.color }}">
+            <div class="feat-card__icon" [innerHTML]="f.icon"></div>
+            <h3 class="feat-card__title">{{ f.title }}</h3>
+            <p class="feat-card__desc">{{ f.desc }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ STATS ══════════════════════════ -->
+  <section class="lp-stats" aria-label="Key numbers">
+    <div class="lp-wrap">
+      <div class="lp-stats__grid">
+        <div class="lp-stat">
+          <span class="lp-stat__val">5 min</span>
+          <span class="lp-stat__lbl">Average setup time</span>
+        </div>
+        <div class="lp-stat">
+          <span class="lp-stat__val">100%</span>
+          <span class="lp-stat__lbl">Jira-native, zero double entry</span>
+        </div>
+        <div class="lp-stat">
+          <span class="lp-stat__val">3</span>
+          <span class="lp-stat__lbl">Granular access roles</span>
+        </div>
+        <div class="lp-stat">
+          <span class="lp-stat__val">∞</span>
+          <span class="lp-stat__lbl">Sprint history retained</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ BENEFITS ══════════════════════════ -->
+  <section id="benefits" class="lp-benefits">
+    <div class="lp-wrap">
+      <header class="lp-section-hd">
+        <span class="lp-tag">Why Kappa?</span>
+        <h2 class="lp-section-hd__title">
+          Built for scrum teams<br />that care about outcomes
+        </h2>
+      </header>
+
+      <div class="ben-grid">
+        <article class="ben-card">
+          <div class="ben-card__icon ben-card__icon--indigo">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+              />
+              <polyline points="13 2 13 9 20 9" />
+            </svg>
+          </div>
+          <h3 class="ben-card__title">Zero manual data entry</h3>
+          <p class="ben-card__desc">
+            Kappa reads directly from your Jira instance. Your sprint data is
+            always fresh, automatically synchronised, and never stale.
+          </p>
+        </article>
+
+        <article class="ben-card">
+          <div class="ben-card__icon ben-card__icon--violet">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+          </div>
+          <h3 class="ben-card__title">Real decisions from real data</h3>
+          <p class="ben-card__desc">
+            Velocity trends, capacity bottlenecks, sprint health — surfaced
+            instantly so your team focuses on shipping, not spreadsheets.
+          </p>
+        </article>
+
+        <article class="ben-card">
+          <div class="ben-card__icon ben-card__icon--amber">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="12 2 20 6 20 18 12 22 4 18 4 6 12 2" />
+              <polyline points="12 22 12 12" />
+              <polyline points="20 6 12 12 4 6" />
+            </svg>
+          </div>
+          <h3 class="ben-card__title">All your data, one place</h3>
+          <p class="ben-card__desc">
+            Stop juggling scattered tools and spreadsheets. Kappa centralizes your
+            metrics, automates calculations, and eliminates manual errors — pure
+            clarity, zero guesswork.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ INTEGRATION ══════════════════════════ -->
+  <section id="integration" class="lp-integration">
+    <div class="lp-wrap">
+      <div class="lp-integration__card">
+        <div class="lp-integration__copy">
+          <span class="lp-tag">Integration</span>
+          <h2 class="lp-integration__title">
+            Connects to Jira<br />in minutes
+          </h2>
+          <p class="lp-integration__desc">
+            Provide your Jira base URL, project key, and API token. Kappa
+            handles the rest — no webhooks, no plugins, no DevOps work required.
+          </p>
+          <ul class="lp-integration__checks">
+            <li>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Jira Cloud &amp; Jira Server
+            </li>
+            <li>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Basic Auth &amp; API Token (PAT)
+            </li>
+            <li>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              No Jira admin permissions required
+            </li>
+            <li>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Read-only — your Jira data is never modified
+            </li>
+          </ul>
+          <a class="btn-primary" routerLink="/auth/register">
+            Connect your Jira
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Config UI mockup -->
+        <div class="lp-integration__mock" aria-hidden="true">
+          <div class="mock-topbar">
+            <span class="mock-topbar__title"
+              >Settings · Jira Configuration</span
+            >
+          </div>
+          <div class="mock-form">
+            <div class="mock-field">
+              <span class="mock-field__lbl">Jira Base URL</span>
+              <div class="mock-field__input">https://yourorg.atlassian.net</div>
+            </div>
+            <div class="mock-field">
+              <span class="mock-field__lbl">Project Key</span>
+              <div class="mock-field__input">KAPPA</div>
+            </div>
+            <div class="mock-field">
+              <span class="mock-field__lbl">Auth Mode</span>
+              <div class="mock-field__input mock-field__input--select">
+                API Token (PAT) ▾
+              </div>
+            </div>
+            <div class="mock-field">
+              <span class="mock-field__lbl">API Token</span>
+              <div class="mock-field__input mock-field__input--masked">
+                ••••••••••••••••••••
+              </div>
+            </div>
+            <div class="mock-connected">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Connected
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ CTA ══════════════════════════ -->
+  <section class="lp-cta">
+    <div class="lp-wrap">
+      <div class="lp-cta__card">
+        <div class="lp-cta__orb lp-cta__orb--1" aria-hidden="true"></div>
+        <div class="lp-cta__orb lp-cta__orb--2" aria-hidden="true"></div>
+        <div class="lp-cta__body">
+          <h2 class="lp-cta__title">Ready to run better sprints?</h2>
+          <p class="lp-cta__desc">
+            Connect your Jira workspace and get full sprint intelligence in
+            under five minutes. No credit card required.
+          </p>
+          <div class="lp-cta__actions">
+            <a class="btn-primary" routerLink="/auth/register"
+              >Start for free</a
+            >
+            <a class="btn-ghost" routerLink="/auth/login">Sign in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ FOOTER ══════════════════════════ -->
+  <footer class="lp-footer">
+    <div class="lp-wrap">
+      <div class="lp-footer__inner">
+        <div class="lp-footer__brand">
+          <div class="lp-footer__logo" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span>Kappa</span>
+        </div>
+        <p class="lp-footer__copy">
+          © {{ year }} Kappa — Sprint intelligence, automated.
+        </p>
+        <nav class="lp-footer__links" aria-label="Footer navigation">
+          <a routerLink="/auth/login">Sign in</a>
+          <a routerLink="/auth/register">Sign up</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+</div>
