@@ -24,6 +24,18 @@
       </div>
     </div>
 
+    <div class="dashboard-switcher" aria-label="Team dashboard switcher">
+      <app-team-dashboard-switcher
+        [dashboards]="dashboards()"
+        [loading]="dashboardsLoading()"
+        [switchingDashboardId]="switchingDashboardId()"
+        [isAdmin]="isAdmin"
+        [hintMessage]="'Lecture seule'"
+        [errorMessage]="dashboardSwitchError()"
+        (switchDashboard)="onSwitchDashboard($event)"
+      />
+    </div>
+
     @if (!state.exportGated()) {
       <button
         class="btn-export"
@@ -108,14 +120,24 @@
     <div class="dashboard-error" role="alert">
       <span class="dashboard-error__icon">⚠</span>
       <span class="dashboard-error__message">{{ dashboardError }}</span>
-      <button class="dashboard-error__retry" (click)="retryActiveTab()">
-        Reessayer
-      </button>
+      <div class="dashboard-error__actions">
+        @if (shouldShowGoToSettings) {
+          <button
+            class="dashboard-error__settings"
+            (click)="onGoToJiraSettings()"
+          >
+            Go to Settings
+          </button>
+        }
+        <button class="dashboard-error__retry" (click)="retryActiveTab()">
+          Reessayer
+        </button>
+      </div>
     </div>
   }
 
   <!-- KPI Summary Cards -->
-  <app-sprint-summary-card [summary]="state.summary()" />
+  <app-sprint-summary-card [summary]="state.summary()" [loading]="state.loading()" />
 
   <!-- Tab Bar -->
   <div class="tab-bar" role="tablist" aria-label="Dashboard tabs">
@@ -202,10 +224,16 @@
   @if (activeTab === "board") {
     <main class="dashboard__content">
       @if (state.loading()) {
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>Loading sprint data…</p>
-        </div>
+        <section class="board-skeleton" aria-busy="true" aria-live="polite">
+          @for (row of [1,2,3,4,5,6,7,8]; track row) {
+            <div class="board-skeleton__row">
+              <span class="board-skeleton__cell board-skeleton__cell--key"></span>
+              <span class="board-skeleton__cell"></span>
+              <span class="board-skeleton__cell board-skeleton__cell--badge"></span>
+              <span class="board-skeleton__cell board-skeleton__cell--num"></span>
+            </div>
+          }
+        </section>
       } @else {
         <app-sprint-issue-table
           [issues]="state.issues()"
@@ -219,20 +247,40 @@
   <!-- Tab: Metrics (Analytics) -->
   @if (activeTab === "metrics") {
     <main class="dashboard__content">
-      <div
-        class="feature-gate"
-        [class.feature-gate--disabled]="state.metricsGated()"
-      >
-        <app-sprint-analytics
-          [metrics]="state.metrics()"
-          [iterations]="state.iterations()"
-          [iterationsGated]="state.iterationsGated()"
-          [capacityGated]="state.iterationsGated()"
-        />
-        @if (state.metricsGated()) {
-          <app-premium-overlay message="Metrics require a Premium plan" />
-        }
-      </div>
+      @if (state.metricsLoading() || switchingDashboardId() !== null) {
+        <section class="metrics-sk" aria-busy="true" aria-live="polite">
+          <div class="metrics-sk__row metrics-sk__row--summary">
+            <div class="metrics-sk__card"></div>
+            <div class="metrics-sk__card"></div>
+            <div class="metrics-sk__card"></div>
+          </div>
+          <div class="metrics-sk__row metrics-sk__row--chart">
+            <div class="metrics-sk__chart"></div>
+            <div class="metrics-sk__panel">
+              <span class="metrics-sk__line"></span>
+              <span class="metrics-sk__line"></span>
+              <span class="metrics-sk__line"></span>
+              <span class="metrics-sk__line"></span>
+            </div>
+          </div>
+        </section>
+      } @else {
+        <div
+          class="feature-gate"
+          [class.feature-gate--disabled]="state.metricsGated()"
+        >
+          <app-sprint-analytics
+            [metrics]="state.metrics()"
+            [iterations]="state.iterations()"
+            [iterationsGated]="state.iterationsGated()"
+            [iterationsLoading]="state.iterationsLoading()"
+            [capacityGated]="state.iterationsGated()"
+          />
+          @if (state.metricsGated()) {
+            <app-premium-overlay message="Metrics require a Premium plan" />
+          }
+        </div>
+      }
     </main>
   }
 

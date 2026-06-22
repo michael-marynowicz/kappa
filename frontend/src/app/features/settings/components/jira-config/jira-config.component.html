@@ -1,139 +1,239 @@
 <div class="jira-config">
-  <h2 class="section-title">Jira Integration</h2>
-  <p class="section-desc">
-    Connect your Jira instance to sync sprint data automatically.
-  </p>
+  <h2 class="section-title">Jira Configuration</h2>
 
   @if (error()) {
     <div class="config-error" role="alert">{{ error() }}</div>
   }
 
+  <!-- success toast — positionnement fixe, hors du flux -->
   @if (success()) {
-    <div class="config-success" role="status">{{ success() }}</div>
+    <output class="toast-success">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      {{ success() }}
+    </output>
   }
 
-  @if (loading()) {
-    <div class="config-loading">Loading configuration…</div>
-  } @else {
-    <form class="config-form" (ngSubmit)="onSave()" #jiraForm="ngForm">
+  <!-- ── Credentials ───────────────────────────────────────── -->
+  <section class="wizard-card">
+    <h3 class="card-title">Credentials</h3>
+
+    <div class="config-form">
       <div class="form-group">
-        <label class="form-label" for="baseUrl">Jira Base URL</label>
+        <label class="form-label" for="baseUrlProd">Jira Base URL</label>
         <input
           class="form-input"
-          id="baseUrl"
+          id="baseUrlProd"
           type="url"
-          name="baseUrl"
+          name="baseUrlProd"
           [(ngModel)]="form.baseUrl"
           required
-          placeholder="https://your-org.atlassian.net"
+          placeholder="https://jira.amadeus.com/agile"
         />
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="authType">Auth Type</label>
-          <select
-            class="form-input"
-            id="authType"
-            name="authType"
-            [(ngModel)]="form.authType"
-            required
-          >
-            <option value="PAT">Personal Access Token (PAT)</option>
-            <option value="BASIC">Basic Auth (email + token)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="userEmail">User Email</label>
+          <label class="form-label" for="authTypeProd">Auth Type</label>
           <input
             class="form-input"
-            id="userEmail"
-            type="email"
-            name="userEmail"
+            id="authTypeProd"
+            type="text"
+            [value]="'BASIC'"
+            disabled
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="userEmailProd"
+            >User Email / Login</label
+          >
+          <input
+            class="form-input"
+            id="userEmailProd"
+            type="text"
+            name="userEmailProd"
             [(ngModel)]="form.userEmail"
             required
-            placeholder="you@company.com"
+            placeholder="firstname.lastname@amadeus.com"
           />
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="apiToken">API Token</label>
+        <label class="form-label" for="tokenProd">AD/SSO Password</label>
         <input
           class="form-input"
-          id="token"
+          id="tokenProd"
           type="password"
-          name="token"
+          name="tokenProd"
           [(ngModel)]="form.token"
           required
           placeholder="••••••••"
         />
-        <span class="form-hint"
-          >Generate from Atlassian Account Settings → Security → API
-          Tokens</span
-        >
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="projectKey">Project Key</label>
-          <input
-            class="form-input"
-            id="projectKey"
-            type="text"
-            name="projectKey"
-            [(ngModel)]="form.projectKey"
-            required
-            placeholder="PROJ"
-            maxlength="10"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="boardId">Board ID</label>
-          <input
-            class="form-input"
-            id="boardId"
-            type="number"
-            name="boardId"
-            [(ngModel)]="form.boardId"
-            required
-            placeholder="123"
-          />
-        </div>
       </div>
 
       <div class="form-actions">
         <button
-          class="btn-primary"
-          type="submit"
-          [disabled]="jiraForm.invalid || saving()"
-        >
-          {{ saving() ? "Saving…" : "Save Configuration" }}
-        </button>
-        <button
           class="btn-secondary"
           type="button"
-          (click)="onTestConnection()"
-          [disabled]="testing()"
+          (click)="onSaveAndTestServerConfig()"
+          [disabled]="configuringServer() || !isAdmin"
         >
-          {{ testing() ? "Testing…" : "Test Connection" }}
+          {{
+            configuringServer()
+              ? "Saving & Testing…"
+              : "Save & Test Credentials"
+          }}
         </button>
       </div>
-    </form>
+    </div>
+  </section>
 
-    @if (config()?.connected) {
-      <div class="sync-section">
-        <div class="sync-status">
-          <span class="sync-dot sync-dot--connected"></span>
-          <span>Connected</span>
-          @if (config()?.lastSyncAt) {
-            <span class="sync-time">Last sync: {{ config()!.lastSyncAt }}</span>
+  <!-- ── Dashboards ────────────────────────────────────────── -->
+  <section class="wizard-card">
+    <h3 class="card-title">Dashboards</h3>
+    <p class="card-subtitle">
+      Le dashboard actif est utilisé par tous les utilisateurs pour charger les
+      issues sprint. Le premier dashboard créé devient actif automatiquement.
+    </p>
+
+    @if (dashboardsLoading()) {
+      <div class="config-loading">Loading…</div>
+    } @else {
+      <!-- List -->
+      @if (dashboards().length === 0) {
+        <p class="empty-state">
+          Aucun dashboard configuré. Ajoutez-en un ci-dessous.
+        </p>
+      } @else {
+        <div class="dashboard-list">
+          @for (dashboard of dashboards(); track dashboard.id) {
+            <article
+              class="dashboard-row"
+              [class.dashboard-row--active]="dashboard.active"
+            >
+              <div class="dashboard-row__info">
+                <span class="dashboard-row__name">{{ dashboard.name }}</span>
+                <span class="dashboard-row__meta"
+                  >{{ dashboard.projectKey }} · Board #{{
+                    dashboard.boardId
+                  }}</span
+                >
+              </div>
+              <div class="dashboard-row__status">
+                @if (dashboard.active) {
+                  <span class="active-pill">Actif</span>
+                } @else if (isAdmin) {
+                  <button
+                    class="btn-ghost"
+                    type="button"
+                    (click)="onActivateDashboard(dashboard.id)"
+                    [disabled]="switchingDashboardId() === dashboard.id"
+                  >
+                    {{
+                      switchingDashboardId() === dashboard.id ? "…" : "Activer"
+                    }}
+                  </button>
+                }
+              </div>
+              @if (isAdmin) {
+                <button
+                  class="btn-icon-danger"
+                  type="button"
+                  title="Supprimer ce dashboard"
+                  (click)="onDeleteDashboard(dashboard)"
+                  [disabled]="deletingDashboardId() === dashboard.id"
+                >
+                  @if (deletingDashboardId() === dashboard.id) {
+                    <span>…</span>
+                  } @else {
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                  }
+                </button>
+              }
+            </article>
           }
         </div>
-        <button class="btn-secondary" (click)="onSync()" [disabled]="syncing()">
-          {{ syncing() ? "Syncing…" : "Sync Now" }}
-        </button>
-      </div>
+      }
+
+      <!-- Add dashboard form -->
+      @if (isAdmin) {
+        <div class="add-dashboard">
+          <h4 class="add-dashboard__title">Ajouter un dashboard</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newDashboardName">Nom</label>
+              <input
+                class="form-input"
+                id="newDashboardName"
+                type="text"
+                name="newDashboardName"
+                [(ngModel)]="newDashboard.name"
+                placeholder="POPT Sprint"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newProjectKey">Project Key</label>
+              <input
+                class="form-input"
+                id="newProjectKey"
+                type="text"
+                name="newProjectKey"
+                [(ngModel)]="newDashboard.projectKey"
+                placeholder="POPT"
+                maxlength="10"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newBoardId">Board ID</label>
+              <input
+                class="form-input"
+                id="newBoardId"
+                type="number"
+                name="newBoardId"
+                [(ngModel)]="newDashboard.boardId"
+                placeholder="17006"
+              />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              class="btn-primary"
+              type="button"
+              (click)="onAddDashboard()"
+              [disabled]="creatingDashboard()"
+            >
+              {{ creatingDashboard() ? "Création…" : "Créer le dashboard" }}
+            </button>
+          </div>
+        </div>
+      }
     }
-  }
+  </section>
 </div>

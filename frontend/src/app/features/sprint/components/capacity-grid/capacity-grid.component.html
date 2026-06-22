@@ -9,10 +9,19 @@
     <button (click)="capState.clearError()">✕</button>
   </div>
 
-  <!-- Loading -->
-  <div class="cap-loading" *ngIf="capState.loading()">
-    <div class="loading-spinner"></div>
-    <p>Loading capacity…</p>
+  <!-- Skeleton loading -->
+  <div class="cap-skeleton" *ngIf="capState.loading()" aria-busy="true" aria-live="polite">
+    <div class="cap-skeleton__toolbar"></div>
+    <div class="cap-skeleton__table">
+      <div class="cap-skeleton__thead"></div>
+      <div class="cap-skeleton__row" *ngFor="let _ of [1,2,3,4,5]">
+        <div class="cap-skeleton__cell cap-skeleton__cell--lg"></div>
+        <div class="cap-skeleton__cell cap-skeleton__cell--sm"></div>
+        <div class="cap-skeleton__cell"></div>
+        <div class="cap-skeleton__cell"></div>
+        <div class="cap-skeleton__cell"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Gated: show placeholder grid with premium overlay -->

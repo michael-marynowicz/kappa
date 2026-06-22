@@ -1,0 +1,108 @@
+<div class="team-switcher">
+  @if (loading) {
+    <span class="team-switcher__meta"
+      ><span class="ds-spinner"></span> Loading teams...</span
+    >
+  } @else if (dashboards.length > 0) {
+    <div class="ds-dropdown" [class.ds-dropdown--open]="dropdownOpen()">
+      <button
+        class="ds-trigger"
+        type="button"
+        [disabled]="switchingDashboardId !== null || !isAdmin"
+        [attr.aria-expanded]="dropdownOpen()"
+        (click)="toggleDropdown()"
+      >
+        @if (switchingDashboardId !== null) {
+          <span class="ds-spinner ds-spinner--sm"></span>
+        } @else {
+          <svg
+            class="ds-icon"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+        }
+        <span class="ds-trigger__label">
+          @if (activeDashboard) {
+            {{ activeDashboard.name }}
+            <span class="ds-trigger__key">{{
+              activeDashboard.projectKey
+            }}</span>
+          } @else {
+            Select team
+          }
+        </span>
+        <svg
+          class="ds-chevron"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      @if (dropdownOpen()) {
+        <div class="ds-panel">
+          @for (dashboard of dashboards; track dashboard.id) {
+            <button
+              class="ds-option"
+              [class.ds-option--active]="dashboard.active"
+              type="button"
+              [attr.aria-pressed]="dashboard.active"
+              (click)="selectDashboard(dashboard.id)"
+            >
+              <span class="ds-option__dot"></span>
+              <span class="ds-option__info">
+                <span class="ds-option__name">{{ dashboard.name }}</span>
+                <span class="ds-option__meta"
+                  >{{ dashboard.projectKey }} · Board #{{
+                    dashboard.boardId
+                  }}</span
+                >
+              </span>
+              @if (dashboard.active) {
+                <svg
+                  class="ds-option__check"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (!isAdmin) {
+      <span class="team-switcher__meta">{{ hintMessage }}</span>
+    }
+  }
+
+  @if (errorMessage) {
+    <span class="team-switcher__error">{{ errorMessage }}</span>
+  }
+</div>

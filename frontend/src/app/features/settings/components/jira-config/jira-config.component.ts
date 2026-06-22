@@ -1,9 +1,16 @@
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
 import { timeout } from "rxjs/operators";
 import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
-import { JiraConfig } from "../../../../core/models/jira-config.model";
+import { AuthStateService } from "../../../../core/services/auth-state.service";
+import {
+  JiraAuthType,
+  JiraConfig,
+  JiraDashboard,
+  JiraDiscoveredBoard,
+} from "../../../../core/models/jira-config.model";
 
 @Component({
   selector: "app-jira-config",
@@ -14,26 +21,78 @@ import { JiraConfig } from "../../../../core/models/jira-config.model";
 })
 export class JiraConfigComponent implements OnInit {
   private readonly api = inject(JiraConfigApiService);
+  private readonly authState = inject(AuthStateService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly config = signal<JiraConfig | null>(null);
+  readonly dashboards = signal<JiraDashboard[]>([]);
+  readonly discoveredBoards = signal<JiraDiscoveredBoard[]>([]);
+  readonly selectedBoardId = signal<number | null>(null);
   readonly loading = signal(false);
-  readonly saving = signal(false);
-  readonly testing = signal(false);
   readonly syncing = signal(false);
+  readonly discoveringBoards = signal(false);
+  readonly creatingDashboard = signal(false);
+  readonly dashboardsLoading = signal(false);
+  readonly switchingDashboardId = signal<string | null>(null);
+  readonly deletingDashboardId = signal<string | null>(null);
+  readonly connecting = signal(false);
+  readonly disconnecting = signal(false);
+  readonly configuringServer = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
+  private successTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private showSuccess(msg: string): void {
+    if (this.successTimer) {
+      clearTimeout(this.successTimer);
+    }
+    this.success.set(msg);
+    this.successTimer = setTimeout(() => this.success.set(null), 5000);
+  }
+
+  newDashboard = {
+    name: "",
+    projectKey: "",
+    boardId: null as number | null,
+  };
 
   form = {
-    baseUrl: "",
-    authType: "PAT",
+    baseUrl: "https://jira.amadeus.com/agile",
+    authType: "BASIC" as JiraAuthType,
     userEmail: "",
     token: "",
-    projectKey: "",
-    boardId: null as unknown as number,
+    projectKey: "POPT",
+    boardId: null as number | null,
   };
 
   ngOnInit(): void {
+    this.handleOAuthRedirectResult();
     this.loadConfig();
+    this.loadDashboards();
+  }
+
+  private handleOAuthRedirectResult(): void {
+    const oauth = this.route.snapshot.queryParamMap.get("oauth");
+    const message = this.route.snapshot.queryParamMap.get("message");
+    if (!oauth) {
+      return;
+    }
+
+    if (oauth === "success") {
+      this.showSuccess("Jira OAuth connected successfully.");
+      this.error.set(null);
+    } else if (oauth === "error") {
+      this.error.set(message || "Jira OAuth connection failed. Please retry.");
+      this.success.set(null);
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { oauth: null, message: null },
+      queryParamsHandling: "merge",
+      replaceUrl: true,
+    });
   }
 
   private loadConfig(): void {
@@ -48,11 +107,11 @@ export class JiraConfigComponent implements OnInit {
             this.config.set(cfg);
             this.form = {
               baseUrl: cfg.baseUrl,
-              authType: cfg.authType || "PAT",
+              authType: (cfg.authType as JiraAuthType) || "BASIC",
               userEmail: cfg.userEmail || "",
               token: cfg.token,
-              projectKey: cfg.projectKey,
-              boardId: cfg.boardId,
+              projectKey: cfg.projectKey || "POPT",
+              boardId: cfg.boardId ?? null,
             };
           }
           // 204 No Content → cfg is null, show empty form
@@ -71,61 +130,349 @@ export class JiraConfigComponent implements OnInit {
       });
   }
 
-  onSave(): void {
-    this.saving.set(true);
-    this.error.set(null);
-    this.success.set(null);
-    const payload = {
-      baseUrl: this.form.baseUrl,
-      authType: this.form.authType,
-      userEmail: this.form.userEmail,
-      token: this.form.token,
-      projectKey: this.form.projectKey,
-      boardId: this.form.boardId,
-    };
-    this.api.updateConfig(payload).subscribe({
-      next: (cfg) => {
-        this.config.set(cfg);
-        this.success.set("Configuration saved successfully.");
-        this.saving.set(false);
+  private loadDashboards(): void {
+    this.dashboardsLoading.set(true);
+    this.api.listDashboards().subscribe({
+      next: (dashboards) => {
+        const orderedDashboards = [...dashboards].sort(
+          (a, b) => a.position - b.position,
+        );
+        this.dashboards.set(orderedDashboards);
+        this.dashboardsLoading.set(false);
       },
       error: (err) => {
-        this.error.set(err.message);
-        this.saving.set(false);
+        this.error.set(err.message ?? "Failed to load dashboards.");
+        this.dashboardsLoading.set(false);
       },
     });
   }
 
-  onTestConnection(): void {
-    this.testing.set(true);
+  private validateWizardInput(): boolean {
+    if (!this.form.baseUrl.trim() || !this.form.token.trim()) {
+      this.error.set("Base URL and token are required.");
+      return false;
+    }
+
+    if (this.form.authType === "BASIC" && !this.form.userEmail.trim()) {
+      this.error.set("User email is required with BASIC auth.");
+      return false;
+    }
+
+    return true;
+  }
+
+  private validateServerConfigInput(): boolean {
+    if (!this.form.userEmail.trim()) {
+      this.error.set("User email/login is required for BASIC auth.");
+      return false;
+    }
+
+    if (!this.form.token.trim()) {
+      this.error.set("AD/SSO password is required.");
+      return false;
+    }
+
+    if (!this.form.projectKey.trim()) {
+      this.error.set("Project key is required (for example POPT or ROC).");
+      return false;
+    }
+
+    if (!this.form.boardId || this.form.boardId <= 0) {
+      this.error.set("Board ID is required.");
+      return false;
+    }
+
+    return true;
+  }
+
+  useAmadeusDefaults(): void {
+    this.form.baseUrl = "https://jira.amadeus.com/agile";
+    this.form.authType = "BASIC";
+    if (!this.form.projectKey.trim()) {
+      this.form.projectKey = "POPT";
+    }
+  }
+
+  onSaveAndTestServerConfig(): void {
+    if (!this.isAdmin) {
+      return;
+    }
+
+    if (!this.validateServerConfigInput()) {
+      return;
+    }
+
+    this.configuringServer.set(true);
     this.error.set(null);
     this.success.set(null);
-    this.api.testConnection().subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.success.set("Connection successful!");
-        } else {
-          this.error.set(res.message);
-        }
-        this.testing.set(false);
+
+    this.api
+      .updateConfig({
+        baseUrl: this.form.baseUrl.trim() || "https://jira.amadeus.com/agile",
+        authType: "BASIC",
+        userEmail: this.form.userEmail.trim(),
+        token: this.form.token,
+        projectKey: this.form.projectKey.trim().toUpperCase(),
+        boardId: Number(this.form.boardId),
+      })
+      .subscribe({
+        next: () => {
+          this.api.testConnection().subscribe({
+            next: (res) => {
+              if (!res.success) {
+                this.error.set(
+                  res.message ||
+                    "Jira test failed. Please check credentials and board settings.",
+                );
+                this.configuringServer.set(false);
+                return;
+              }
+
+              this.showSuccess(
+                "Jira server-to-server configuration saved and validated.",
+              );
+              this.configuringServer.set(false);
+              this.loadConfig();
+              this.loadDashboards();
+            },
+            error: (err) => {
+              this.error.set(err.message ?? "Jira test failed.");
+              this.configuringServer.set(false);
+            },
+          });
+        },
+        error: (err) => {
+          this.error.set(err.message ?? "Unable to save Jira configuration.");
+          this.configuringServer.set(false);
+        },
+      });
+  }
+
+  onDiscoverBoards(): void {
+    if (!this.validateWizardInput()) {
+      return;
+    }
+
+    this.discoveringBoards.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    this.discoveredBoards.set([]);
+    this.selectedBoardId.set(null);
+
+    this.api
+      .discoverBoards({
+        baseUrl: this.form.baseUrl.trim(),
+        authType: this.form.authType,
+        userEmail:
+          this.form.authType === "BASIC"
+            ? this.form.userEmail.trim()
+            : undefined,
+        token: this.form.token.trim(),
+      })
+      .subscribe({
+        next: (boards) => {
+          this.discoveredBoards.set(boards);
+          if (boards.length > 0) {
+            this.selectedBoardId.set(boards[0].id);
+            this.showSuccess(
+              "Boards discovered. Select one and create dashboard.",
+            );
+          } else {
+            this.error.set("No boards found for this Jira account.");
+          }
+          this.discoveringBoards.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.message ?? "Unable to discover Jira boards.");
+          this.discoveringBoards.set(false);
+        },
+      });
+  }
+
+  onAddDashboard(): void {
+    const { name, projectKey, boardId } = this.newDashboard;
+    if (!name.trim() || !projectKey.trim() || !boardId || boardId <= 0) {
+      this.error.set("Nom, Project Key et Board ID sont requis.");
+      return;
+    }
+
+    this.creatingDashboard.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    this.api
+      .createDashboard({
+        name: name.trim(),
+        boardId: Number(boardId),
+        projectKey: projectKey.trim().toUpperCase(),
+      })
+      .subscribe({
+        next: () => {
+          this.showSuccess(`Dashboard "${name.trim()}" créé.`);
+          this.creatingDashboard.set(false);
+          this.newDashboard = { name: "", projectKey: "", boardId: null };
+          this.loadDashboards();
+        },
+        error: (err) => {
+          this.error.set(err.message ?? "Impossible de créer le dashboard.");
+          this.creatingDashboard.set(false);
+        },
+      });
+  }
+
+  onCreateDashboard(): void {
+    const boardId = this.selectedBoardId();
+    const board = this.discoveredBoards().find((b) => b.id === boardId);
+    if (!board) {
+      this.error.set("Please select a board first.");
+      return;
+    }
+
+    this.creatingDashboard.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    this.api
+      .createDashboard({
+        name: board.name,
+        boardId: board.id,
+        projectKey: board.projectKey,
+      })
+      .subscribe({
+        next: () => {
+          this.showSuccess(`Dashboard '${board.name}' created.`);
+          this.creatingDashboard.set(false);
+          this.loadDashboards();
+          this.loadConfig();
+        },
+        error: (err) => {
+          this.error.set(err.message ?? "Unable to create dashboard.");
+          this.creatingDashboard.set(false);
+        },
+      });
+  }
+
+  onActivateDashboard(dashboardId: string): void {
+    this.switchingDashboardId.set(dashboardId);
+    this.error.set(null);
+    this.success.set(null);
+    this.api.activateDashboard(dashboardId).subscribe({
+      next: () => {
+        this.showSuccess("Active dashboard updated.");
+        this.switchingDashboardId.set(null);
+        this.loadDashboards();
       },
       error: (err) => {
-        this.error.set(err.message);
-        this.testing.set(false);
+        this.error.set(err.message ?? "Unable to switch dashboard.");
+        this.switchingDashboardId.set(null);
       },
     });
+  }
+
+  onDeleteDashboard(dashboard: JiraDashboard): void {
+    const confirmed = globalThis.confirm(
+      `Delete dashboard '${dashboard.name}'?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingDashboardId.set(dashboard.id);
+    this.error.set(null);
+    this.success.set(null);
+    this.api.deleteDashboard(dashboard.id).subscribe({
+      next: () => {
+        this.showSuccess("Dashboard deleted.");
+        this.deletingDashboardId.set(null);
+        this.loadDashboards();
+      },
+      error: (err) => {
+        this.error.set(err.message ?? "Unable to delete dashboard.");
+        this.deletingDashboardId.set(null);
+      },
+    });
+  }
+
+  onAuthTypeChange(): void {
+    if (this.form.authType === "PAT") {
+      this.form.userEmail = "";
+    }
   }
 
   onSync(): void {
     this.syncing.set(true);
+    this.error.set(null);
+    this.success.set(null);
     this.api.sync().subscribe({
       next: () => {
-        this.success.set("Sync completed.");
+        this.showSuccess("Sync completed.");
         this.syncing.set(false);
       },
       error: (err) => {
         this.error.set(err.message);
         this.syncing.set(false);
+      },
+    });
+  }
+
+  get activeDashboard(): JiraDashboard | null {
+    return this.dashboards().find((dashboard) => dashboard.active) ?? null;
+  }
+
+  get canCreateDashboard(): boolean {
+    return (
+      this.isAdmin &&
+      this.selectedBoardId() !== null &&
+      !this.creatingDashboard()
+    );
+  }
+
+  get isAdmin(): boolean {
+    return this.authState.user()?.role === "ADMIN";
+  }
+
+  onConnectOAuth(): void {
+    this.connecting.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    const oauthWindow = globalThis.open("about:blank", "_blank");
+    if (!oauthWindow) {
+      this.error.set("Pop-up blocked. Please allow pop-ups and retry.");
+      this.connecting.set(false);
+      return;
+    }
+
+    this.api.startOAuthConnect().subscribe({
+      next: ({ authUrl }) => {
+        if (!authUrl) {
+          this.error.set("OAuth URL was not provided by the server.");
+          oauthWindow.close();
+          this.connecting.set(false);
+          return;
+        }
+        oauthWindow.location.href = authUrl;
+        this.connecting.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.message ?? "Unable to initiate Jira OAuth.");
+        oauthWindow.close();
+        this.connecting.set(false);
+      },
+    });
+  }
+
+  onDisconnectOAuth(): void {
+    this.disconnecting.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    this.api.disconnectOAuth().subscribe({
+      next: () => {
+        this.showSuccess("Jira OAuth disconnected.");
+        this.disconnecting.set(false);
+        this.loadConfig();
+        this.loadDashboards();
+      },
+      error: (err) => {
+        this.error.set(err.message ?? "Unable to disconnect Jira OAuth.");
+        this.disconnecting.set(false);
       },
     });
   }

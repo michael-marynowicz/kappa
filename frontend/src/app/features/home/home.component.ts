@@ -20,7 +20,9 @@ export class HomeComponent {
 
   scrollTo(id: string, event: Event): void {
     event.preventDefault();
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   readonly features: Feature[] = [

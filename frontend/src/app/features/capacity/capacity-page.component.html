@@ -6,6 +6,18 @@
         Manage team availability and plan sprint capacity
       </p>
     </div>
+
+    <div class="header-actions">
+      <app-team-dashboard-switcher
+        [dashboards]="dashboards()"
+        [loading]="dashboardsLoading()"
+        [switchingDashboardId]="switchingDashboardId()"
+        [isAdmin]="isAdmin"
+        [errorMessage]="dashboardError()"
+        (switchDashboard)="onSwitchTeam($event)"
+      />
+    </div>
+
     <button class="btn-export" (click)="onExportCsv()">
       <span>Export CSV</span>
     </button>

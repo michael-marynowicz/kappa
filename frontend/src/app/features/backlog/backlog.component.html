@@ -4,6 +4,18 @@
       <h1 class="page-title">Sprint Backlog</h1>
       <p class="page-subtitle">Track and manage sprint issues</p>
     </div>
+
+    <div class="header-actions">
+      <app-team-dashboard-switcher
+        [dashboards]="dashboards()"
+        [loading]="dashboardsLoading()"
+        [switchingDashboardId]="switchingDashboardId()"
+        [isAdmin]="isAdmin"
+        [errorMessage]="dashboardError()"
+        (switchDashboard)="onSwitchTeam($event)"
+      />
+    </div>
+
     <button class="btn-export" (click)="onExportCsv()">
       <span>Export CSV</span>
     </button>
@@ -16,13 +28,19 @@
     </div>
   }
 
-  <app-sprint-summary-card [summary]="state.summary()" />
+  <app-sprint-summary-card [summary]="state.summary()" [loading]="state.loading()" />
 
   @if (state.loading()) {
-    <div class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Loading backlog…</p>
-    </div>
+    <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
+      @for (row of [1,2,3,4,5,6,7,8]; track row) {
+        <div class="backlog-skeleton__row">
+          <span class="backlog-skeleton__cell bsk--key"></span>
+          <span class="backlog-skeleton__cell bsk--title"></span>
+          <span class="backlog-skeleton__cell bsk--badge"></span>
+          <span class="backlog-skeleton__cell bsk--num"></span>
+        </div>
+      }
+    </section>
   } @else {
     <app-sprint-issue-table
       [issues]="state.issues()"

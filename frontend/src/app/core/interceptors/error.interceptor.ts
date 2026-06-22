@@ -124,6 +124,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         localStorage.removeItem("sr_token_expiry");
         router.navigate(["/auth/login"]);
         message = STATUS_MESSAGES[401];
+      } else if (error.status === 502 || error.status === 503) {
+        message =
+          sanitizeErrorMessage(error.error?.message) ??
+          (error.status === 503
+            ? "Jira est temporairement inaccessible"
+            : "Le token Jira est invalide ou expire.");
       } else if (isIntegrationUnavailable(error)) {
         message =
           "Impossible de charger les donnees Jira. Verifie la configuration Jira (token/base URL/projet) ou reessaie plus tard.";

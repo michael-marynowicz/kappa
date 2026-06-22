@@ -18,6 +18,18 @@ function isFeatureGatedError(err: unknown): boolean {
   );
 }
 
+function getErrorStatus(err: unknown): number | null {
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "status" in err &&
+    typeof (err as { status?: unknown }).status === "number"
+  ) {
+    return (err as { status: number }).status;
+  }
+  return null;
+}
+
 @Injectable({ providedIn: "root" })
 export class SprintStateService {
   private readonly apiService = inject(SprintApiService);
@@ -28,10 +40,14 @@ export class SprintStateService {
   private readonly _epicGroups = signal<EpicGroup[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _metricsLoading = signal<boolean>(false);
+  private readonly _iterationsLoading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private readonly _issuesError = signal<string | null>(null);
+  private readonly _issuesErrorStatus = signal<number | null>(null);
   private readonly _metricsError = signal<string | null>(null);
+  private readonly _metricsErrorStatus = signal<number | null>(null);
   private readonly _iterationsError = signal<string | null>(null);
+  private readonly _iterationsErrorStatus = signal<number | null>(null);
   private readonly _savingIssueKey = signal<string | null>(null);
   private readonly _metricsGated = signal(false);
   private readonly _iterationsGated = signal(false);
@@ -43,10 +59,14 @@ export class SprintStateService {
   readonly epicGroups = this._epicGroups.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly metricsLoading = this._metricsLoading.asReadonly();
+  readonly iterationsLoading = this._iterationsLoading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly issuesError = this._issuesError.asReadonly();
+  readonly issuesErrorStatus = this._issuesErrorStatus.asReadonly();
   readonly metricsError = this._metricsError.asReadonly();
+  readonly metricsErrorStatus = this._metricsErrorStatus.asReadonly();
   readonly iterationsError = this._iterationsError.asReadonly();
+  readonly iterationsErrorStatus = this._iterationsErrorStatus.asReadonly();
   readonly savingIssueKey = this._savingIssueKey.asReadonly();
   readonly metricsGated = this._metricsGated.asReadonly();
   readonly iterationsGated = this._iterationsGated.asReadonly();
@@ -73,13 +93,16 @@ export class SprintStateService {
   loadIssues(): void {
     this._loading.set(true);
     this._issuesError.set(null);
+    this._issuesErrorStatus.set(null);
     this.apiService.getSprintIssues().subscribe({
       next: (issues) => {
         this._issues.set(issues);
+        this._issuesErrorStatus.set(null);
         this._loading.set(false);
       },
       error: (err) => {
         this._issuesError.set(err.message ?? "Failed to load sprint issues");
+        this._issuesErrorStatus.set(getErrorStatus(err));
         this._loading.set(false);
       },
     });
@@ -88,10 +111,12 @@ export class SprintStateService {
   loadMetrics(): void {
     this._metricsLoading.set(true);
     this._metricsError.set(null);
+    this._metricsErrorStatus.set(null);
     this.apiService.getMetrics().subscribe({
       next: (m) => {
         this._metrics.set(m);
         this._metricsGated.set(false);
+        this._metricsErrorStatus.set(null);
         this._metricsLoading.set(false);
       },
       error: (err) => {
@@ -99,6 +124,7 @@ export class SprintStateService {
           this._metricsGated.set(true);
         } else {
           this._metricsError.set(err.message ?? "Failed to load metrics");
+          this._metricsErrorStatus.set(getErrorStatus(err));
         }
         this._metricsLoading.set(false);
       },
@@ -106,11 +132,16 @@ export class SprintStateService {
   }
 
   loadIterations(): void {
+    this._iterationsLoading.set(true);
+    this._iterations.set([]);
     this._iterationsError.set(null);
+    this._iterationsErrorStatus.set(null);
     this.apiService.getIterationHistory().subscribe({
       next: (data) => {
         this._iterations.set(data);
         this._iterationsGated.set(false);
+        this._iterationsErrorStatus.set(null);
+        this._iterationsLoading.set(false);
       },
       error: (err) => {
         if (isFeatureGatedError(err)) {
@@ -119,7 +150,9 @@ export class SprintStateService {
           this._iterationsError.set(
             err.message ?? "Failed to load iteration history",
           );
+          this._iterationsErrorStatus.set(getErrorStatus(err));
         }
+        this._iterationsLoading.set(false);
       },
     });
   }
@@ -179,7 +212,30 @@ export class SprintStateService {
   clearError(): void {
     this._error.set(null);
     this._issuesError.set(null);
+    this._issuesErrorStatus.set(null);
     this._metricsError.set(null);
+    this._metricsErrorStatus.set(null);
     this._iterationsError.set(null);
+    this._iterationsErrorStatus.set(null);
+  }
+
+  clear(): void {
+    this._issues.set([]);
+    this._metrics.set(null);
+    this._iterations.set([]);
+    this._epicGroups.set([]);
+    this._loading.set(false);
+    this._metricsLoading.set(false);
+    this._error.set(null);
+    this._issuesError.set(null);
+    this._issuesErrorStatus.set(null);
+    this._metricsError.set(null);
+    this._metricsErrorStatus.set(null);
+    this._iterationsError.set(null);
+    this._iterationsErrorStatus.set(null);
+    this._savingIssueKey.set(null);
+    this._metricsGated.set(false);
+    this._iterationsGated.set(false);
+    this._exportGated.set(false);
   }
 }

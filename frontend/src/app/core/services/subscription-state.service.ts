@@ -36,9 +36,7 @@ export class SubscriptionStateService {
   resolveActiveAccess(): Observable<boolean> {
     const existing = this._subscription();
     if (existing) {
-      return of(
-        existing.status === "ACTIVE" || existing.status === "TRIALING",
-      );
+      return of(existing.status === "ACTIVE" || existing.status === "TRIALING");
     }
 
     return this.api.getCurrent().pipe(
@@ -138,6 +136,14 @@ export class SubscriptionStateService {
   }
 
   clearError(): void {
+    this._error.set(null);
+  }
+
+  clear(): void {
+    this._subscription.set(null);
+    this._plans.set([]);
+    this._features.set([]);
+    this._loading.set(false);
     this._error.set(null);
   }
 }

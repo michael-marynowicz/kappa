@@ -87,6 +87,7 @@ export class SprintAnalyticsComponent implements OnChanges {
   @Input() iterations: IterationSnapshot[] = [];
   @Input() epicGroups: EpicGroup[] = [];
   @Input() iterationsGated = false;
+  @Input() iterationsLoading = false;
   @Input() capacityGated = false;
   @Input() focusView: ChartFocusView = "all";
 

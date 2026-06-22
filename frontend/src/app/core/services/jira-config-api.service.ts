@@ -5,6 +5,10 @@ import {
   JiraConfig,
   UpdateJiraConfigRequest,
   JiraTestResult,
+  JiraBoardDiscoveryRequest,
+  JiraDiscoveredBoard,
+  CreateJiraDashboardRequest,
+  JiraDashboard,
 } from "../models/jira-config.model";
 import { environment } from "../../../environments/environment";
 
@@ -12,6 +16,41 @@ import { environment } from "../../../environments/environment";
 export class JiraConfigApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/jira`;
+
+  startOAuthConnect(): Observable<{ authUrl: string }> {
+    return this.http.get<{ authUrl: string }>(`${this.baseUrl}/oauth/connect`);
+  }
+
+  disconnectOAuth(): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/oauth/disconnect`);
+  }
+
+  discoverBoards(
+    request: JiraBoardDiscoveryRequest,
+  ): Observable<JiraDiscoveredBoard[]> {
+    return this.http.post<JiraDiscoveredBoard[]>(
+      `${this.baseUrl}/boards/discover`,
+      request,
+    );
+  }
+
+  createDashboard(
+    request: CreateJiraDashboardRequest,
+  ): Observable<JiraDashboard> {
+    return this.http.post<JiraDashboard>(`${this.baseUrl}/dashboards`, request);
+  }
+
+  listDashboards(): Observable<JiraDashboard[]> {
+    return this.http.get<JiraDashboard[]>(`${this.baseUrl}/dashboards`);
+  }
+
+  activateDashboard(id: string): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/dashboards/${id}/activate`, {});
+  }
+
+  deleteDashboard(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/dashboards/${id}`);
+  }
 
   getConfig(): Observable<JiraConfig> {
     return this.http.get<JiraConfig>(this.baseUrl);

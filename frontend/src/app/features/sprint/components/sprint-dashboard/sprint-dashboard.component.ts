@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, OnInit, signal } from "@angular/core";
 import { CurrentIterationService } from "../../services/current-iteration.service";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
@@ -9,6 +9,11 @@ import { SprintIssueTableComponent } from "../sprint-issue-table/sprint-issue-ta
 import { SprintAnalyticsComponent } from "../sprint-analytics/sprint-analytics.component";
 import { CapacityGridComponent } from "../capacity-grid/capacity-grid.component";
 import { PremiumOverlayComponent } from "../../../../shared/components/premium-overlay/premium-overlay.component";
+import { TeamDashboardSwitcherComponent } from "../../../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
+import { TeamDashboardStateService } from "../../../../shared/services/team-dashboard-state.service";
+import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
+import { JiraDashboard } from "../../../../core/models/jira-config.model";
+import { AuthStateService } from "../../../../core/services/auth-state.service";
 
 @Component({
   selector: "app-sprint-dashboard",
@@ -20,23 +25,90 @@ import { PremiumOverlayComponent } from "../../../../shared/components/premium-o
     SprintAnalyticsComponent,
     CapacityGridComponent,
     PremiumOverlayComponent,
+    TeamDashboardSwitcherComponent,
   ],
+  providers: [TeamDashboardStateService],
   templateUrl: "./sprint-dashboard.component.html",
   styleUrls: ["./sprint-dashboard.component.scss"],
 })
 export class SprintDashboardComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly jiraApi = inject(JiraConfigApiService);
+  private readonly authState = inject(AuthStateService);
   readonly state = inject(SprintStateService);
   readonly capState = inject(CapacityStateService);
   readonly currentIteration = inject(CurrentIterationService);
   readonly today = new Date();
+  readonly dashboards = signal<JiraDashboard[]>([]);
+  readonly dashboardsLoading = signal(false);
+  readonly switchingDashboardId = signal<string | null>(null);
+  readonly dashboardSwitchError = signal<string | null>(null);
   activeTab: "board" | "metrics" | "capacity" = "board";
 
   ngOnInit(): void {
+    this.loadDashboards();
     this.state.loadIssues();
     this.state.loadMetrics();
     this.state.loadIterations();
     this.currentIteration.fetch();
+  }
+
+  private loadDashboards(): void {
+    this.dashboardsLoading.set(true);
+    this.dashboardSwitchError.set(null);
+    this.jiraApi.listDashboards().subscribe({
+      next: (dashboards) => {
+        const orderedDashboards = [...dashboards].sort(
+          (a, b) => a.position - b.position,
+        );
+        this.dashboards.set(orderedDashboards);
+        this.dashboardsLoading.set(false);
+      },
+      error: (err) => {
+        this.dashboardSwitchError.set(
+          err.message ?? "Unable to load team dashboards.",
+        );
+        this.dashboardsLoading.set(false);
+      },
+    });
+  }
+
+  get activeDashboardId(): string | null {
+    return this.dashboards().find((dashboard) => dashboard.active)?.id ?? null;
+  }
+
+  get isAdmin(): boolean {
+    return this.authState.user()?.role === "ADMIN";
+  }
+
+  onSwitchDashboard(dashboardId: string): void {
+    if (!this.isAdmin) {
+      return;
+    }
+
+    if (!dashboardId || dashboardId === this.activeDashboardId) {
+      return;
+    }
+
+    this.switchingDashboardId.set(dashboardId);
+    this.dashboardSwitchError.set(null);
+    this.jiraApi.activateDashboard(dashboardId).subscribe({
+      next: () => {
+        this.switchingDashboardId.set(null);
+        this.loadDashboards();
+        this.state.loadIssues();
+        this.state.loadMetrics();
+        this.state.loadIterations();
+        this.capState.loadGrid();
+        this.currentIteration.fetch();
+      },
+      error: (err) => {
+        this.dashboardSwitchError.set(
+          err.message ?? "Unable to switch dashboard.",
+        );
+        this.switchingDashboardId.set(null);
+      },
+    });
   }
   get currentSprintName() {
     return this.currentIteration.name();
@@ -69,11 +141,29 @@ export class SprintDashboardComponent implements OnInit {
     return this.state.metricsError() ?? this.state.iterationsError();
   }
 
+  get boardErrorStatus(): number | null {
+    return this.state.issuesErrorStatus();
+  }
+
+  get metricsErrorStatus(): number | null {
+    return (
+      this.state.metricsErrorStatus() ?? this.state.iterationsErrorStatus()
+    );
+  }
+
   get capacityError(): string | null {
     return this.capState.error();
   }
 
+  get capacityErrorStatus(): number | null {
+    return this.capState.errorStatus();
+  }
+
   get dashboardError(): string | null {
+    if (this.dashboardSwitchError()) {
+      return this.dashboardSwitchError();
+    }
+
     if (this.activeTab === "metrics") {
       return this.metricsError;
     }
@@ -83,6 +173,26 @@ export class SprintDashboardComponent implements OnInit {
     }
 
     return this.boardError;
+  }
+
+  get dashboardErrorStatus(): number | null {
+    if (this.activeTab === "metrics") {
+      return this.metricsErrorStatus;
+    }
+
+    if (this.activeTab === "capacity") {
+      return this.capacityErrorStatus;
+    }
+
+    return this.boardErrorStatus;
+  }
+
+  get shouldShowGoToSettings(): boolean {
+    return this.dashboardErrorStatus === 502;
+  }
+
+  onGoToJiraSettings(): void {
+    this.router.navigate(["/settings/jira"]);
   }
 
   retryBoard(): void {

@@ -366,7 +366,6 @@
           </div>
         </div>
 
-        <!-- Placeholder rows when gated (no real data available) -->
         <div
           class="iteration-chart"
           *ngIf="iterationBars.length === 0 && iterationsGated"
@@ -402,9 +401,30 @@
           </div>
         </div>
 
+        <!-- Iteration Skeleton Loading -->
+        <div
+          class="iteration-skeleton"
+          *ngIf="iterationBars.length === 0 && iterationsLoading && !iterationsGated"
+        >
+          <div class="iteration-row iteration-row--header">
+            <span class="iter-col iter-col--name">Sprint</span>
+            <span class="iter-col iter-col--bar">Delivered / Committed</span>
+            <span class="iter-col iter-col--vel">Velocity</span>
+            <span class="iter-col iter-col--ratio">Ratio</span>
+          </div>
+          <div class="iteration-row" *ngFor="let i of [0, 1, 2, 3]">
+            <div class="iter-col iter-col--name skeleton-line" style="width: 80px"></div>
+            <div class="iter-col iter-col--bar">
+              <div class="skeleton-line" style="width: 120px; margin: 8px 0"></div>
+            </div>
+            <div class="iter-col iter-col--vel skeleton-line" style="width: 60px"></div>
+            <div class="iter-col iter-col--ratio skeleton-line" style="width: 60px"></div>
+          </div>
+        </div>
+
         <div
           class="chart-empty"
-          *ngIf="iterationBars.length === 0 && !iterationsGated"
+          *ngIf="iterationBars.length === 0 && !iterationsGated && !iterationsLoading"
         >
           <p>No iteration history available</p>
         </div>

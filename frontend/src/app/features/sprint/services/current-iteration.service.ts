@@ -14,4 +14,8 @@ export class CurrentIterationService {
       error: () => this.name.set(null),
     });
   }
+
+  clear(): void {
+    this.name.set(null);
+  }
 }

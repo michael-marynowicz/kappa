@@ -1,15 +1,25 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
-import { CapacityStateService } from "../sprint/services/capacity-state.service";
-import { SprintAnalyticsComponent } from "../sprint/components/sprint-analytics/sprint-analytics.component";
-import { ChartFocusView } from "../sprint/components/sprint-analytics/sprint-analytics.component";
+import {
+  ChartFocusView,
+  SprintAnalyticsComponent,
+} from "../sprint/components/sprint-analytics/sprint-analytics.component";
 import { PremiumOverlayComponent } from "../../shared/components/premium-overlay/premium-overlay.component";
+import { AuthStateService } from "../../core/services/auth-state.service";
+import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
+import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
 
 @Component({
   selector: "app-metrics",
   standalone: true,
-  imports: [CommonModule, SprintAnalyticsComponent, PremiumOverlayComponent],
+  imports: [
+    CommonModule,
+    SprintAnalyticsComponent,
+    PremiumOverlayComponent,
+    TeamDashboardSwitcherComponent,
+  ],
+  providers: [TeamDashboardStateService],
   templateUrl: "./metrics.component.html",
   styles: [
     `
@@ -17,7 +27,27 @@ import { PremiumOverlayComponent } from "../../shared/components/premium-overlay
         width: 100%;
       }
       .metrics__header {
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) auto minmax(160px, 1fr);
+        align-items: center;
+        gap: 12px;
         margin-bottom: 16px;
+      }
+      .header-actions {
+        display: flex;
+        justify-self: center;
+      }
+      .metrics__spacer {
+        min-height: 1px;
+      }
+      @media (max-width: 1024px) {
+        .metrics__header {
+          grid-template-columns: 1fr;
+        }
+        .header-actions,
+        .metrics__spacer {
+          justify-self: start;
+        }
       }
       .page-title {
         font-size: 22px;
@@ -87,12 +117,104 @@ import { PremiumOverlayComponent } from "../../shared/components/premium-overlay
           cursor: pointer;
         }
       }
+
+      .metrics-skeleton {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .metrics-skeleton__row {
+        display: grid;
+        gap: 12px;
+      }
+      .metrics-skeleton__row--summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .metrics-skeleton__row--chart {
+        grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+      }
+      .metrics-skeleton__row--table {
+        grid-template-columns: 1fr;
+      }
+      .metrics-skeleton__card,
+      .metrics-skeleton__chart,
+      .metrics-skeleton__list,
+      .metrics-skeleton__line {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .metrics-skeleton__card {
+        height: 92px;
+      }
+      .metrics-skeleton__chart {
+        height: 260px;
+      }
+      .metrics-skeleton__list {
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .metrics-skeleton__line {
+        height: 12px;
+        width: 70%;
+      }
+      .metrics-skeleton__line--full {
+        width: 100%;
+      }
+      .metrics-skeleton__card::after,
+      .metrics-skeleton__chart::after,
+      .metrics-skeleton__list::after,
+      .metrics-skeleton__line::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.16),
+          transparent
+        );
+        animation: skeleton-shimmer 1.25s ease-in-out infinite;
+      }
+
+      @media (max-width: 960px) {
+        .metrics-skeleton__row--summary,
+        .metrics-skeleton__row--chart {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @keyframes skeleton-shimmer {
+        100% {
+          transform: translateX(100%);
+        }
+      }
     `,
   ],
 })
 export class MetricsComponent implements OnInit {
+  private readonly authState = inject(AuthStateService);
+  private readonly teamDash = inject(TeamDashboardStateService);
+
   readonly state = inject(SprintStateService);
-  readonly capState = inject(CapacityStateService);
+  readonly dashboards = this.teamDash.dashboards;
+  readonly dashboardsLoading = this.teamDash.loading;
+  readonly switchingDashboardId = this.teamDash.switchingDashboardId;
+  readonly dashboardError = this.teamDash.error;
+  readonly showAnalyticsSkeleton = computed(() => {
+    const loadingByRequest = this.state.metricsLoading();
+    const loadingBySwitch = this.switchingDashboardId() !== null;
+    const initialEmptyState =
+      this.state.metrics() === null &&
+      !this.state.metricsGated() &&
+      !this.state.metricsError();
+
+    return loadingByRequest || loadingBySwitch || initialEmptyState;
+  });
 
   readonly focusView = signal<ChartFocusView>("all");
 
@@ -104,8 +226,39 @@ export class MetricsComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.teamDash.loadDashboards("Unable to load teams.");
     this.state.loadMetrics();
     this.state.loadIterations();
     this.state.loadGroupedIssues();
+  }
+
+  get activeDashboardId(): string | null {
+    return this.teamDash.activeDashboardId();
+  }
+
+  get isAdmin(): boolean {
+    return this.authState.user()?.role === "ADMIN";
+  }
+
+  onSwitchTeam(dashboardId: string): void {
+    if (!this.isAdmin) {
+      return;
+    }
+
+    if (!dashboardId || dashboardId === this.activeDashboardId) {
+      return;
+    }
+
+    this.teamDash.switchDashboard({
+      dashboardId,
+      isAdmin: this.isAdmin,
+      loadErrorMessage: "Unable to load teams.",
+      switchErrorMessage: "Unable to switch team.",
+      onSuccess: () => {
+        this.state.loadMetrics();
+        this.state.loadIterations();
+        this.state.loadGroupedIssues();
+      },
+    });
   }
 }

@@ -15,4 +15,5 @@ import { SprintSummary } from "../../models/sprint-issue.model";
 })
 export class SprintSummaryCardComponent {
   @Input({ required: true }) summary!: SprintSummary;
+  @Input() loading = false;
 }

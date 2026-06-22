@@ -4,6 +4,9 @@ import { AuthApiService } from "./auth-api.service";
 import { PermissionService } from "./permission.service";
 import { OrganizationStateService } from "./organization-state.service";
 import { SubscriptionStateService } from "./subscription-state.service";
+import { SprintStateService } from "../../features/sprint/services/sprint-state.service";
+import { CapacityStateService } from "../../features/sprint/services/capacity-state.service";
+import { CurrentIterationService } from "../../features/sprint/services/current-iteration.service";
 import {
   User,
   LoginRequest,
@@ -22,6 +25,9 @@ export class AuthStateService {
   private readonly permissionService = inject(PermissionService);
   private readonly orgState = inject(OrganizationStateService);
   private readonly subState = inject(SubscriptionStateService);
+  private readonly sprintState = inject(SprintStateService);
+  private readonly capacityState = inject(CapacityStateService);
+  private readonly currentIteration = inject(CurrentIterationService);
 
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(false);
@@ -96,7 +102,14 @@ export class AuthStateService {
     this.api.logout().subscribe({ error: () => {} });
     this.clearToken();
     this._user.set(null);
+    this._error.set(null);
+    this._registerSuccess.set(null);
     this.permissionService.clear();
+    this.orgState.clear();
+    this.subState.clear();
+    this.sprintState.clear();
+    this.capacityState.clear();
+    this.currentIteration.clear();
     this.router.navigate(["/auth/login"]);
   }
 
