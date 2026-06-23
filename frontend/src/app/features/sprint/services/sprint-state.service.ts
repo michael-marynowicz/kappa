@@ -92,6 +92,7 @@ export class SprintStateService {
 
   loadIssues(): void {
     this._loading.set(true);
+    this._issues.set([]);
     this._issuesError.set(null);
     this._issuesErrorStatus.set(null);
     this.apiService.getSprintIssues().subscribe({
@@ -110,6 +111,7 @@ export class SprintStateService {
 
   loadMetrics(): void {
     this._metricsLoading.set(true);
+    this._metrics.set(null);
     this._metricsError.set(null);
     this._metricsErrorStatus.set(null);
     this.apiService.getMetrics().subscribe({
@@ -158,6 +160,7 @@ export class SprintStateService {
   }
 
   loadGroupedIssues(): void {
+    this._epicGroups.set([]);
     this.apiService.getGroupedIssues().subscribe({
       next: (groups) => this._epicGroups.set(groups),
       error: (err) => {

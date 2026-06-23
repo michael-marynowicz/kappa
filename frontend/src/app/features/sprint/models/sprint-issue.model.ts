@@ -54,6 +54,8 @@ export interface SprintMetrics {
   throughput: number;
   workInProgress: number;
   carryOverIssues: number;
+  /** Total issue count in sprint (committed + mid-sprint additions) */
+  issueCount?: number;
   /** Story points grouped by topic/epic */
   topicBreakdown: TopicStoryPoints[];
   /** Capacity planning vs actual */
@@ -65,6 +67,8 @@ export interface SprintMetrics {
 export interface TopicStoryPoints {
   topic: string;
   storyPoints: number;
+  /** Issue count for this topic */
+  issueCount?: number;
 }
 
 export interface CapacityData {

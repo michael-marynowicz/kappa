@@ -1,8 +1,8 @@
 <div class="backlog">
   <header class="backlog__header">
     <div class="header-text">
-      <h1 class="page-title">Sprint Backlog</h1>
-      <p class="page-subtitle">Track and manage sprint issues</p>
+      <h1 class="page-title">{{ "backlog.title" | translate }}</h1>
+      <p class="page-subtitle">{{ "backlog.subtitle" | translate }}</p>
     </div>
 
     <div class="header-actions">
@@ -17,7 +17,7 @@
     </div>
 
     <button class="btn-export" (click)="onExportCsv()">
-      <span>Export CSV</span>
+      <span>{{ "common.export_csv" | translate }}</span>
     </button>
   </header>
 
@@ -28,11 +28,14 @@
     </div>
   }
 
-  <app-sprint-summary-card [summary]="state.summary()" [loading]="state.loading()" />
+  <app-sprint-summary-card
+    [summary]="state.summary()"
+    [loading]="state.loading()"
+  />
 
   @if (state.loading()) {
     <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
-      @for (row of [1,2,3,4,5,6,7,8]; track row) {
+      @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
         <div class="backlog-skeleton__row">
           <span class="backlog-skeleton__cell bsk--key"></span>
           <span class="backlog-skeleton__cell bsk--title"></span>

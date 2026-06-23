@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { SprintIssue } from "../../models/sprint-issue.model";
 import { StatusBadgeComponent } from "../status-badge/status-badge.component";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 interface EditingState {
   issueKey: string;
@@ -23,7 +24,7 @@ interface EditingState {
 @Component({
   selector: "app-sprint-issue-table",
   standalone: true,
-  imports: [CommonModule, FormsModule, StatusBadgeComponent],
+  imports: [CommonModule, FormsModule, StatusBadgeComponent, TranslatePipe],
   templateUrl: "./sprint-issue-table.component.html",
   styleUrls: ["./sprint-issue-table.component.scss"],
 })

@@ -59,7 +59,9 @@
 
 /* ── Skeleton loading ──────────────────────────────────────── */
 @keyframes cap-shimmer {
-  100% { transform: translateX(100%); }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 %cap-skel-base {
@@ -114,7 +116,9 @@
   @extend %cap-skel-base;
   height: 30px;
 
-  &--lg { border-radius: 8px; }
+  &--lg {
+    border-radius: 8px;
+  }
 
   &--sm {
     width: 60%;

@@ -1,28 +1,36 @@
 <div class="table-container">
   <div class="table-header">
-    <h2 class="table-title">Sprint Issues</h2>
-    <span class="table-count">{{ issues.length }} issues</span>
+    <h2 class="table-title">{{ "table.title" | translate }}</h2>
+    <span class="table-count"
+      >{{ issues.length }} {{ "table.title" | translate | lowercase }}</span
+    >
   </div>
 
   @if (issues.length === 0) {
     <div class="empty-state">
       <p class="empty-state__icon">◎</p>
-      <p class="empty-state__text">No issues found for this sprint.</p>
+      <p class="empty-state__text">{{ "table.empty" | translate }}</p>
     </div>
   } @else {
     <div class="table-wrapper">
       <table class="issues-table" aria-label="Sprint issues">
         <thead>
           <tr>
-            <th class="col-key">Key</th>
-            <th class="col-summary">Summary</th>
-            <th class="col-assignee">Assignee</th>
-            <th class="col-type">Type</th>
-            <th class="col-status">Status</th>
-            <th class="col-sp col-sp--total">Total SP</th>
-            <th class="col-sp col-sp--remaining">Remaining SP</th>
-            <th class="col-sp col-sp--done">Done SP</th>
-            <th class="col-actions">Action</th>
+            <th class="col-key">{{ "table.key" | translate }}</th>
+            <th class="col-summary">{{ "table.summary" | translate }}</th>
+            <th class="col-assignee">{{ "table.assignee" | translate }}</th>
+            <th class="col-type">{{ "table.type" | translate }}</th>
+            <th class="col-status">{{ "table.status" | translate }}</th>
+            <th class="col-sp col-sp--total">
+              {{ "table.total_sp" | translate }}
+            </th>
+            <th class="col-sp col-sp--remaining">
+              {{ "table.remaining_sp" | translate }}
+            </th>
+            <th class="col-sp col-sp--done">
+              {{ "table.done_sp" | translate }}
+            </th>
+            <th class="col-actions">{{ "table.action" | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -47,7 +55,7 @@
               <!-- Assignee -->
               <td class="col-assignee">
                 <span class="assignee">{{
-                  issue.assignee ?? "Unassigned"
+                  issue.assignee ?? ("table.unassigned" | translate)
                 }}</span>
               </td>
 

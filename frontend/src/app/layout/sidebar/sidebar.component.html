@@ -25,7 +25,9 @@
     </div>
     <div class="brand-text">
       <span class="brand-title">Kappa</span>
-      <span class="brand-org">{{ orgName || "No Organization" }}</span>
+      <span class="brand-org">{{
+        orgName || ("sidebar.no_org" | translate)
+      }}</span>
     </div>
     <!-- Mobile close button -->
     <button

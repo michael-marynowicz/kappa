@@ -1,6 +1,11 @@
 @if (loading) {
-  <section class="summary-grid summary-grid--skeleton" aria-busy="true" aria-live="polite" aria-label="Loading sprint KPIs">
-    @for (_ of [1,2,3,4,5]; track _) {
+  <section
+    class="summary-grid summary-grid--skeleton"
+    aria-busy="true"
+    aria-live="polite"
+    aria-label="Loading sprint KPIs"
+  >
+    @for (_ of [1, 2, 3, 4, 5]; track _) {
       <div class="kpi-card kpi-skeleton">
         <span class="kpi-skeleton__label"></span>
         <span class="kpi-skeleton__value"></span>
@@ -8,34 +13,34 @@
     }
   </section>
 } @else {
-<section class="summary-grid" aria-label="Sprint KPIs">
-  <div class="kpi-card">
-    <p class="kpi-label">Total Issues</p>
-    <p class="kpi-value">{{ summary.totalIssues }}</p>
-  </div>
-  <div class="kpi-card kpi-card--total">
-    <p class="kpi-label">Total SP</p>
-    <p class="kpi-value">{{ summary.totalStoryPoints }}</p>
-  </div>
-  <div class="kpi-card kpi-card--done">
-    <p class="kpi-label">Done SP</p>
-    <p class="kpi-value">{{ summary.doneStoryPoints }}</p>
-  </div>
-  <div class="kpi-card kpi-card--remaining">
-    <p class="kpi-label">Remaining SP</p>
-    <p class="kpi-value">{{ summary.remainingStoryPoints }}</p>
-  </div>
-  <div class="kpi-card kpi-card--completion">
-    <p class="kpi-label">Completion</p>
-    <p class="kpi-value">
-      {{ summary.completionPercentage }}<span class="kpi-unit">%</span>
-    </p>
-    <div class="progress-bar">
-      <div
-        class="progress-bar__fill"
-        [style.width.%]="summary.completionPercentage"
-      ></div>
+  <section class="summary-grid" aria-label="Sprint KPIs">
+    <div class="kpi-card">
+      <p class="kpi-label">{{ "summary.total_issues" | translate }}</p>
+      <p class="kpi-value">{{ summary.totalIssues }}</p>
     </div>
-  </div>
-</section>
+    <div class="kpi-card kpi-card--total">
+      <p class="kpi-label">{{ "summary.total_sp" | translate }}</p>
+      <p class="kpi-value">{{ summary.totalStoryPoints }}</p>
+    </div>
+    <div class="kpi-card kpi-card--done">
+      <p class="kpi-label">{{ "summary.done_sp" | translate }}</p>
+      <p class="kpi-value">{{ summary.doneStoryPoints }}</p>
+    </div>
+    <div class="kpi-card kpi-card--remaining">
+      <p class="kpi-label">{{ "summary.remaining_sp" | translate }}</p>
+      <p class="kpi-value">{{ summary.remainingStoryPoints }}</p>
+    </div>
+    <div class="kpi-card kpi-card--completion">
+      <p class="kpi-label">{{ "summary.completion" | translate }}</p>
+      <p class="kpi-value">
+        {{ summary.completionPercentage }}<span class="kpi-unit">%</span>
+      </p>
+      <div class="progress-bar">
+        <div
+          class="progress-bar__fill"
+          [style.width.%]="summary.completionPercentage"
+        ></div>
+      </div>
+    </div>
+  </section>
 }

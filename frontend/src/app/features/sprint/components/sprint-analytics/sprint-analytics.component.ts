@@ -14,6 +14,7 @@ import {
   EpicGroup,
 } from "../../models/sprint-issue.model";
 import { PremiumOverlayComponent } from "../../../../shared/components/premium-overlay/premium-overlay.component";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 interface VelocityBar {
   label: string;
@@ -24,6 +25,7 @@ interface VelocityBar {
 interface DonutSeg {
   label: string;
   storyPoints: number;
+  issueCount: number;
   color: string;
   dash: string;
   offset: number;
@@ -61,7 +63,7 @@ export type ChartFocusView = "all" | "velocity" | "capacity" | "topics";
 @Component({
   selector: "app-sprint-analytics",
   standalone: true,
-  imports: [CommonModule, PremiumOverlayComponent],
+  imports: [CommonModule, PremiumOverlayComponent, TranslatePipe],
   templateUrl: "./sprint-analytics.component.html",
   styleUrls: ["./sprint-analytics.component.scss"],
   animations: [
@@ -136,6 +138,7 @@ export class SprintAnalyticsComponent implements OnChanges {
   velocityBars: VelocityBar[] = [];
   topicSegments: DonutSeg[] = [];
   totalTopicSP = 0;
+  totalTopicIssueCount = 0;
   capacityMax = 1;
   capacityDelta = 0;
   capacityDeltaColor = "#34d399";
@@ -229,6 +232,10 @@ export class SprintAnalyticsComponent implements OnChanges {
   private buildTopicDonut(): void {
     const topics = this.metrics?.topicBreakdown ?? [];
     this.totalTopicSP = topics.reduce((s, t) => s + t.storyPoints, 0);
+    this.totalTopicIssueCount = topics.reduce(
+      (s, t) => s + (t.issueCount ?? 0),
+      0,
+    );
 
     if (this.totalTopicSP === 0) {
       this.topicSegments = [];
@@ -248,6 +255,7 @@ export class SprintAnalyticsComponent implements OnChanges {
         return {
           label: t.topic,
           storyPoints: t.storyPoints,
+          issueCount: t.issueCount ?? 0,
           color: TOPIC_COLORS[i % TOPIC_COLORS.length],
           dash,
           offset,

@@ -14,6 +14,8 @@ import { TeamDashboardStateService } from "../../../../shared/services/team-dash
 import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
 import { JiraDashboard } from "../../../../core/models/jira-config.model";
 import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
+import { I18nService } from "../../../../i18n/i18n.service";
 
 @Component({
   selector: "app-sprint-dashboard",
@@ -26,6 +28,7 @@ import { AuthStateService } from "../../../../core/services/auth-state.service";
     CapacityGridComponent,
     PremiumOverlayComponent,
     TeamDashboardSwitcherComponent,
+    TranslatePipe,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./sprint-dashboard.component.html",
@@ -38,6 +41,7 @@ export class SprintDashboardComponent implements OnInit {
   readonly state = inject(SprintStateService);
   readonly capState = inject(CapacityStateService);
   readonly currentIteration = inject(CurrentIterationService);
+  readonly i18n = inject(I18nService);
   readonly today = new Date();
   readonly dashboards = signal<JiraDashboard[]>([]);
   readonly dashboardsLoading = signal(false);

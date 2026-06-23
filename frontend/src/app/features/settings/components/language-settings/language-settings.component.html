@@ -1,6 +1,6 @@
 <div class="language-settings">
-  <h2 class="section-title">Language</h2>
-  <p class="section-desc">Choose your preferred application language.</p>
+  <h2 class="section-title">{{ "lang.title" | translate }}</h2>
+  <p class="section-desc">{{ "lang.subtitle" | translate }}</p>
 
   @if (error()) {
     <div class="feedback feedback--error" role="alert">{{ error() }}</div>
@@ -10,26 +10,102 @@
   }
 
   @if (loading()) {
-    <div class="loading">Loading language preference...</div>
+    <div class="loading">{{ "lang.loading" | translate }}</div>
   } @else {
     <form class="language-form" (ngSubmit)="onSave()" #formRef="ngForm">
       <div class="form-group">
-        <label class="form-label" for="language">Interface language</label>
-        <select
-          class="form-select"
-          id="language"
-          name="language"
-          [(ngModel)]="language"
-          required
-        >
-          <option value="fr">Francais</option>
-          <option value="en">English</option>
-        </select>
+        <label class="form-label" for="language">{{
+          "lang.label" | translate
+        }}</label>
+        <div class="ls-dropdown" [class.ls-dropdown--open]="dropdownOpen()">
+          <button
+            class="ls-trigger"
+            type="button"
+            id="language"
+            [attr.aria-expanded]="dropdownOpen()"
+            [disabled]="saving()"
+            (click)="toggleDropdown()"
+          >
+            <svg
+              class="ls-icon"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z" />
+              <path d="M2 12h20" />
+              <path
+                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"
+              />
+            </svg>
+            <span class="ls-trigger__label">{{ selectedLanguageLabel }}</span>
+            <svg
+              class="ls-chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (dropdownOpen()) {
+            <div class="ls-panel">
+              @for (option of languageOptions; track option.value) {
+                <button
+                  class="ls-option"
+                  [class.ls-option--active]="language === option.value"
+                  type="button"
+                  [attr.aria-pressed]="language === option.value"
+                  (click)="selectLanguage(option.value)"
+                >
+                  <span class="ls-option__dot"></span>
+                  <span class="ls-option__info">
+                    <span class="ls-option__name">{{ option.label }}</span>
+                    <span class="ls-option__meta">{{
+                      option.value | uppercase
+                    }}</span>
+                  </span>
+                  @if (language === option.value) {
+                    <svg
+                      class="ls-option__check"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn-primary" type="submit" [disabled]="saving() || formRef.invalid">
-          {{ saving() ? "Saving..." : "Save language" }}
+        <button class="btn-primary" type="submit" [disabled]="saving()">
+          {{
+            saving() ? ("lang.saving" | translate) : ("lang.save" | translate)
+          }}
         </button>
       </div>
     </form>

@@ -1,9 +1,9 @@
 <div class="metrics-page">
   <header class="metrics__header">
     <div>
-      <h1 class="page-title">Metrics & Analytics</h1>
+      <h1 class="page-title">{{ "metrics.title" | translate }}</h1>
       <p class="page-subtitle">
-        Sprint velocity, capacity, and historical comparisons
+        {{ "metrics.subtitle" | translate }}
       </p>
     </div>
 
@@ -61,9 +61,15 @@
       </div>
 
       <div class="metrics-skeleton__row metrics-skeleton__row--table">
-        <span class="metrics-skeleton__line metrics-skeleton__line--full"></span>
-        <span class="metrics-skeleton__line metrics-skeleton__line--full"></span>
-        <span class="metrics-skeleton__line metrics-skeleton__line--full"></span>
+        <span
+          class="metrics-skeleton__line metrics-skeleton__line--full"
+        ></span>
+        <span
+          class="metrics-skeleton__line metrics-skeleton__line--full"
+        ></span>
+        <span
+          class="metrics-skeleton__line metrics-skeleton__line--full"
+        ></span>
       </div>
     </section>
   } @else {

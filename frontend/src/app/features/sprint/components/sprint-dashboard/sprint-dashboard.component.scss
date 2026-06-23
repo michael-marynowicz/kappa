@@ -635,13 +635,16 @@
 
 /* ── Skeleton loaders ───────────────────────────────────────── */
 @keyframes skel-shimmer {
-  100% { transform: translateX(100%); }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 %skel-shine {
   position: relative;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06);
+
   &::after {
     content: '';
     position: absolute;
@@ -669,16 +672,29 @@
   align-items: center;
   padding: 14px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  &:last-child { border-bottom: none; }
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .board-skeleton__cell {
   @extend %skel-shine;
   height: 13px;
   border-radius: 6px;
-  &--key   { width: 70%; }
-  &--badge { width: 60%; border-radius: 20px; }
-  &--num   { width: 40%; }
+
+  &--key {
+    width: 70%;
+  }
+
+  &--badge {
+    width: 60%;
+    border-radius: 20px;
+  }
+
+  &--num {
+    width: 40%;
+  }
 }
 
 /* Charts skeleton (Metrics tab) */
@@ -691,16 +707,36 @@
 .metrics-sk__row {
   display: grid;
   gap: 12px;
-  &--summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  &--chart   { grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); }
+
+  &--summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &--chart {
+    grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  }
 
   @media (max-width: 960px) {
-    &--summary, &--chart { grid-template-columns: 1fr; }
+
+    &--summary,
+    &--chart {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
-.metrics-sk__card  { @extend %skel-shine; height: 92px;  border-radius: 12px; }
-.metrics-sk__chart { @extend %skel-shine; height: 260px; border-radius: 12px; }
+.metrics-sk__card {
+  @extend %skel-shine;
+  height: 92px;
+  border-radius: 12px;
+}
+
+.metrics-sk__chart {
+  @extend %skel-shine;
+  height: 260px;
+  border-radius: 12px;
+}
+
 .metrics-sk__panel {
   @extend %skel-shine;
   border-radius: 12px;
@@ -709,12 +745,16 @@
   gap: 10px;
   align-content: start;
 }
+
 .metrics-sk__line {
   @extend %skel-shine;
   height: 12px;
   border-radius: 6px;
   width: 70%;
-  &--full { width: 100%; }
+
+  &--full {
+    width: 100%;
+  }
 }
 
 /* ── Content & Footer ───────────────────────────────────────── */

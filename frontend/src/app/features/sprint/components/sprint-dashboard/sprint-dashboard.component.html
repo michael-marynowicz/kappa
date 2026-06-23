@@ -20,7 +20,9 @@
       </div>
       <div class="brand-text">
         <h1 class="brand-title">Kappa</h1>
-        <p class="brand-subtitle">Sprint intelligence workspace</p>
+        <p class="brand-subtitle">
+          {{ "dashboard.brand_subtitle" | translate }}
+        </p>
       </div>
     </div>
 
@@ -30,7 +32,7 @@
         [loading]="dashboardsLoading()"
         [switchingDashboardId]="switchingDashboardId()"
         [isAdmin]="isAdmin"
-        [hintMessage]="'Lecture seule'"
+        [hintMessage]="i18n.t('dashboard.read_only')"
         [errorMessage]="dashboardSwitchError()"
         (switchDashboard)="onSwitchDashboard($event)"
       />
@@ -62,7 +64,7 @@
             stroke-linecap="round"
           />
         </svg>
-        <span>Export CSV</span>
+        <span>{{ "common.export_csv" | translate }}</span>
       </button>
     } @else {
       <button
@@ -90,8 +92,8 @@
             stroke-linecap="round"
           />
         </svg>
-        <span>Export CSV</span>
-        <span class="premium-badge">★ Premium</span>
+        <span>{{ "common.export_csv" | translate }}</span>
+        <span class="premium-badge">{{ "common.premium" | translate }}</span>
       </button>
     }
   </header>
@@ -109,10 +111,10 @@
 
   <!-- Sprint Hero -->
   <section class="dashboard__hero" aria-label="Current sprint context">
-    <p class="hero-kicker">Agile reporting automation</p>
+    <p class="hero-kicker">{{ "dashboard.hero_kicker" | translate }}</p>
     @if (currentSprintName) {
       <h2 class="hero-title">{{ currentSprintName }}</h2>
-      <p class="hero-meta">Current sprint</p>
+      <p class="hero-meta">{{ "dashboard.current_sprint" | translate }}</p>
     }
   </section>
 
@@ -130,14 +132,17 @@
           </button>
         }
         <button class="dashboard-error__retry" (click)="retryActiveTab()">
-          Reessayer
+          {{ "dashboard.retry" | translate }}
         </button>
       </div>
     </div>
   }
 
   <!-- KPI Summary Cards -->
-  <app-sprint-summary-card [summary]="state.summary()" [loading]="state.loading()" />
+  <app-sprint-summary-card
+    [summary]="state.summary()"
+    [loading]="state.loading()"
+  />
 
   <!-- Tab Bar -->
   <div class="tab-bar" role="tablist" aria-label="Dashboard tabs">
@@ -165,7 +170,7 @@
           <rect x="14" y="14" width="7" height="7" />
         </svg>
       </span>
-      <span>Board</span>
+      <span>{{ "dashboard.tab.board" | translate }}</span>
     </button>
     <button
       class="tab-btn"
@@ -190,7 +195,7 @@
           <line x1="6" y1="20" x2="6" y2="14" />
         </svg>
       </span>
-      <span>Metrics</span>
+      <span>{{ "dashboard.tab.metrics" | translate }}</span>
     </button>
     <button
       class="tab-btn"
@@ -216,7 +221,7 @@
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       </span>
-      <span>Capacity</span>
+      <span>{{ "dashboard.tab.capacity" | translate }}</span>
     </button>
   </div>
 
@@ -225,12 +230,18 @@
     <main class="dashboard__content">
       @if (state.loading()) {
         <section class="board-skeleton" aria-busy="true" aria-live="polite">
-          @for (row of [1,2,3,4,5,6,7,8]; track row) {
+          @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
             <div class="board-skeleton__row">
-              <span class="board-skeleton__cell board-skeleton__cell--key"></span>
+              <span
+                class="board-skeleton__cell board-skeleton__cell--key"
+              ></span>
               <span class="board-skeleton__cell"></span>
-              <span class="board-skeleton__cell board-skeleton__cell--badge"></span>
-              <span class="board-skeleton__cell board-skeleton__cell--num"></span>
+              <span
+                class="board-skeleton__cell board-skeleton__cell--badge"
+              ></span>
+              <span
+                class="board-skeleton__cell board-skeleton__cell--num"
+              ></span>
             </div>
           }
         </section>

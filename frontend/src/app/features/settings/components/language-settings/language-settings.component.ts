@@ -1,25 +1,41 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { LanguageSettingsApiService } from "../../../../core/services/language-settings-api.service";
 import { AppLanguage } from "../../../../core/models/language-settings.model";
+import { I18nService } from "../../../../i18n/i18n.service";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-language-settings",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: "./language-settings.component.html",
   styleUrls: ["./language-settings.component.scss"],
 })
 export class LanguageSettingsComponent {
   private readonly api = inject(LanguageSettingsApiService);
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  readonly i18n = inject(I18nService);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly success = signal<string | null>(null);
   readonly error = signal<string | null>(null);
+  readonly dropdownOpen = signal(false);
 
   language: AppLanguage = "fr";
+
+  readonly languageOptions: Array<{ value: AppLanguage; label: string }> = [
+    { value: "fr", label: "Francais" },
+    { value: "en", label: "English" },
+  ];
 
   constructor() {
     this.load();
@@ -32,7 +48,7 @@ export class LanguageSettingsComponent {
     this.api.getLanguageSettings().subscribe({
       next: (response) => {
         this.language = response.language ?? "fr";
-        this.applyLanguage(this.language);
+        this.i18n.setLanguage(this.language);
         this.loading.set(false);
       },
       error: () => {
@@ -40,7 +56,7 @@ export class LanguageSettingsComponent {
         const local = localStorage.getItem("app_language");
         if (local === "fr" || local === "en") {
           this.language = local;
-          this.applyLanguage(this.language);
+          this.i18n.setLanguage(this.language);
         }
         this.loading.set(false);
       },
@@ -55,19 +71,45 @@ export class LanguageSettingsComponent {
     this.api.updateLanguageSettings({ language: this.language }).subscribe({
       next: (response) => {
         this.language = response.language;
-        this.applyLanguage(this.language);
-        this.success.set("Language preference saved.");
+        this.i18n.setLanguage(this.language);
+        this.success.set(this.i18n.t("lang.saved"));
         this.saving.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message ?? "Failed to save language preference.");
+        this.error.set(err?.message ?? this.i18n.t("lang.error"));
         this.saving.set(false);
       },
     });
   }
 
-  private applyLanguage(language: AppLanguage): void {
-    localStorage.setItem("app_language", language);
-    document.documentElement.lang = language;
+  get selectedLanguageLabel(): string {
+    return (
+      this.languageOptions.find((option) => option.value === this.language)
+        ?.label ?? "Francais"
+    );
+  }
+
+  toggleDropdown(): void {
+    if (this.loading() || this.saving()) {
+      return;
+    }
+
+    this.dropdownOpen.update((open) => !open);
+  }
+
+  selectLanguage(language: AppLanguage): void {
+    this.language = language;
+    this.dropdownOpen.set(false);
+  }
+
+  @HostListener("document:click", ["$event"])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.dropdownOpen()) {
+      return;
+    }
+
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.dropdownOpen.set(false);
+    }
   }
 }

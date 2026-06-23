@@ -5,6 +5,7 @@ import { CapacityStateService } from "../sprint/services/capacity-state.service"
 import { AuthStateService } from "../../core/services/auth-state.service";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
+import { TranslatePipe } from "../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-capacity-page",
@@ -13,6 +14,7 @@ import { TeamDashboardStateService } from "../../shared/services/team-dashboard-
     CommonModule,
     CapacityGridComponent,
     TeamDashboardSwitcherComponent,
+    TranslatePipe,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./capacity-page.component.html",

@@ -9,9 +9,9 @@
         *ngIf="focusView === 'all' || focusView === 'velocity'"
         [class.chart-card--focused]="focusView === 'velocity'"
       >
-        <p class="chart-title">Velocity</p>
+        <p class="chart-title">{{ "analytics.velocity.title" | translate }}</p>
         <p class="chart-subtitle">
-          Committed · Delivered · Work · Leftover · Ratio
+          {{ "analytics.velocity.subtitle" | translate }}
         </p>
         <div class="bar-chart">
           <div class="bar-row" *ngFor="let bar of velocityBars">
@@ -27,7 +27,9 @@
           </div>
         </div>
         <div class="velocity-ratio" *ngIf="metrics.ratio != null">
-          <span class="velocity-ratio__label">Delivered / Committed Ratio</span>
+          <span class="velocity-ratio__label">{{
+            "analytics.ratio_label" | translate
+          }}</span>
           <span
             class="velocity-ratio__value"
             [style.color]="ratioColor(metrics.ratio)"
@@ -55,15 +57,19 @@
         [class.chart-card--focused]="focusView === 'capacity'"
         *ngIf="focusView === 'all' || focusView === 'capacity'"
       >
-        <p class="chart-title">Capacity & Team Availability</p>
-        <p class="chart-subtitle">Planned vs Real · EFT by role</p>
+        <p class="chart-title">{{ "analytics.capacity.title" | translate }}</p>
+        <p class="chart-subtitle">
+          {{ "analytics.capacity.subtitle" | translate }}
+        </p>
 
         <!-- Capacity bars -->
         <div class="capacity-section">
           <div class="capacity-bars">
             <div class="capacity-bar-group">
               <div class="capacity-bar-header">
-                <span class="capacity-bar-label">Planned</span>
+                <span class="capacity-bar-label">{{
+                  "analytics.planned" | translate
+                }}</span>
                 <span class="capacity-bar-val">{{
                   metrics.capacity.plannedCapacity
                 }}</span>
@@ -80,7 +86,9 @@
             </div>
             <div class="capacity-bar-group">
               <div class="capacity-bar-header">
-                <span class="capacity-bar-label">Real</span>
+                <span class="capacity-bar-label">{{
+                  "analytics.real" | translate
+                }}</span>
                 <span
                   class="capacity-bar-val"
                   [style.color]="capacityDeltaColor"
@@ -99,7 +107,9 @@
             </div>
           </div>
           <div class="capacity-delta">
-            <span class="capacity-delta__label">Delta</span>
+            <span class="capacity-delta__label">{{
+              "analytics.delta" | translate
+            }}</span>
             <span
               class="capacity-delta__value"
               [style.color]="capacityDeltaColor"
@@ -112,7 +122,7 @@
         <!-- Team Availability EFT -->
         <div class="team-availability">
           <p class="chart-subtitle" style="margin-top: 14px">
-            Team Availability (EFT)
+            {{ "analytics.team_availability" | translate }}
           </p>
           <div class="eft-grid">
             <div class="eft-cell">
@@ -150,8 +160,10 @@
         *ngIf="focusView === 'all' || focusView === 'topics'"
         [class.chart-card--focused]="focusView === 'topics'"
       >
-        <p class="chart-title">Story Points by Topic</p>
-        <p class="chart-subtitle">Distribution across epics / topics</p>
+        <p class="chart-title">{{ "analytics.topics.title" | translate }}</p>
+        <p class="chart-subtitle">
+          {{ "analytics.topics.subtitle" | translate }}
+        </p>
 
         <!-- Compact view (grid mode) -->
         <div
@@ -194,15 +206,15 @@
               {{ totalTopicSP }}
             </text>
             <text x="60" y="70" text-anchor="middle" class="donut-center-sub">
-              SP
+              SP · {{ totalTopicIssueCount }} US
             </text>
           </svg>
           <div class="donut-legend">
             <div class="legend-item" *ngFor="let seg of topicSegments">
               <span class="legend-dot" [style.background]="seg.color"></span>
               <span class="legend-text"
-                >{{ seg.pct }} — {{ seg.label }} ·
-                {{ seg.storyPoints }} SP</span
+                >{{ seg.pct }} — {{ seg.label }} · {{ seg.storyPoints }} SP ·
+                {{ seg.issueCount }} US</span
               >
             </div>
           </div>
@@ -230,8 +242,8 @@
             ></div>
           </div>
           <p class="stacked-bar__total">
-            {{ totalTopicSP }} story points répartis sur
-            {{ epicGroups.length }} epics
+            {{ totalTopicSP }} story points · {{ totalTopicIssueCount }} US
+            répartis sur {{ epicGroups.length }} epics
           </p>
 
           <!-- Epic accordion list -->
@@ -323,7 +335,9 @@
         [class.feature-gate--disabled]="iterationsGated"
         *ngIf="focusView === 'all'"
       >
-        <p class="chart-title">Iteration Comparison</p>
+        <p class="chart-title">
+          {{ "analytics.iterations.title" | translate }}
+        </p>
         <p class="chart-subtitle">Cross-sprint velocity & delivery</p>
 
         <!-- Real data -->
@@ -371,10 +385,18 @@
           *ngIf="iterationBars.length === 0 && iterationsGated"
         >
           <div class="iteration-row iteration-row--header">
-            <span class="iter-col iter-col--name">Sprint</span>
-            <span class="iter-col iter-col--bar">Delivered / Committed</span>
-            <span class="iter-col iter-col--vel">Velocity</span>
-            <span class="iter-col iter-col--ratio">Ratio</span>
+            <span class="iter-col iter-col--name">{{
+              "analytics.iterations.sprint_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--bar">{{
+              "analytics.iterations.delivered_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--vel">{{
+              "analytics.iterations.velocity_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--ratio">{{
+              "analytics.iterations.ratio_col" | translate
+            }}</span>
           </div>
           <div class="iteration-row" *ngFor="let ph of placeholderIterations">
             <span class="iter-col iter-col--name">{{ ph.sprint }}</span>
@@ -404,29 +426,53 @@
         <!-- Iteration Skeleton Loading -->
         <div
           class="iteration-skeleton"
-          *ngIf="iterationBars.length === 0 && iterationsLoading && !iterationsGated"
+          *ngIf="
+            iterationBars.length === 0 && iterationsLoading && !iterationsGated
+          "
         >
           <div class="iteration-row iteration-row--header">
-            <span class="iter-col iter-col--name">Sprint</span>
-            <span class="iter-col iter-col--bar">Delivered / Committed</span>
-            <span class="iter-col iter-col--vel">Velocity</span>
-            <span class="iter-col iter-col--ratio">Ratio</span>
+            <span class="iter-col iter-col--name">{{
+              "analytics.iterations.sprint_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--bar">{{
+              "analytics.iterations.delivered_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--vel">{{
+              "analytics.iterations.velocity_col" | translate
+            }}</span>
+            <span class="iter-col iter-col--ratio">{{
+              "analytics.iterations.ratio_col" | translate
+            }}</span>
           </div>
           <div class="iteration-row" *ngFor="let i of [0, 1, 2, 3]">
-            <div class="iter-col iter-col--name skeleton-line" style="width: 80px"></div>
+            <div
+              class="iter-col iter-col--name skeleton-line"
+              style="width: 80px"
+            ></div>
             <div class="iter-col iter-col--bar">
-              <div class="skeleton-line" style="width: 120px; margin: 8px 0"></div>
+              <div
+                class="skeleton-line"
+                style="width: 120px; margin: 8px 0"
+              ></div>
             </div>
-            <div class="iter-col iter-col--vel skeleton-line" style="width: 60px"></div>
-            <div class="iter-col iter-col--ratio skeleton-line" style="width: 60px"></div>
+            <div
+              class="iter-col iter-col--vel skeleton-line"
+              style="width: 60px"
+            ></div>
+            <div
+              class="iter-col iter-col--ratio skeleton-line"
+              style="width: 60px"
+            ></div>
           </div>
         </div>
 
         <div
           class="chart-empty"
-          *ngIf="iterationBars.length === 0 && !iterationsGated && !iterationsLoading"
+          *ngIf="
+            iterationBars.length === 0 && !iterationsGated && !iterationsLoading
+          "
         >
-          <p>No iteration history available</p>
+          <p>{{ "analytics.iterations.empty" | translate }}</p>
         </div>
         <app-premium-overlay
           *ngIf="iterationsGated"
@@ -440,6 +486,6 @@
 
   <div class="analytics-empty" *ngIf="!metrics">
     <div class="loading-spinner"></div>
-    <p>Loading analytics…</p>
+    <p>{{ "analytics.loading" | translate }}</p>
   </div>
 </section>

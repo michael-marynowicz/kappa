@@ -1,9 +1,9 @@
 <div class="capacity-page">
   <header class="capacity__header">
     <div>
-      <h1 class="page-title">Capacity Planning</h1>
+      <h1 class="page-title">{{ "capacity.title" | translate }}</h1>
       <p class="page-subtitle">
-        Manage team availability and plan sprint capacity
+        {{ "capacity.subtitle" | translate }}
       </p>
     </div>
 
@@ -19,7 +19,7 @@
     </div>
 
     <button class="btn-export" (click)="onExportCsv()">
-      <span>Export CSV</span>
+      <span>{{ "common.export_csv" | translate }}</span>
     </button>
   </header>
 

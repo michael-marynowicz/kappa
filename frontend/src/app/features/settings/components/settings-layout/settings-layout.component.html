@@ -1,7 +1,7 @@
 <div class="settings">
   <header class="settings__header">
-    <h1 class="settings__title">Settings</h1>
-    <p class="settings__subtitle">Manage your organization configuration</p>
+    <h1 class="settings__title">{{ "settings.title" | translate }}</h1>
+    <p class="settings__subtitle">{{ "settings.subtitle" | translate }}</p>
   </header>
 
   <nav class="settings__tabs">
@@ -10,21 +10,21 @@
       routerLink="jira"
       routerLinkActive="settings-tab--active"
     >
-      Jira Configuration
+      {{ "settings.tab.jira" | translate }}
     </a>
     <a
       class="settings-tab"
       routerLink="billing"
       routerLinkActive="settings-tab--active"
     >
-      Billing & Subscription
+      {{ "settings.tab.billing" | translate }}
     </a>
     <a
       class="settings-tab"
       routerLink="language"
       routerLinkActive="settings-tab--active"
     >
-      Language
+      {{ "settings.tab.language" | translate }}
     </a>
     @if (isAdmin) {
       <a
@@ -32,7 +32,7 @@
         routerLink="members"
         routerLinkActive="settings-tab--active"
       >
-        Members
+        {{ "settings.tab.members" | translate }}
       </a>
     }
   </nav>

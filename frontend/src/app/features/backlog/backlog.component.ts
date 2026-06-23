@@ -6,6 +6,7 @@ import { SprintSummaryCardComponent } from "../sprint/components/sprint-summary-
 import { AuthStateService } from "../../core/services/auth-state.service";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
+import { TranslatePipe } from "../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-backlog",
@@ -15,6 +16,7 @@ import { TeamDashboardStateService } from "../../shared/services/team-dashboard-
     SprintIssueTableComponent,
     SprintSummaryCardComponent,
     TeamDashboardSwitcherComponent,
+    TranslatePipe,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./backlog.component.html",
@@ -77,13 +79,15 @@ import { TeamDashboardStateService } from "../../shared/services/team-dashboard-
       }
       /* ── Skeleton ─────────────────────────────────── */
       @keyframes bsk-shimmer {
-        100% { transform: translateX(100%); }
+        100% {
+          transform: translateX(100%);
+        }
       }
       .backlog-skeleton {
         display: flex;
         flex-direction: column;
         gap: 0;
-        border: 1px solid rgba(255,255,255,0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         overflow: hidden;
       }
@@ -93,28 +97,43 @@ import { TeamDashboardStateService } from "../../shared/services/team-dashboard-
         gap: 14px;
         align-items: center;
         padding: 14px 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
-        &:last-child { border-bottom: none; }
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        &:last-child {
+          border-bottom: none;
+        }
       }
       .backlog-skeleton__cell {
         position: relative;
         overflow: hidden;
         height: 13px;
         border-radius: 6px;
-        background: rgba(255,255,255,0.07);
+        background: rgba(255, 255, 255, 0.07);
         &::after {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           transform: translateX(-100%);
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.14),
+            transparent
+          );
           animation: bsk-shimmer 1.25s ease-in-out infinite;
         }
       }
-      .bsk--key  { width: 70%; }
-      .bsk--title { }
-      .bsk--badge { width: 60%; border-radius: 20px; }
-      .bsk--num  { width: 40%; }
+      .bsk--key {
+        width: 70%;
+      }
+      .bsk--title {
+      }
+      .bsk--badge {
+        width: 60%;
+        border-radius: 20px;
+      }
+      .bsk--num {
+        width: 40%;
+      }
       .error-banner {
         display: flex;
         align-items: center;

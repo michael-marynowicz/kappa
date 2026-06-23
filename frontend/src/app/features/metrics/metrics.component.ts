@@ -9,6 +9,8 @@ import { PremiumOverlayComponent } from "../../shared/components/premium-overlay
 import { AuthStateService } from "../../core/services/auth-state.service";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
+import { I18nService } from "../../i18n/i18n.service";
+import { TranslatePipe } from "../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-metrics",
@@ -18,6 +20,7 @@ import { TeamDashboardStateService } from "../../shared/services/team-dashboard-
     SprintAnalyticsComponent,
     PremiumOverlayComponent,
     TeamDashboardSwitcherComponent,
+    TranslatePipe,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./metrics.component.html",
@@ -217,13 +220,16 @@ export class MetricsComponent implements OnInit {
   });
 
   readonly focusView = signal<ChartFocusView>("all");
+  private readonly i18n = inject(I18nService);
 
-  readonly viewOptions: { value: ChartFocusView; label: string }[] = [
-    { value: "all", label: "All" },
-    { value: "velocity", label: "Velocity" },
-    { value: "capacity", label: "Capacity" },
-    { value: "topics", label: "Topics" },
-  ];
+  get viewOptions(): { value: ChartFocusView; label: string }[] {
+    return [
+      { value: "all", label: this.i18n.t("metrics.view.all") },
+      { value: "velocity", label: this.i18n.t("metrics.view.velocity") },
+      { value: "capacity", label: this.i18n.t("metrics.view.capacity") },
+      { value: "topics", label: this.i18n.t("metrics.view.topics") },
+    ];
+  }
 
   ngOnInit(): void {
     this.teamDash.loadDashboards("Unable to load teams.");
