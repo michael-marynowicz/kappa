@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { CurrentIterationService } from "../../services/current-iteration.service";
 import { CommonModule } from "@angular/common";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { SprintStateService } from "../../services/sprint-state.service";
 import { CapacityStateService } from "../../services/capacity-state.service";
 import { SprintSummaryCardComponent } from "../sprint-summary-card/sprint-summary-card.component";
@@ -36,6 +36,7 @@ import { I18nService } from "../../../../i18n/i18n.service";
 })
 export class SprintDashboardComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly jiraApi = inject(JiraConfigApiService);
   private readonly authState = inject(AuthStateService);
   readonly state = inject(SprintStateService);
@@ -67,6 +68,7 @@ export class SprintDashboardComponent implements OnInit {
         );
         this.dashboards.set(orderedDashboards);
         this.dashboardsLoading.set(false);
+        this.activateFromQueryParam();
       },
       error: (err) => {
         this.dashboardSwitchError.set(
@@ -74,6 +76,26 @@ export class SprintDashboardComponent implements OnInit {
         );
         this.dashboardsLoading.set(false);
       },
+    });
+  }
+
+  private activateFromQueryParam(): void {
+    const dashboardId = this.route.snapshot.queryParamMap.get("dashboard");
+    if (!dashboardId || !this.isAdmin) return;
+    if (dashboardId === this.activeDashboardId) {
+      // Already active — clear the query param silently
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+      return;
+    }
+    this.onSwitchDashboard(dashboardId);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
     });
   }
 

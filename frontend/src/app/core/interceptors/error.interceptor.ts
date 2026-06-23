@@ -25,6 +25,7 @@ function sanitizeErrorMessage(raw: string | undefined | null): string | null {
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Invalid request. Please check your input.",
   401: "Authentication required. Please log in.",
+  402: "Plan limit reached. Upgrade your plan to continue.",
   403: "You do not have permission to perform this action.",
   404: "The requested resource was not found.",
   408: "The request timed out. Please try again.",

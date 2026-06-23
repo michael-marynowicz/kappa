@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>Assign Pilot Plan</h2>
+
+<mat-dialog-content>
+  <p class="text-gray-600 mb-4">
+    Organization: <strong>{{ data.orgName }}</strong>
+  </p>
+
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Plan Code</mat-label>
+      <mat-select formControlName="planCode">
+        @for (plan of planOptions; track plan) {
+          <mat-option [value]="plan">{{ plan }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get("planCode")?.hasError("required")) {
+        <mat-error>Plan code is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Pilot Expires At</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        formControlName="pilotExpiresAt"
+        [min]="minDate"
+        placeholder="MM/DD/YYYY"
+        readonly
+      />
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      @if (
+        form.get("pilotExpiresAt")?.touched &&
+        form.get("pilotExpiresAt")?.hasError("required")
+      ) {
+        <mat-error>Expiration date is required</mat-error>
+      }
+    </mat-form-field>
+  </form>
+
+  <p class="text-sm text-gray-500 mt-2">
+    The pilot will expire at 23:59:59 UTC on the selected date.
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="confirm()"
+    [disabled]="form.invalid"
+  >
+    Assign Pilot
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,490 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+  <!-- Header -->
+  <mat-toolbar
+    color="primary"
+    class="flex justify-between items-center px-6 shadow-md"
+  >
+    <div class="flex items-center gap-2">
+      <button
+        mat-icon-button
+        (click)="goBack()"
+        matTooltip="Back to organizations"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <mat-icon>business</mat-icon>
+      @if (detail) {
+        <span class="text-lg font-semibold">{{ detail.name }}</span>
+      } @else {
+        <span class="text-lg font-semibold">Organization Details</span>
+      }
+    </div>
+    @if (detail) {
+      <span class="status-chip" [ngClass]="getOrgStatusClass()">{{
+        getOrgStatusLabel()
+      }}</span>
+    }
+  </mat-toolbar>
+
+  <!-- Loading -->
+  @if (detailLoading) {
+    <div class="flex justify-center items-center h-64">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  }
+
+  @if (!detailLoading && detail) {
+    <div class="flex-1 p-6 flex flex-col gap-6">
+      <!-- Info + Actions row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- General info card -->
+        <mat-card class="lg:col-span-2">
+          <mat-card-header>
+            <mat-card-title>
+              <div class="flex items-center gap-2 text-base font-semibold">
+                <mat-icon>info</mat-icon>
+                General information
+              </div>
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="pt-4">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">Organization</div>
+                <div class="text-gray-900 font-semibold">{{ detail.name }}</div>
+                <div class="text-gray-400 text-xs">{{ detail.slug }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">Email</div>
+                <div class="text-gray-900">{{ detail.email }}</div>
+              </div>
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">Created</div>
+                <div class="text-gray-900">
+                  {{ formatDate(detail.createdAt) }}
+                </div>
+              </div>
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">
+                  Last activity
+                </div>
+                <div class="text-gray-900">
+                  {{ formatDateTime(detail.lastActivityAt) }}
+                </div>
+              </div>
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">Members</div>
+                <div class="text-gray-900 font-semibold">
+                  {{ detail.userCount }}
+                </div>
+              </div>
+              <div>
+                <div class="text-gray-500 font-medium mb-0.5">
+                  Pending invitations
+                </div>
+                <div class="text-gray-900 font-semibold">
+                  {{ detail.pendingInvitationCount }}
+                </div>
+              </div>
+              @if (detail.subscription) {
+                <div>
+                  <div class="text-gray-500 font-medium mb-0.5">Plan</div>
+                  <div class="text-gray-900">
+                    {{ detail.subscription.planName }} ({{
+                      detail.subscription.planCode
+                    }})
+                  </div>
+                </div>
+                <div>
+                  <div class="text-gray-500 font-medium mb-0.5">Billing</div>
+                  <div class="text-gray-900">
+                    {{ detail.subscription.billingProvider }}
+                  </div>
+                </div>
+                @if (
+                  detail.subscription.isPilot &&
+                  detail.subscription.pilotExpiresAt
+                ) {
+                  <div class="col-span-2">
+                    <div class="text-gray-500 font-medium mb-0.5">
+                      Pilot expires
+                    </div>
+                    <div class="text-orange-600 font-semibold">
+                      {{ formatDate(detail.subscription.pilotExpiresAt) }}
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Actions card -->
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              <div class="flex items-center gap-2 text-base font-semibold">
+                <mat-icon>settings</mat-icon>
+                Actions
+              </div>
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="pt-4 flex flex-col gap-2">
+            @if (!detail.active) {
+              <button
+                mat-stroked-button
+                color="primary"
+                class="w-full"
+                [disabled]="actionLoading"
+                (click)="activateOrg()"
+              >
+                <mat-icon>check_circle</mat-icon>
+                Activate
+              </button>
+            } @else {
+              <button
+                mat-stroked-button
+                class="w-full"
+                [disabled]="actionLoading"
+                (click)="suspendOrg()"
+              >
+                <mat-icon>cancel</mat-icon>
+                Suspend
+              </button>
+            }
+
+            <mat-divider></mat-divider>
+
+            <button
+              mat-stroked-button
+              class="w-full"
+              [disabled]="actionLoading"
+              (click)="convertToEnterprise()"
+            >
+              <mat-icon>business_center</mat-icon>
+              Convert to Enterprise
+            </button>
+            <button
+              mat-stroked-button
+              class="w-full"
+              [disabled]="actionLoading"
+              (click)="convertToPilot()"
+            >
+              <mat-icon>flight_takeoff</mat-icon>
+              Convert to Pilot
+            </button>
+            @if (detail.subscription?.isPilot) {
+              <button
+                mat-stroked-button
+                class="w-full"
+                [disabled]="actionLoading"
+                (click)="extendPilot()"
+              >
+                <mat-icon>date_range</mat-icon>
+                Extend Pilot expiry
+              </button>
+            }
+            <button
+              mat-stroked-button
+              class="w-full"
+              [disabled]="actionLoading"
+              (click)="convertToSelfService()"
+            >
+              <mat-icon>swap_horiz</mat-icon>
+              Convert to Self-service
+            </button>
+
+            <mat-divider></mat-divider>
+
+            <button
+              mat-stroked-button
+              color="warn"
+              class="w-full"
+              [disabled]="actionLoading"
+              (click)="deleteOrg()"
+            >
+              <mat-icon>delete_forever</mat-icon>
+              Delete organization
+            </button>
+
+            @if (actionLoading) {
+              <div class="flex justify-center pt-2">
+                <mat-spinner diameter="28"></mat-spinner>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Tabs: Members + Invitations -->
+      <mat-card>
+        <mat-tab-group animationDuration="150ms">
+          <!-- Members tab -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="mr-1">people</mat-icon>
+              Members ({{ detail.userCount }})
+            </ng-template>
+
+            @if (membersLoading) {
+              <div class="flex justify-center p-8">
+                <mat-spinner diameter="36"></mat-spinner>
+              </div>
+            } @else if (members.length === 0) {
+              <div
+                class="flex flex-col items-center justify-center py-12 text-gray-400 gap-2"
+              >
+                <mat-icon style="font-size: 40px; width: 40px; height: 40px"
+                  >group</mat-icon
+                >
+                <p>No members yet</p>
+              </div>
+            } @else {
+              <mat-table [dataSource]="members" class="w-full">
+                <ng-container matColumnDef="name">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Name</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    <div class="font-medium text-gray-900">{{ m.name }}</div>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="email">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Email</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    <span class="text-gray-600 text-sm">{{ m.email }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="role">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Role</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    <span class="text-gray-700">{{ m.role }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="lastLogin">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Last login</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    <span class="text-gray-500 text-sm">{{
+                      formatDateTime(m.lastLoginAt)
+                    }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Status</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    <span
+                      class="status-chip"
+                      [ngClass]="getMemberStatusClass(m.status)"
+                      >{{ m.status }}</span
+                    >
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Actions</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let m">
+                    @if (m.status === "ACTIVE") {
+                      <button
+                        mat-icon-button
+                        matTooltip="Deactivate user"
+                        (click)="deactivateMember(m)"
+                      >
+                        <mat-icon class="text-orange-500">person_off</mat-icon>
+                      </button>
+                    } @else {
+                      <button
+                        mat-icon-button
+                        matTooltip="Reactivate user"
+                        (click)="reactivateMember(m)"
+                      >
+                        <mat-icon class="text-green-500">person_add</mat-icon>
+                      </button>
+                    }
+                    <button
+                      mat-icon-button
+                      matTooltip="Remove user"
+                      (click)="removeMember(m)"
+                    >
+                      <mat-icon class="text-red-500">delete</mat-icon>
+                    </button>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row
+                  *matHeaderRowDef="memberColumns"
+                ></mat-header-row>
+                <mat-row
+                  *matRowDef="let row; columns: memberColumns"
+                  class="hover:bg-gray-50"
+                ></mat-row>
+              </mat-table>
+            }
+          </mat-tab>
+
+          <!-- Invitations tab -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="mr-1">mail</mat-icon>
+              Invitations ({{ detail.pendingInvitationCount }})
+            </ng-template>
+
+            <div class="flex justify-end p-4 pb-0">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="openInviteUsers()"
+              >
+                <mat-icon>person_add</mat-icon>
+                Invite users
+              </button>
+            </div>
+
+            @if (invitationsLoading) {
+              <div class="flex justify-center p-8">
+                <mat-spinner diameter="36"></mat-spinner>
+              </div>
+            } @else if (invitations.length === 0) {
+              <div
+                class="flex flex-col items-center justify-center py-12 text-gray-400 gap-2"
+              >
+                <mat-icon style="font-size: 40px; width: 40px; height: 40px"
+                  >mail_outline</mat-icon
+                >
+                <p>No pending invitations</p>
+              </div>
+            } @else {
+              <mat-table [dataSource]="invitations" class="w-full">
+                <ng-container matColumnDef="email">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Email</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let inv">
+                    <span class="text-gray-700">{{ inv.email }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="role">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Role</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let inv">
+                    <span class="text-gray-700">{{ inv.role }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="createdAt">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Sent</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let inv">
+                    <span class="text-gray-500 text-sm">{{
+                      formatDate(inv.createdAt)
+                    }}</span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <mat-header-cell
+                    *matHeaderCellDef
+                    class="font-semibold text-gray-700"
+                    >Actions</mat-header-cell
+                  >
+                  <mat-cell *matCellDef="let inv">
+                    <button
+                      mat-icon-button
+                      matTooltip="Resend invitation"
+                      (click)="resendInvitation(inv)"
+                    >
+                      <mat-icon class="text-blue-500"
+                        >forward_to_inbox</mat-icon
+                      >
+                    </button>
+                    <button
+                      mat-icon-button
+                      matTooltip="Revoke invitation"
+                      (click)="revokeInvitation(inv)"
+                    >
+                      <mat-icon class="text-red-500">cancel</mat-icon>
+                    </button>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row
+                  *matHeaderRowDef="invitationColumns"
+                ></mat-header-row>
+                <mat-row
+                  *matRowDef="let row; columns: invitationColumns"
+                  class="hover:bg-gray-50"
+                ></mat-row>
+              </mat-table>
+            }
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card>
+    </div>
+  }
+</div>
+
+<style>
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .chip-green {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  .chip-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  .chip-orange {
+    background-color: #ffedd5;
+    color: #9a3412;
+  }
+  .chip-red {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  .chip-grey {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+</style>

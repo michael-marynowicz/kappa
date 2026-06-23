@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { billingRouteGuard } from "../../core/guards/subscription.guard";
 
 export const settingsRoutes: Routes = [
   {
@@ -17,6 +18,7 @@ export const settingsRoutes: Routes = [
       },
       {
         path: "billing",
+        canActivate: [billingRouteGuard],
         loadComponent: () =>
           import("./components/billing/billing.component").then(
             (m) => m.BillingComponent,

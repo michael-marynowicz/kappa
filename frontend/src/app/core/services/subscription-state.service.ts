@@ -6,6 +6,7 @@ import {
   Subscription,
   Plan,
   SubscriptionStatus,
+  SubscriptionType,
 } from "../models/subscription.model";
 
 @Injectable({ providedIn: "root" })
@@ -31,6 +32,34 @@ export class SubscriptionStateService {
 
   readonly status = computed<SubscriptionStatus>(() => {
     return this._subscription()?.status ?? "NONE";
+  });
+
+  readonly subscriptionType = computed<SubscriptionType>(
+    () => this._subscription()?.subscriptionType ?? "SELF_SERVICE",
+  );
+
+  readonly isSelfService = computed(
+    () => this.subscriptionType() === "SELF_SERVICE",
+  );
+
+  /** Reads backend boolean directly — avoids drift between type and flag. */
+  readonly isEnterprise = computed(
+    () => this._subscription()?.isEnterprise ?? false,
+  );
+
+  readonly isPilot = computed(() => this._subscription()?.isPilot ?? false);
+
+  /** When false: hide all Upgrade buttons and the Billing settings page. */
+  readonly showPaymentPages = computed(
+    () => this._subscription()?.showPaymentPages ?? true,
+  );
+
+  /** Remaining days for PILOT subscriptions, or null if not applicable. */
+  readonly pilotDaysRemaining = computed(() => {
+    const sub = this._subscription();
+    if (!sub?.isPilot || !sub.pilotExpiresAt) return null;
+    const diff = new Date(sub.pilotExpiresAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / 86_400_000));
   });
 
   resolveActiveAccess(): Observable<boolean> {

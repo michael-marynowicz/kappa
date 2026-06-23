@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import {
   JiraConfig,
-  UpdateJiraConfigRequest,
+  UpdateJiraCredentialsRequest,
   JiraTestResult,
   JiraBoardDiscoveryRequest,
   JiraDiscoveredBoard,
@@ -56,8 +56,10 @@ export class JiraConfigApiService {
     return this.http.get<JiraConfig>(this.baseUrl);
   }
 
-  updateConfig(request: UpdateJiraConfigRequest): Observable<JiraConfig> {
-    return this.http.put<JiraConfig>(this.baseUrl, request);
+  updateCredentials(
+    request: UpdateJiraCredentialsRequest,
+  ): Observable<JiraConfig> {
+    return this.http.put<JiraConfig>(`${this.baseUrl}/credentials`, request);
   }
 
   testConnection(): Observable<JiraTestResult> {

@@ -22,6 +22,50 @@
   padding: 18px;
   background: rgba(255, 255, 255, 0.02);
   margin-bottom: 16px;
+
+  &--locked {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// ── Connected credentials badge ────────────────────────────────────────────────
+.cred-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(52, 211, 153, 0.06);
+}
+
+.cred-row__icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34d399;
+}
+
+// ── Locked hint ────────────────────────────────────────────────────────────────
+.locked-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8b92a8;
+  padding: 8px 0;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
 }
 
 .card-title {

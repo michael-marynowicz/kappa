@@ -46,9 +46,7 @@
     @for (plan of subState.plans(); track plan.code) {
       <div
         class="plan-card"
-        [class.plan-card--current]="
-          subState.subscription()?.planCode === plan.code
-        "
+        [class.plan-card--current]="isCurrentPlan(plan.code)"
       >
         <div class="plan-card__header">
           <h4 class="plan-card__name">{{ plan.name }}</h4>
@@ -58,12 +56,31 @@
           </p>
         </div>
         <p class="plan-card__desc">{{ plan.description }}</p>
+        <p class="plan-card__limit">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          {{ formatLimit(plan.maxUsers) }} Users •
+          {{ formatLimit(plan.maxDashboards) }} Dashboards
+        </p>
         <ul class="plan-card__features">
           @for (feature of plan.features; track feature) {
             <li class="feature-item">✓ {{ feature | humanize }}</li>
           }
         </ul>
-        @if (subState.subscription()?.planCode === plan.code) {
+        @if (isCurrentPlan(plan.code)) {
           <span class="plan-card__current">Current Plan</span>
         } @else {
           <button

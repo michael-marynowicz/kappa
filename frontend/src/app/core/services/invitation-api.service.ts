@@ -4,6 +4,8 @@ import { Observable } from "rxjs";
 import {
   Invitation,
   CreateInvitationRequest,
+  BulkInviteRequest,
+  BulkInviteResult,
   InvitationCheck,
   VerifyEmailResponse,
 } from "../models/invitation.model";
@@ -23,6 +25,13 @@ export class InvitationApiService {
   createInvitation(request: CreateInvitationRequest): Observable<Invitation> {
     return this.http.post<Invitation>(
       `${this.baseUrl}/organization/invitations`,
+      request,
+    );
+  }
+
+  bulkInvite(request: BulkInviteRequest): Observable<BulkInviteResult> {
+    return this.http.post<BulkInviteResult>(
+      `${this.baseUrl}/organization/invitations/bulk`,
       request,
     );
   }

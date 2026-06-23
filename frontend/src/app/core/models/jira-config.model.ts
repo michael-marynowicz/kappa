@@ -10,12 +10,10 @@ export interface JiraConfig {
   lastSyncAt: string | null;
 }
 
-export interface UpdateJiraConfigRequest {
+export interface UpdateJiraCredentialsRequest {
   baseUrl: string;
   authType: string;
   userEmail: string;
-  projectKey: string;
-  boardId: number;
   token: string;
 }
 

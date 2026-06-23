@@ -11,6 +11,7 @@ export interface OrganizationMember {
   firstName: string;
   lastName: string;
   role: string;
+  dashboardIds: string[];
 }
 
 export interface InviteMemberRequest {

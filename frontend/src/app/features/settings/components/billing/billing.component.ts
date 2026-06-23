@@ -16,9 +16,21 @@ export class BillingComponent implements OnInit {
   promoCode = "";
   showCancelModal = false;
 
+  formatLimit(value: number | null): string {
+    return value === null ? "Unlimited" : String(value);
+  }
+
+  isCurrentPlan(planCode: string): boolean {
+    const current = this.subState.subscription()?.planCode;
+    if (!current) return false;
+    return current.toLowerCase() === planCode.toLowerCase();
+  }
+
   ngOnInit(): void {
-    this.subState.loadSubscription();
-    this.subState.loadPlans();
+    if (this.subState.showPaymentPages()) {
+      this.subState.loadSubscription();
+      this.subState.loadPlans();
+    }
   }
 
   onSelectPlan(planCode: string): void {

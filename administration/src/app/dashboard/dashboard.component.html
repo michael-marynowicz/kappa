@@ -1,0 +1,262 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+  <!-- Header -->
+  <mat-toolbar
+    color="primary"
+    class="flex justify-between items-center px-6 shadow-md"
+  >
+    <div class="flex items-center gap-2">
+      <mat-icon>admin_panel_settings</mat-icon>
+      <span class="text-lg font-semibold">Sprint Reporter — Admin Panel</span>
+    </div>
+    <button mat-icon-button (click)="logout()" matTooltip="Logout">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Content -->
+  <div class="flex-1 p-6">
+    <!-- Title + controls row -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">Organizations</h2>
+      <div class="flex items-center gap-3">
+        <mat-form-field
+          appearance="outline"
+          class="w-72"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>Search</mat-label>
+          <mat-icon matPrefix class="mr-1">search</mat-icon>
+          <input
+            matInput
+            [(ngModel)]="searchValue"
+            (input)="applySearch()"
+            placeholder="Name, email or slug…"
+          />
+          @if (searchValue) {
+            <button mat-icon-button matSuffix (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+        <button
+          mat-stroked-button
+          (click)="loadData()"
+          [disabled]="tableLoading"
+        >
+          <mat-icon>refresh</mat-icon>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    @if (tableLoading) {
+      <div class="flex justify-center items-center h-64">
+        <mat-spinner diameter="48"></mat-spinner>
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!tableLoading && dataSource.data.length === 0) {
+      <div
+        class="flex flex-col items-center justify-center h-64 text-gray-400 gap-2"
+      >
+        <mat-icon style="font-size: 48px; width: 48px; height: 48px"
+          >business</mat-icon
+        >
+        <p class="text-lg">No organizations found</p>
+      </div>
+    }
+
+    <!-- Table -->
+    @if (!tableLoading && dataSource.data.length > 0) {
+      <div class="bg-white rounded-lg shadow overflow-auto">
+        <mat-table [dataSource]="dataSource" matSort class="w-full">
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="font-semibold text-gray-700"
+              >Name</mat-header-cell
+            >
+            <mat-cell *matCellDef="let row">
+              <div>
+                <div class="font-medium text-gray-900">{{ row.name }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ row.slug }} · {{ row.email }}
+                </div>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="font-semibold text-gray-700"
+              >Status</mat-header-cell
+            >
+            <mat-cell *matCellDef="let row">
+              <div class="flex flex-col gap-1">
+                <span class="status-chip" [ngClass]="getOrgStatusClass(row)">
+                  {{ getOrgStatusLabel(row) }}
+                </span>
+                @if (row.subscriptionType) {
+                  <span class="text-xs text-gray-500">{{
+                    getTypeLabel(row.subscriptionType)
+                  }}</span>
+                }
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Users Column -->
+          <ng-container matColumnDef="userCount">
+            <mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="font-semibold text-gray-700"
+              >Users</mat-header-cell
+            >
+            <mat-cell *matCellDef="let row">
+              <span class="text-gray-700">{{ row.userCount }}</span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Pending Invitations Column -->
+          <ng-container matColumnDef="pendingInvitations">
+            <mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="font-semibold text-gray-700"
+              >Pending inv.</mat-header-cell
+            >
+            <mat-cell *matCellDef="let row">
+              @if (row.pendingInvitationCount > 0) {
+                <span class="status-chip chip-blue">{{
+                  row.pendingInvitationCount
+                }}</span>
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </mat-cell>
+          </ng-container>
+
+          <!-- Created At Column -->
+          <ng-container matColumnDef="createdAt">
+            <mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="font-semibold text-gray-700"
+              >Created</mat-header-cell
+            >
+            <mat-cell *matCellDef="let row">
+              <div>
+                <div class="text-sm text-gray-700">
+                  {{ formatDate(row.createdAt) }}
+                </div>
+                @if (row.lastActivityAt) {
+                  <div class="text-xs text-gray-400">
+                    Active {{ formatDate(row.lastActivityAt) }}
+                  </div>
+                }
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell
+              *matHeaderCellDef
+              class="font-semibold text-gray-700"
+              >Actions</mat-header-cell
+            >
+            <mat-cell
+              *matCellDef="let row"
+              (keydown)="$event.stopPropagation()"
+            >
+              <button
+                mat-icon-button
+                color="primary"
+                matTooltip="View details"
+                (click)="openDetail(row)"
+              >
+                <mat-icon>open_in_new</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="actionsMenu"
+                matTooltip="More actions"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #actionsMenu="matMenu">
+                @if (!row.active) {
+                  <button mat-menu-item (click)="activate(row, $event)">
+                    <mat-icon class="text-green-600">check_circle</mat-icon>
+                    <span>Activate</span>
+                  </button>
+                } @else {
+                  <button mat-menu-item (click)="deactivate(row, $event)">
+                    <mat-icon class="text-red-600">cancel</mat-icon>
+                    <span>Suspend</span>
+                  </button>
+                }
+              </mat-menu>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            class="hover:bg-blue-50 cursor-pointer transition-colors"
+            (click)="openDetail(row)"
+            (keydown.enter)="openDetail(row)"
+            (keydown.space)="openDetail(row)"
+            tabindex="0"
+            role="button"
+          ></mat-row>
+        </mat-table>
+
+        <mat-paginator
+          [pageSizeOptions]="[10, 25, 50]"
+          showFirstLastButtons
+        ></mat-paginator>
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .chip-green {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  .chip-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  .chip-orange {
+    background-color: #ffedd5;
+    color: #9a3412;
+  }
+  .chip-red {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  .chip-grey {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+</style>

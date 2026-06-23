@@ -1,0 +1,78 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center">
+  <mat-card class="w-full max-w-md shadow-lg">
+    <mat-card-header class="mb-2">
+      <mat-card-title class="text-xl font-bold">Sprint Reporter</mat-card-title>
+      <mat-card-subtitle
+        >Admin Panel — super-admin access only</mat-card-subtitle
+      >
+    </mat-card-header>
+
+    <mat-card-content class="pt-4">
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        class="flex flex-col gap-4"
+      >
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+            placeholder="admin@example.com"
+          />
+          @if (
+            form.get("email")?.touched &&
+            form.get("email")?.hasError("required")
+          ) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (
+            form.get("email")?.touched && form.get("email")?.hasError("email")
+          ) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            type="password"
+            autocomplete="current-password"
+          />
+          @if (
+            form.get("password")?.touched &&
+            form.get("password")?.hasError("required")
+          ) {
+            <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
+
+        @if (errorMessage) {
+          <div
+            class="text-red-600 text-sm bg-red-50 border border-red-200 rounded px-3 py-2"
+          >
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="loading"
+          class="w-full h-11"
+        >
+          @if (loading) {
+            <mat-spinner diameter="22" class="inline-block"></mat-spinner>
+          } @else {
+            Login
+          }
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

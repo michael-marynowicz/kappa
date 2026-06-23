@@ -72,6 +72,17 @@
   </nav>
 
   <div class="sidebar__footer">
+    @if (subState.isPilot()) {
+      <div class="pilot-banner">
+        <span class="pilot-banner__badge">Pilot</span>
+        @if (subState.pilotDaysRemaining() !== null) {
+          <span class="pilot-banner__days">
+            {{ subState.pilotDaysRemaining() }}
+            {{ subState.pilotDaysRemaining() === 1 ? "day" : "days" }} left
+          </span>
+        }
+      </div>
+    }
     @if (user) {
       <div class="user-info">
         <div

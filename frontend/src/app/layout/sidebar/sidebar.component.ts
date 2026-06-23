@@ -11,6 +11,7 @@ import { RouterLink, RouterLinkActive } from "@angular/router";
 import { User } from "../../core/models/user.model";
 import { I18nService } from "../../i18n/i18n.service";
 import { TranslatePipe } from "../../shared/pipes/translate.pipe";
+import { SubscriptionStateService } from "../../core/services/subscription-state.service";
 
 interface NavItem {
   label: string;
@@ -27,6 +28,7 @@ interface NavItem {
 })
 export class SidebarComponent {
   private readonly i18n = inject(I18nService);
+  readonly subState = inject(SubscriptionStateService);
   @Input() user: User | null = null;
   @Input() orgName = "";
   @Output() logout = new EventEmitter<void>();
@@ -72,7 +74,6 @@ export class SidebarComponent {
         route: "/settings",
       },
     ];
-    if (this.user?.role === "ADMIN") return all;
-    return all.filter((item) => item.route !== "/settings");
+    return all;
   }
 }

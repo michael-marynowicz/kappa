@@ -97,7 +97,7 @@
       }
     </div>
 
-    @if (!isAdmin) {
+    @if (!isAdmin && dashboards.length > 1) {
       <span class="team-switcher__meta">{{ hintMessage }}</span>
     }
   }

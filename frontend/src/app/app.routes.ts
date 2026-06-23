@@ -1,6 +1,5 @@
 import { Routes } from "@angular/router";
 import { authGuard, guestGuard } from "./core/guards/auth.guard";
-import { adminGuard } from "./core/guards/admin.guard";
 import { subscriptionGuard } from "./core/guards/subscription.guard";
 
 export const routes: Routes = [
@@ -69,7 +68,6 @@ export const routes: Routes = [
       },
       {
         path: "settings",
-        canActivate: [adminGuard],
         loadChildren: () =>
           import("./features/settings/settings.routes").then(
             (m) => m.settingsRoutes,

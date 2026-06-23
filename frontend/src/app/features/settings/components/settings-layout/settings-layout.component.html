@@ -12,13 +12,15 @@
     >
       {{ "settings.tab.jira" | translate }}
     </a>
-    <a
-      class="settings-tab"
-      routerLink="billing"
-      routerLinkActive="settings-tab--active"
-    >
-      {{ "settings.tab.billing" | translate }}
-    </a>
+    @if (showBillingTab) {
+      <a
+        class="settings-tab"
+        routerLink="billing"
+        routerLinkActive="settings-tab--active"
+      >
+        {{ "settings.tab.billing" | translate }}
+      </a>
+    }
     <a
       class="settings-tab"
       routerLink="language"

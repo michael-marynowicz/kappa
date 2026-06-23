@@ -1,0 +1,66 @@
+<h2 mat-dialog-title>Invite users</h2>
+
+<mat-dialog-content>
+  <p class="text-gray-600 mb-4">
+    Organization: <strong>{{ data.orgName }}</strong>
+  </p>
+
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Email addresses</mat-label>
+      <textarea
+        matInput
+        formControlName="emailsRaw"
+        rows="4"
+        placeholder="Paste one or multiple emails separated by comma, semicolon or newline"
+        (input)="parseEmails()"
+      ></textarea>
+      <mat-hint
+        >Separate multiple addresses with comma, semicolon, or newline</mat-hint
+      >
+      @if (
+        form.get("emailsRaw")?.touched &&
+        form.get("emailsRaw")?.hasError("required")
+      ) {
+        <mat-error>At least one email is required</mat-error>
+      }
+    </mat-form-field>
+
+    @if (parseError) {
+      <div
+        class="text-red-600 text-sm bg-red-50 border border-red-200 rounded px-3 py-2"
+      >
+        {{ parseError }}
+      </div>
+    }
+
+    @if (parsedEmails.length > 0 && !parseError) {
+      <div
+        class="text-green-700 text-sm bg-green-50 border border-green-200 rounded px-3 py-2"
+      >
+        {{ parsedEmails.length }} valid email(s) detected
+      </div>
+    }
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="role">
+        @for (role of roleOptions; track role) {
+          <mat-option [value]="role">{{ role }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="confirm()"
+    [disabled]="form.invalid || parsedEmails.length === 0 || !!parseError"
+  >
+    Send {{ parsedEmails.length > 0 ? parsedEmails.length : "" }} invitation(s)
+  </button>
+</mat-dialog-actions>

@@ -3,8 +3,10 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { timeout } from "rxjs/operators";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
 import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { SubscriptionStateService } from "../../../../core/services/subscription-state.service";
 import {
   JiraAuthType,
   JiraConfig,
@@ -15,13 +17,14 @@ import {
 @Component({
   selector: "app-jira-config",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: "./jira-config.component.html",
   styleUrls: ["./jira-config.component.scss"],
 })
 export class JiraConfigComponent implements OnInit {
   private readonly api = inject(JiraConfigApiService);
   private readonly authState = inject(AuthStateService);
+  private readonly subState = inject(SubscriptionStateService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -39,6 +42,8 @@ export class JiraConfigComponent implements OnInit {
   readonly connecting = signal(false);
   readonly disconnecting = signal(false);
   readonly configuringServer = signal(false);
+  readonly editingCredentials = signal(false);
+  readonly credentialsVerified = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
   private successTimer: ReturnType<typeof setTimeout> | null = null;
@@ -62,14 +67,29 @@ export class JiraConfigComponent implements OnInit {
     authType: "BASIC" as JiraAuthType,
     userEmail: "",
     token: "",
-    projectKey: "POPT",
-    boardId: null as number | null,
   };
 
   ngOnInit(): void {
     this.handleOAuthRedirectResult();
     this.loadConfig();
     this.loadDashboards();
+    if (!this.subState.subscription()) this.subState.loadSubscription();
+    if (!this.subState.plans().length) this.subState.loadPlans();
+  }
+
+  formatLimit(value: number | null): string {
+    return value === null ? "Unlimited" : String(value);
+  }
+
+  private get dashboardLimitLabel(): string | null {
+    const sub = this.subState.subscription();
+    const plans = this.subState.plans();
+    if (!sub || !plans.length) return null;
+    const currentPlan = plans.find(
+      (p) => p.code.toLowerCase() === sub.planCode.toLowerCase(),
+    );
+    if (!currentPlan || currentPlan.maxDashboards === null) return null;
+    return `${this.formatLimit(currentPlan.maxDashboards)} Dashboards`;
   }
 
   private handleOAuthRedirectResult(): void {
@@ -110,8 +130,6 @@ export class JiraConfigComponent implements OnInit {
               authType: (cfg.authType as JiraAuthType) || "BASIC",
               userEmail: cfg.userEmail || "",
               token: cfg.token,
-              projectKey: cfg.projectKey || "POPT",
-              boardId: cfg.boardId ?? null,
             };
           }
           // 204 No Content → cfg is null, show empty form
@@ -162,23 +180,18 @@ export class JiraConfigComponent implements OnInit {
   }
 
   private validateServerConfigInput(): boolean {
+    if (!this.form.baseUrl.trim()) {
+      this.error.set("Jira Base URL is required.");
+      return false;
+    }
+
     if (!this.form.userEmail.trim()) {
-      this.error.set("User email/login is required for BASIC auth.");
+      this.error.set("User email/login is required.");
       return false;
     }
 
     if (!this.form.token.trim()) {
       this.error.set("AD/SSO password is required.");
-      return false;
-    }
-
-    if (!this.form.projectKey.trim()) {
-      this.error.set("Project key is required (for example POPT or ROC).");
-      return false;
-    }
-
-    if (!this.form.boardId || this.form.boardId <= 0) {
-      this.error.set("Board ID is required.");
       return false;
     }
 
@@ -188,9 +201,6 @@ export class JiraConfigComponent implements OnInit {
   useAmadeusDefaults(): void {
     this.form.baseUrl = "https://jira.amadeus.com/agile";
     this.form.authType = "BASIC";
-    if (!this.form.projectKey.trim()) {
-      this.form.projectKey = "POPT";
-    }
   }
 
   onSaveAndTestServerConfig(): void {
@@ -207,13 +217,11 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
 
     this.api
-      .updateConfig({
+      .updateCredentials({
         baseUrl: this.form.baseUrl.trim() || "https://jira.amadeus.com/agile",
         authType: "BASIC",
         userEmail: this.form.userEmail.trim(),
         token: this.form.token,
-        projectKey: this.form.projectKey.trim().toUpperCase(),
-        boardId: Number(this.form.boardId),
       })
       .subscribe({
         next: () => {
@@ -232,6 +240,8 @@ export class JiraConfigComponent implements OnInit {
                 "Jira server-to-server configuration saved and validated.",
               );
               this.configuringServer.set(false);
+              this.editingCredentials.set(false);
+              this.credentialsVerified.set(true);
               this.loadConfig();
               this.loadDashboards();
             },
@@ -313,7 +323,11 @@ export class JiraConfigComponent implements OnInit {
           this.loadDashboards();
         },
         error: (err) => {
-          this.error.set(err.message ?? "Impossible de créer le dashboard.");
+          this.error.set(
+            err.status === 402
+              ? `Dashboard limit reached (${this.dashboardLimitLabel ?? "Plan limit"}). Upgrade your plan to add more dashboards.`
+              : (err.message ?? "Impossible de créer le dashboard."),
+          );
           this.creatingDashboard.set(false);
         },
       });
@@ -344,7 +358,11 @@ export class JiraConfigComponent implements OnInit {
           this.loadConfig();
         },
         error: (err) => {
-          this.error.set(err.message ?? "Unable to create dashboard.");
+          this.error.set(
+            err.status === 402
+              ? `Dashboard limit reached (${this.dashboardLimitLabel ?? "Plan limit"}). Upgrade your plan to add more dashboards.`
+              : (err.message ?? "Unable to create dashboard."),
+          );
           this.creatingDashboard.set(false);
         },
       });
@@ -427,6 +445,31 @@ export class JiraConfigComponent implements OnInit {
 
   get isAdmin(): boolean {
     return this.authState.user()?.role === "ADMIN";
+  }
+
+  get isConnected(): boolean {
+    // true if OAuth connected OR BASIC credentials were verified (server test passed)
+    // OR if config already has credentials saved (baseUrl + userEmail set)
+    const cfg = this.config();
+    return (
+      this.credentialsVerified() ||
+      cfg?.connected === true ||
+      (!!cfg?.baseUrl && !!cfg?.userEmail)
+    );
+  }
+
+  startEditCredentials(): void {
+    const cfg = this.config();
+    if (cfg) {
+      this.form = {
+        baseUrl: cfg.baseUrl,
+        authType: (cfg.authType as JiraAuthType) || "BASIC",
+        userEmail: cfg.userEmail || "",
+        token: "",
+      };
+    }
+    this.editingCredentials.set(true);
+    this.error.set(null);
   }
 
   onConnectOAuth(): void {

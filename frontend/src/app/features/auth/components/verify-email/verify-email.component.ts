@@ -69,7 +69,14 @@ export class VerifyEmailComponent implements OnInit {
   }
 
   goToDashboard(): void {
-    this.router.navigate(["/"]);
+    const dashboardId = this.result()?.dashboardId;
+    if (dashboardId) {
+      this.router.navigate(["/sprint"], {
+        queryParams: { dashboard: dashboardId },
+      });
+    } else {
+      this.router.navigate(["/"]);
+    }
   }
 
   private refreshToken(): void {

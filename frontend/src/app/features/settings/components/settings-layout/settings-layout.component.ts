@@ -2,6 +2,7 @@ import { Component, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
 import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { SubscriptionStateService } from "../../../../core/services/subscription-state.service";
 import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 @Component({
@@ -19,8 +20,13 @@ import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 })
 export class SettingsLayoutComponent {
   readonly authState = inject(AuthStateService);
+  readonly subState = inject(SubscriptionStateService);
 
   get isAdmin(): boolean {
     return this.authState.user()?.role === "ADMIN";
+  }
+
+  get showBillingTab(): boolean {
+    return this.subState.showPaymentPages();
   }
 }

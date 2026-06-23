@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>Extend Pilot Expiry</h2>
+
+<mat-dialog-content>
+  <p class="text-gray-600 mb-2">
+    Organization: <strong>{{ data.orgName }}</strong>
+  </p>
+  <p class="text-gray-500 text-sm mb-4">
+    Current expiry: <strong>{{ formatCurrentExpiry() }}</strong>
+  </p>
+
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>New expiration date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        formControlName="pilotExpiresAt"
+        [min]="minDate"
+        placeholder="MM/DD/YYYY"
+        readonly
+      />
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      @if (
+        form.get("pilotExpiresAt")?.touched &&
+        form.get("pilotExpiresAt")?.hasError("required")
+      ) {
+        <mat-error>New expiration date is required</mat-error>
+      }
+    </mat-form-field>
+  </form>
+
+  <p class="text-sm text-gray-500 mt-2">
+    The pilot will expire at 23:59:59 on the selected date. The new date must be
+    after the current expiry.
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="confirm()"
+    [disabled]="form.invalid"
+  >
+    Extend Pilot
+  </button>
+</mat-dialog-actions>

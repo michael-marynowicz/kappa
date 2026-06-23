@@ -1,5 +1,5 @@
 <div class="jira-config">
-  <h2 class="section-title">Jira Configuration</h2>
+  <h2 class="section-title">{{ "jira.title" | translate }}</h2>
 
   @if (error()) {
     <div class="config-error" role="alert">{{ error() }}</div>
@@ -26,95 +26,169 @@
 
   <!-- ── Credentials ───────────────────────────────────────── -->
   <section class="wizard-card">
-    <h3 class="card-title">Credentials</h3>
+    <h3 class="card-title">{{ "jira.credentials.title" | translate }}</h3>
 
-    <div class="config-form">
-      <div class="form-group">
-        <label class="form-label" for="baseUrlProd">Jira Base URL</label>
-        <input
-          class="form-input"
-          id="baseUrlProd"
-          type="url"
-          name="baseUrlProd"
-          [(ngModel)]="form.baseUrl"
-          required
-          placeholder="https://jira.amadeus.com/agile"
-        />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="authTypeProd">Auth Type</label>
-          <input
-            class="form-input"
-            id="authTypeProd"
-            type="text"
-            [value]="'BASIC'"
-            disabled
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="userEmailProd"
-            >User Email / Login</label
+    @if (isConnected && !editingCredentials()) {
+      <!-- Connected badge -->
+      <div class="cred-row">
+        <div class="cred-row__icon">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
+            <path
+              d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+            />
+            <path
+              d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+            />
+          </svg>
+        </div>
+        <div class="dashboard-row__info">
+          <span class="dashboard-row__name">{{ config()?.baseUrl }}</span>
+          <span class="dashboard-row__meta"
+            >{{ config()?.userEmail }} · {{ config()?.authType }}</span
+          >
+        </div>
+        <div class="dashboard-row__status">
+          <span class="active-pill">{{
+            "jira.credentials.connected" | translate
+          }}</span>
+        </div>
+        @if (isAdmin) {
+          <button
+            class="btn-ghost"
+            type="button"
+            (click)="startEditCredentials()"
+          >
+            {{ "jira.credentials.modify" | translate }}
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Credentials form -->
+      <div class="config-form">
+        <div class="form-group">
+          <label class="form-label" for="baseUrlProd">Jira Base URL</label>
           <input
             class="form-input"
-            id="userEmailProd"
-            type="text"
-            name="userEmailProd"
-            [(ngModel)]="form.userEmail"
+            id="baseUrlProd"
+            type="url"
+            name="baseUrlProd"
+            [(ngModel)]="form.baseUrl"
             required
-            placeholder="firstname.lastname@amadeus.com"
+            placeholder="https://jira.amadeus.com/agile"
           />
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label" for="tokenProd">AD/SSO Password</label>
-        <input
-          class="form-input"
-          id="tokenProd"
-          type="password"
-          name="tokenProd"
-          [(ngModel)]="form.token"
-          required
-          placeholder="••••••••"
-        />
-      </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="authTypeProd">Auth Type</label>
+            <input
+              class="form-input"
+              id="authTypeProd"
+              type="text"
+              [value]="'BASIC'"
+              disabled
+            />
+          </div>
 
-      <div class="form-actions">
-        <button
-          class="btn-secondary"
-          type="button"
-          (click)="onSaveAndTestServerConfig()"
-          [disabled]="configuringServer() || !isAdmin"
-        >
-          {{
-            configuringServer()
-              ? "Saving & Testing…"
-              : "Save & Test Credentials"
-          }}
-        </button>
+          <div class="form-group">
+            <label class="form-label" for="userEmailProd"
+              >User Email / Login</label
+            >
+            <input
+              class="form-input"
+              id="userEmailProd"
+              type="text"
+              name="userEmailProd"
+              [(ngModel)]="form.userEmail"
+              required
+              placeholder="firstname.lastname@amadeus.com"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="tokenProd">AD/SSO Password</label>
+          <input
+            class="form-input"
+            id="tokenProd"
+            type="password"
+            name="tokenProd"
+            [(ngModel)]="form.token"
+            required
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div class="form-actions">
+          @if (editingCredentials()) {
+            <button
+              class="btn-ghost"
+              type="button"
+              (click)="editingCredentials.set(false)"
+            >
+              {{ "jira.credentials.cancel" | translate }}
+            </button>
+          }
+          <button
+            class="btn-secondary"
+            type="button"
+            (click)="onSaveAndTestServerConfig()"
+            [disabled]="configuringServer() || !isAdmin"
+          >
+            {{
+              configuringServer()
+                ? ("jira.credentials.saving" | translate)
+                : ("jira.credentials.save_test" | translate)
+            }}
+          </button>
+        </div>
       </div>
-    </div>
+    }
   </section>
 
   <!-- ── Dashboards ────────────────────────────────────────── -->
-  <section class="wizard-card">
-    <h3 class="card-title">Dashboards</h3>
+  <section
+    class="wizard-card"
+    [class.wizard-card--locked]="!loading() && !isConnected"
+  >
+    <h3 class="card-title">{{ "jira.dashboards.title" | translate }}</h3>
     <p class="card-subtitle">
-      Le dashboard actif est utilisé par tous les utilisateurs pour charger les
-      issues sprint. Le premier dashboard créé devient actif automatiquement.
+      {{ "jira.dashboards.subtitle" | translate }}
     </p>
 
-    @if (dashboardsLoading()) {
-      <div class="config-loading">Loading…</div>
+    @if (!loading() && !isConnected) {
+      <p class="locked-hint">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        {{ "jira.credentials.locked_hint" | translate }}
+      </p>
+    } @else if (dashboardsLoading()) {
+      <div class="config-loading">{{ "common.loading" | translate }}</div>
     } @else {
       <!-- List -->
       @if (dashboards().length === 0) {
         <p class="empty-state">
-          Aucun dashboard configuré. Ajoutez-en un ci-dessous.
+          {{ "jira.dashboards.empty" | translate }}
         </p>
       } @else {
         <div class="dashboard-list">
@@ -133,7 +207,9 @@
               </div>
               <div class="dashboard-row__status">
                 @if (dashboard.active) {
-                  <span class="active-pill">Actif</span>
+                  <span class="active-pill">{{
+                    "jira.dashboards.active" | translate
+                  }}</span>
                 } @else if (isAdmin) {
                   <button
                     class="btn-ghost"
@@ -142,7 +218,9 @@
                     [disabled]="switchingDashboardId() === dashboard.id"
                   >
                     {{
-                      switchingDashboardId() === dashboard.id ? "…" : "Activer"
+                      switchingDashboardId() === dashboard.id
+                        ? "…"
+                        : ("jira.dashboards.activate" | translate)
                     }}
                   </button>
                 }
@@ -151,7 +229,7 @@
                 <button
                   class="btn-icon-danger"
                   type="button"
-                  title="Supprimer ce dashboard"
+                  [title]="'jira.dashboards.delete' | translate"
                   (click)="onDeleteDashboard(dashboard)"
                   [disabled]="deletingDashboardId() === dashboard.id"
                 >
@@ -185,10 +263,14 @@
       <!-- Add dashboard form -->
       @if (isAdmin) {
         <div class="add-dashboard">
-          <h4 class="add-dashboard__title">Ajouter un dashboard</h4>
+          <h4 class="add-dashboard__title">
+            {{ "jira.dashboards.add_title" | translate }}
+          </h4>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="newDashboardName">Nom</label>
+              <label class="form-label" for="newDashboardName">{{
+                "jira.dashboards.field_name" | translate
+              }}</label>
               <input
                 class="form-input"
                 id="newDashboardName"
@@ -229,7 +311,11 @@
               (click)="onAddDashboard()"
               [disabled]="creatingDashboard()"
             >
-              {{ creatingDashboard() ? "Création…" : "Créer le dashboard" }}
+              {{
+                creatingDashboard()
+                  ? ("jira.dashboards.creating" | translate)
+                  : ("jira.dashboards.create" | translate)
+              }}
             </button>
           </div>
         </div>
