@@ -1,3 +1,8 @@
+export interface InvitationDashboard {
+  id: string;
+  name: string;
+}
+
 export interface Invitation {
   id: string;
   email: string;
@@ -5,6 +10,7 @@ export interface Invitation {
   status: "PENDING" | "ACCEPTED" | "EXPIRED";
   createdAt: string;
   dashboardIds?: string[];
+  dashboards?: InvitationDashboard[];
 }
 
 export interface CreateInvitationRequest {

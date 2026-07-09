@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { signal, NO_ERRORS_SCHEMA } from "@angular/core";
+import { provideRouter } from "@angular/router";
 import { SprintDashboardComponent } from "./sprint-dashboard.component";
 import { SprintStateService } from "../../services/sprint-state.service";
 import { SprintSummary } from "../../models/sprint-issue.model";
@@ -45,6 +46,7 @@ describe("SprintDashboardComponent", () => {
 
     await TestBed.configureTestingModule({
       imports: [SprintDashboardComponent],
+      providers: [provideRouter([])],
     })
       .overrideComponent(SprintDashboardComponent, {
         remove: {

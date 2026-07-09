@@ -52,7 +52,7 @@ describe("SprintIssueTableComponent", () => {
 
   it("should display issue count", () => {
     const count = fixture.nativeElement.querySelector(".table-count");
-    expect(count.textContent).toContain("2 issues");
+    expect(count.textContent).toContain("2 sprint issues");
   });
 
   // -----------------------------------------------------------------------

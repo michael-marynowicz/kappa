@@ -127,6 +127,45 @@
   color: #34d399;
 }
 
+.jira-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  background: rgba(99, 179, 237, 0.06);
+  border: 1px solid rgba(99, 179, 237, 0.15);
+  border-radius: 8px;
+  animation: fadeIn 200ms ease;
+}
+
+.jira-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #63b3ed;
+}
+
+.jira-banner__btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: rgba(99, 179, 237, 0.1);
+  border: 1px solid rgba(99, 179, 237, 0.2);
+  border-radius: 6px;
+  color: #63b3ed;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 150ms ease;
+
+  &:hover {
+    background: rgba(99, 179, 237, 0.15);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

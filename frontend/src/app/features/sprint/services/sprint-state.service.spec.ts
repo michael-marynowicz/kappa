@@ -134,7 +134,7 @@ describe("SprintStateService", () => {
       service.loadIssues();
 
       expect(service.issues()).toEqual([]);
-      expect(service.error()).toBe("Network error");
+      expect(service.issuesError()).toBe("Network error");
       expect(service.loading()).toBeFalse();
     });
   });
@@ -207,11 +207,11 @@ describe("SprintStateService", () => {
         throwError(() => new Error("Some error")),
       );
       service.loadIssues();
-      expect(service.error()).toBeTruthy();
+      expect(service.issuesError()).toBeTruthy();
 
       service.clearError();
 
-      expect(service.error()).toBeNull();
+      expect(service.issuesError()).toBeNull();
     });
   });
 
@@ -245,7 +245,7 @@ describe("SprintStateService", () => {
 
       service.loadMetrics();
 
-      expect(service.error()).toBe("Metrics failed");
+      expect(service.metricsError()).toBe("Metrics failed");
       expect(service.metricsLoading()).toBeFalse();
     });
   });
@@ -268,7 +268,7 @@ describe("SprintStateService", () => {
 
       service.loadIterations();
 
-      expect(service.error()).toBe("Iterations failed");
+      expect(service.iterationsError()).toBe("Iterations failed");
     });
   });
 

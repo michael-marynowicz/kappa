@@ -12,7 +12,9 @@ import {
   JiraConfig,
   JiraDashboard,
   JiraDiscoveredBoard,
+  MyJiraCredentials,
 } from "../../../../core/models/jira-config.model";
+import { JiraCredentialsStateService } from "../../../../core/services/jira-credentials-state.service";
 
 @Component({
   selector: "app-jira-config",
@@ -27,6 +29,7 @@ export class JiraConfigComponent implements OnInit {
   private readonly subState = inject(SubscriptionStateService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly jiraCreds = inject(JiraCredentialsStateService);
 
   readonly config = signal<JiraConfig | null>(null);
   readonly dashboards = signal<JiraDashboard[]>([]);
@@ -46,6 +49,8 @@ export class JiraConfigComponent implements OnInit {
   readonly credentialsVerified = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
+  readonly myCredentials = signal<MyJiraCredentials | null>(null);
+  readonly savingPersonal = signal(false);
   private successTimer: ReturnType<typeof setTimeout> | null = null;
 
   private showSuccess(msg: string): void {
@@ -69,12 +74,18 @@ export class JiraConfigComponent implements OnInit {
     token: "",
   };
 
+  personalForm = { username: "", password: "" };
+
   ngOnInit(): void {
     this.handleOAuthRedirectResult();
-    this.loadConfig();
-    this.loadDashboards();
-    if (!this.subState.subscription()) this.subState.loadSubscription();
-    if (!this.subState.plans().length) this.subState.loadPlans();
+    if (this.isAdmin) {
+      this.loadConfig();
+      this.loadDashboards();
+      if (!this.subState.subscription()) this.subState.loadSubscription();
+      if (!this.subState.plans().length) this.subState.loadPlans();
+    } else {
+      this.loadMyCredentials();
+    }
   }
 
   formatLimit(value: number | null): string {
@@ -450,23 +461,84 @@ export class JiraConfigComponent implements OnInit {
   get isConnected(): boolean {
     // true if OAuth connected OR BASIC credentials were verified (server test passed)
     // OR if config already has credentials saved (baseUrl + userEmail set)
+    // OR if personal credentials are saved (for non-admins)
     const cfg = this.config();
+    const personalCreds = this.myCredentials();
     return (
       this.credentialsVerified() ||
       cfg?.connected === true ||
-      (!!cfg?.baseUrl && !!cfg?.userEmail)
+      (!!cfg?.baseUrl && !!cfg?.userEmail) ||
+      !!personalCreds?.username
     );
   }
 
+  private loadMyCredentials(): void {
+    const cached = this.jiraCreds.credentials();
+    if (cached !== null) {
+      this.myCredentials.set(cached);
+      if (cached.username) this.loadDashboards();
+      return;
+    }
+    this.jiraCreds.load().subscribe({
+      next: (creds) => {
+        this.myCredentials.set(creds);
+        if (creds?.username) this.loadDashboards();
+      },
+      error: () => {},
+    });
+  }
+
+  onSavePersonalCredentials(): void {
+    if (
+      !this.personalForm.username.trim() ||
+      !this.personalForm.password.trim()
+    ) {
+      this.error.set("Username and password are required.");
+      return;
+    }
+
+    this.savingPersonal.set(true);
+    this.error.set(null);
+
+    this.api
+      .saveMyCredentials({
+        username: this.personalForm.username.trim(),
+        password: this.personalForm.password,
+      })
+      .subscribe({
+        next: (creds) => {
+          this.jiraCreds.setConnected(creds.username!);
+          this.myCredentials.set(creds);
+          this.personalForm.password = "";
+          this.editingCredentials.set(false);
+          this.savingPersonal.set(false);
+          this.loadDashboards();
+          this.showSuccess("Jira account connected successfully.");
+        },
+        error: (err) => {
+          this.error.set(err.message ?? "Failed to save Jira credentials.");
+          this.savingPersonal.set(false);
+        },
+      });
+  }
+
   startEditCredentials(): void {
-    const cfg = this.config();
-    if (cfg) {
-      this.form = {
-        baseUrl: cfg.baseUrl,
-        authType: (cfg.authType as JiraAuthType) || "BASIC",
-        userEmail: cfg.userEmail || "",
-        token: "",
-      };
+    if (this.isAdmin) {
+      const cfg = this.config();
+      if (cfg) {
+        this.form = {
+          baseUrl: cfg.baseUrl,
+          authType: (cfg.authType as JiraAuthType) || "BASIC",
+          userEmail: cfg.userEmail || "",
+          token: "",
+        };
+      }
+    } else {
+      const creds = this.myCredentials();
+      if (creds) {
+        this.personalForm.username = creds.username || "";
+        this.personalForm.password = "";
+      }
     }
     this.editingCredentials.set(true);
     this.error.set(null);

@@ -7,6 +7,7 @@ import { SubscriptionStateService } from "./subscription-state.service";
 import { SprintStateService } from "../../features/sprint/services/sprint-state.service";
 import { CapacityStateService } from "../../features/sprint/services/capacity-state.service";
 import { CurrentIterationService } from "../../features/sprint/services/current-iteration.service";
+import { JiraCredentialsStateService } from "./jira-credentials-state.service";
 import {
   User,
   LoginRequest,
@@ -28,6 +29,7 @@ export class AuthStateService {
   private readonly sprintState = inject(SprintStateService);
   private readonly capacityState = inject(CapacityStateService);
   private readonly currentIteration = inject(CurrentIterationService);
+  private readonly jiraCredentialsState = inject(JiraCredentialsStateService);
 
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(false);
@@ -90,6 +92,10 @@ export class AuthStateService {
         this._user.set(user);
         this._loading.set(false);
         this.permissionService.loadPermissions();
+        if (user.role === "ADMIN") {
+          this.subState.loadSubscription();
+          this.subState.loadFeatures();
+        }
       },
       error: () => {
         this.clearToken();
@@ -110,6 +116,7 @@ export class AuthStateService {
     this.sprintState.clear();
     this.capacityState.clear();
     this.currentIteration.clear();
+    this.jiraCredentialsState.clear();
     this.router.navigate(["/auth/login"]);
   }
 
@@ -127,9 +134,24 @@ export class AuthStateService {
     this._loading.set(false);
     this.permissionService.loadPermissions();
     this.orgState.loadOrganization();
-    this.subState.loadSubscription();
+    if (res.user.role === "ADMIN") {
+      this.subState.loadSubscription();
+      this.subState.loadFeatures();
+    }
     if (shouldRedirectToHome && this.router.url.startsWith("/auth")) {
-      this.router.navigate(["/"]);
+      if (res.user.role !== "ADMIN") {
+        // Non-admins: check personal Jira connection and redirect accordingly
+        this.jiraCredentialsState.load().subscribe({
+          next: (creds) => {
+            this.router.navigate(creds.connected ? ["/"] : ["/settings/jira"]);
+          },
+          error: () => {
+            this.router.navigate(["/"]);
+          },
+        });
+      } else {
+        this.router.navigate(["/"]);
+      }
     }
   }
 

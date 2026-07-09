@@ -53,3 +53,15 @@ export interface JiraDashboard {
   active: boolean;
   position: number;
 }
+
+/** Personal Jira credentials — returned by GET /api/v1/jira/my-credentials */
+export interface MyJiraCredentials {
+  connected: boolean;
+  username?: string;
+}
+
+/** Body for PUT /api/v1/jira/my-credentials */
+export interface SaveMyJiraCredentialsRequest {
+  username: string;
+  password: string;
+}

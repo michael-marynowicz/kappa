@@ -154,6 +154,26 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "jira.dashboards.creating": "Creating…",
     "jira.dashboards.field_name": "Name",
     "jira.dashboards.delete": "Delete dashboard",
+
+    // ── My Jira Credentials (personal) ─────────────────────────────────────────────
+    "settings.tab.my_jira": "My Jira Account",
+    "my_jira.title": "My Jira Account",
+    "my_jira.subtitle":
+      "Connect your personal Jira account to access sprint data.",
+    "my_jira.field.username": "Jira username (email or login)",
+    "my_jira.field.password": "Password or Personal Access Token",
+    "my_jira.save": "Connect my Jira account",
+    "my_jira.saving": "Connecting…",
+    "my_jira.success": "Jira account connected. Redirecting to dashboard…",
+    "my_jira.connected_label": "Connected Jira account",
+    "my_jira.error.required": "Username and password are required.",
+    "my_jira.error.save_failed":
+      "Failed to connect Jira account. Please check your credentials.",
+
+    // ── Jira connection banner ───────────────────────────────────────────────────
+    "jira.banner.message":
+      "Connect your Jira account in settings to access sprint data.",
+    "jira.banner.action": "Configure Jira",
   },
 
   fr: {
@@ -311,5 +331,27 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "jira.dashboards.creating": "Création…",
     "jira.dashboards.field_name": "Nom",
     "jira.dashboards.delete": "Supprimer ce tableau de bord",
+
+    // ── My Jira Credentials (personal) ─────────────────────────────────────────────
+    "settings.tab.my_jira": "Mon compte Jira",
+    "my_jira.title": "Mon compte Jira",
+    "my_jira.subtitle":
+      "Connecte ton compte Jira personnel pour accéder aux données du sprint.",
+    "my_jira.field.username": "Identifiant Jira (email ou login)",
+    "my_jira.field.password": "Mot de passe ou Personal Access Token",
+    "my_jira.save": "Connecter mon compte Jira",
+    "my_jira.saving": "Connexion en cours…",
+    "my_jira.success":
+      "Compte Jira connecté. Redirection vers le tableau de bord…",
+    "my_jira.connected_label": "Compte Jira connecté",
+    "my_jira.error.required":
+      "L’identifiant et le mot de passe sont obligatoires.",
+    "my_jira.error.save_failed":
+      "Impossible de connecter le compte Jira. Vérifie tes identifiants.",
+
+    // ── Jira connection banner ───────────────────────────────────────────────────
+    "jira.banner.message":
+      "Connectez votre compte Jira dans les paramètres pour accéder aux données sprint.",
+    "jira.banner.action": "Configurer Jira",
   },
 };

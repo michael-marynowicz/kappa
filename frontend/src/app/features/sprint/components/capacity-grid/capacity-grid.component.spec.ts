@@ -39,6 +39,7 @@ describe("CapacityGridComponent", () => {
         loading: signal(false),
         error: signal<string | null>(null),
         savingCell: signal<string | null>(null),
+        gated: signal(false),
       },
     );
 

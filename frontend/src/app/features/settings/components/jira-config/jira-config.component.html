@@ -51,82 +51,121 @@
           </svg>
         </div>
         <div class="dashboard-row__info">
-          <span class="dashboard-row__name">{{ config()?.baseUrl }}</span>
-          <span class="dashboard-row__meta"
-            >{{ config()?.userEmail }} · {{ config()?.authType }}</span
-          >
+          @if (isAdmin) {
+            <span class="dashboard-row__name">{{ config()?.baseUrl }}</span>
+            <span class="dashboard-row__meta"
+              >{{ config()?.userEmail }} · {{ config()?.authType }}</span
+            >
+          } @else {
+            <span class="dashboard-row__name">{{
+              myCredentials()?.username
+            }}</span>
+            <span class="dashboard-row__meta">Personal Jira credentials</span>
+          }
         </div>
         <div class="dashboard-row__status">
           <span class="active-pill">{{
             "jira.credentials.connected" | translate
           }}</span>
         </div>
-        @if (isAdmin) {
-          <button
-            class="btn-ghost"
-            type="button"
-            (click)="startEditCredentials()"
-          >
-            {{ "jira.credentials.modify" | translate }}
-          </button>
-        }
+        <button
+          class="btn-ghost"
+          type="button"
+          (click)="startEditCredentials()"
+        >
+          {{ "jira.credentials.modify" | translate }}
+        </button>
       </div>
     } @else {
       <!-- Credentials form -->
       <div class="config-form">
-        <div class="form-group">
-          <label class="form-label" for="baseUrlProd">Jira Base URL</label>
-          <input
-            class="form-input"
-            id="baseUrlProd"
-            type="url"
-            name="baseUrlProd"
-            [(ngModel)]="form.baseUrl"
-            required
-            placeholder="https://jira.amadeus.com/agile"
-          />
-        </div>
-
-        <div class="form-row">
+        @if (isAdmin) {
+          <!-- Admin: Server credentials form -->
           <div class="form-group">
-            <label class="form-label" for="authTypeProd">Auth Type</label>
+            <label class="form-label" for="baseUrlProd">Jira Base URL</label>
             <input
               class="form-input"
-              id="authTypeProd"
-              type="text"
-              [value]="'BASIC'"
-              disabled
+              id="baseUrlProd"
+              type="url"
+              name="baseUrlProd"
+              [(ngModel)]="form.baseUrl"
+              required
+              placeholder="https://jira.amadeus.com/agile"
             />
           </div>
 
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="authTypeProd">Auth Type</label>
+              <input
+                class="form-input"
+                id="authTypeProd"
+                type="text"
+                [value]="'BASIC'"
+                disabled
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="userEmailProd"
+                >User Email / Login</label
+              >
+              <input
+                class="form-input"
+                id="userEmailProd"
+                type="text"
+                name="userEmailProd"
+                [(ngModel)]="form.userEmail"
+                required
+                placeholder="firstname.lastname@amadeus.com"
+              />
+            </div>
+          </div>
+
           <div class="form-group">
-            <label class="form-label" for="userEmailProd"
-              >User Email / Login</label
+            <label class="form-label" for="tokenProd">AD/SSO Password</label>
+            <input
+              class="form-input"
+              id="tokenProd"
+              type="password"
+              name="tokenProd"
+              [(ngModel)]="form.token"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+        } @else {
+          <!-- Non-Admin: Personal credentials form -->
+          <div class="form-group">
+            <label class="form-label" for="personalUsername"
+              >Jira Username</label
             >
             <input
               class="form-input"
-              id="userEmailProd"
+              id="personalUsername"
               type="text"
-              name="userEmailProd"
-              [(ngModel)]="form.userEmail"
+              name="personalUsername"
+              [(ngModel)]="personalForm.username"
               required
-              placeholder="firstname.lastname@amadeus.com"
+              placeholder="your.username"
             />
           </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label" for="tokenProd">AD/SSO Password</label>
-          <input
-            class="form-input"
-            id="tokenProd"
-            type="password"
-            name="tokenProd"
-            [(ngModel)]="form.token"
-            required
-            placeholder="••••••••"
-          />
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="personalPassword"
+              >Jira Password</label
+            >
+            <input
+              class="form-input"
+              id="personalPassword"
+              type="password"
+              name="personalPassword"
+              [(ngModel)]="personalForm.password"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+        }
 
         <div class="form-actions">
           @if (editingCredentials()) {
@@ -138,18 +177,42 @@
               {{ "jira.credentials.cancel" | translate }}
             </button>
           }
-          <button
-            class="btn-secondary"
-            type="button"
-            (click)="onSaveAndTestServerConfig()"
-            [disabled]="configuringServer() || !isAdmin"
-          >
-            {{
-              configuringServer()
-                ? ("jira.credentials.saving" | translate)
-                : ("jira.credentials.save_test" | translate)
-            }}
-          </button>
+          @if (isAdmin) {
+            <button
+              class="btn-secondary"
+              type="button"
+              (click)="onSaveAndTestServerConfig()"
+              [disabled]="
+                configuringServer() ||
+                !form.baseUrl.trim() ||
+                !form.userEmail.trim() ||
+                !form.token.trim()
+              "
+            >
+              {{
+                configuringServer()
+                  ? ("jira.credentials.saving" | translate)
+                  : ("jira.credentials.save_test" | translate)
+              }}
+            </button>
+          } @else {
+            <button
+              class="btn-secondary"
+              type="button"
+              (click)="onSavePersonalCredentials()"
+              [disabled]="
+                savingPersonal() ||
+                !personalForm.username.trim() ||
+                !personalForm.password.trim()
+              "
+            >
+              {{
+                savingPersonal()
+                  ? ("jira.credentials.saving" | translate)
+                  : ("jira.credentials.save_test" | translate)
+              }}
+            </button>
+          }
         </div>
       </div>
     }
@@ -261,65 +324,63 @@
       }
 
       <!-- Add dashboard form -->
-      @if (isAdmin) {
-        <div class="add-dashboard">
-          <h4 class="add-dashboard__title">
-            {{ "jira.dashboards.add_title" | translate }}
-          </h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="newDashboardName">{{
-                "jira.dashboards.field_name" | translate
-              }}</label>
-              <input
-                class="form-input"
-                id="newDashboardName"
-                type="text"
-                name="newDashboardName"
-                [(ngModel)]="newDashboard.name"
-                placeholder="POPT Sprint"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="newProjectKey">Project Key</label>
-              <input
-                class="form-input"
-                id="newProjectKey"
-                type="text"
-                name="newProjectKey"
-                [(ngModel)]="newDashboard.projectKey"
-                placeholder="POPT"
-                maxlength="10"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="newBoardId">Board ID</label>
-              <input
-                class="form-input"
-                id="newBoardId"
-                type="number"
-                name="newBoardId"
-                [(ngModel)]="newDashboard.boardId"
-                placeholder="17006"
-              />
-            </div>
+      <div class="add-dashboard">
+        <h4 class="add-dashboard__title">
+          {{ "jira.dashboards.add_title" | translate }}
+        </h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newDashboardName">{{
+              "jira.dashboards.field_name" | translate
+            }}</label>
+            <input
+              class="form-input"
+              id="newDashboardName"
+              type="text"
+              name="newDashboardName"
+              [(ngModel)]="newDashboard.name"
+              placeholder="POPT Sprint"
+            />
           </div>
-          <div class="form-actions">
-            <button
-              class="btn-primary"
-              type="button"
-              (click)="onAddDashboard()"
-              [disabled]="creatingDashboard()"
-            >
-              {{
-                creatingDashboard()
-                  ? ("jira.dashboards.creating" | translate)
-                  : ("jira.dashboards.create" | translate)
-              }}
-            </button>
+          <div class="form-group">
+            <label class="form-label" for="newProjectKey">Project Key</label>
+            <input
+              class="form-input"
+              id="newProjectKey"
+              type="text"
+              name="newProjectKey"
+              [(ngModel)]="newDashboard.projectKey"
+              placeholder="POPT"
+              maxlength="10"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newBoardId">Board ID</label>
+            <input
+              class="form-input"
+              id="newBoardId"
+              type="number"
+              name="newBoardId"
+              [(ngModel)]="newDashboard.boardId"
+              placeholder="17006"
+            />
           </div>
         </div>
-      }
+        <div class="form-actions">
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="onAddDashboard()"
+            [disabled]="creatingDashboard()"
+          >
+            {{
+              creatingDashboard()
+                ? ("jira.dashboards.creating" | translate)
+                : ("jira.dashboards.create" | translate)
+            }}
+          </button>
+        </div>
+      </div>
     }
   </section>
 </div>
