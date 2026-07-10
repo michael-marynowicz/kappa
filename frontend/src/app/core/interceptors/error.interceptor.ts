@@ -31,7 +31,9 @@ const TOKEN_EXPIRY_KEY = "sr_token_expiry";
 function sanitizeErrorMessage(raw: string | undefined | null): string | null {
   if (!raw || typeof raw !== "string") return null;
   // Strip HTML tags to prevent reflected XSS from error messages
-  const clean = raw.replace(/<[^>]*>/g, "");
+  const container = globalThis.document.createElement("div");
+  container.innerHTML = raw;
+  const clean = container.textContent ?? "";
   // Limit length to prevent log flooding
   return clean.length > 200 ? clean.substring(0, 200) + "…" : clean;
 }
@@ -248,8 +250,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         // Backend error format: { status, error, message, details[], timestamp }
         const sanitized = sanitizeErrorMessage(error.error?.message);
         message =
-          sanitized ??
           STATUS_MESSAGES[error.status] ??
+          sanitized ??
           `Server error: ${error.status}`;
       }
 

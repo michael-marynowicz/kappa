@@ -5,6 +5,7 @@ WORKDIR /app
 # Copy Maven wrapper and pom first for layer caching
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
+RUN apk add --no-cache curl && chmod +x mvnw
 RUN ./mvnw dependency:go-offline -q
 
 # Copy source and build
