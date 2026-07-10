@@ -60,7 +60,7 @@ export class MembersComponent implements OnInit {
     const filter = this.activeDashboardFilter();
     if (!filter) return this.invitations();
     return this.invitations().filter((i) => {
-      const ids = i.dashboardIds ?? [];
+      const ids = i.dashboards?.map((d) => d.id) ?? i.dashboardIds ?? [];
       return ids.length === 0 || ids.includes(filter);
     });
   });
@@ -68,7 +68,7 @@ export class MembersComponent implements OnInit {
   // ── Single invite ──────────────────────────────────────────────
   inviteEmail = "";
   inviteRole = "MEMBER";
-  inviting = false;
+  readonly inviting = signal(false);
   readonly inviteRoleDropdownOpen = signal(false);
 
   // ── Dashboard picker (shared between single + bulk) ────────────
@@ -163,7 +163,7 @@ export class MembersComponent implements OnInit {
       return;
     }
 
-    this.inviting = true;
+    this.inviting.set(true);
     this.error.set(null);
     this.success.set(null);
 
@@ -178,15 +178,15 @@ export class MembersComponent implements OnInit {
       })
       .subscribe({
         next: (invitation) => {
-          this.invitations.update((list) => [...list, invitation]);
+          this.invitations.update((list) => [...list, invitation || { id: "", email, role: this.inviteRole, status: "PENDING", createdAt: new Date().toISOString() }]);
           this.inviteEmail = "";
           this.inviteSelectedDashboards.set([]);
-          this.inviting = false;
+          this.inviting.set(false);
           this.success.set(`Invitation sent to ${email}`);
           setTimeout(() => this.success.set(null), 4000);
         },
         error: (err: HttpErrorResponse) => {
-          this.inviting = false;
+          this.inviting.set(false);
           if (err.status === 402) {
             this.error.set(
               `Member limit reached (${this.formatLimit(this.maxMembers)} Users). Please upgrade your plan.`,
@@ -210,7 +210,7 @@ export class MembersComponent implements OnInit {
   }
 
   toggleInviteRoleDropdown(): void {
-    if (this.inviting) return;
+    if (this.inviting()) return;
     this.inviteRoleDropdownOpen.update((v) => !v);
     this.bulkRoleDropdownOpen.set(false);
     this.inviteDashboardDropdownOpen.set(false);
@@ -295,7 +295,7 @@ export class MembersComponent implements OnInit {
   // ── Dashboard picker helpers ───────────────────────────────────
 
   toggleInviteDashboardDropdown(): void {
-    if (this.inviting) return;
+    if (this.inviting()) return;
     this.inviteDashboardDropdownOpen.update((v) => !v);
     this.inviteRoleDropdownOpen.set(false);
     this.bulkDashboardDropdownOpen.set(false);

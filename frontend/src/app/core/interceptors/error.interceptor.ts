@@ -1,11 +1,26 @@
-import { HttpInterceptorFn, HttpErrorResponse } from "@angular/common/http";
+import {
+  HttpInterceptorFn,
+  HttpErrorResponse,
+  HttpBackend,
+  HttpClient,
+  HttpHandlerFn,
+  HttpRequest,
+  HttpEvent,
+} from "@angular/common/http";
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
-import { catchError, throwError } from "rxjs";
+import { Observable, catchError, switchMap, throwError } from "rxjs";
+import { AuthResponse } from "../models/user.model";
+import { environment } from "../../../environments/environment";
 
 const AUTH_ENDPOINT_PATTERNS = ["/api/v1/auth", "/api/v1/session"];
 const AUTH_FAILURE_CODES = new Set(["AUTH_EXPIRED", "AUTH_INVALID"]);
 const INTEGRATION_UNAVAILABLE_STATUS = new Set([424, 502, 503, 504]);
+/** Sentinel header added to retry requests to prevent infinite refresh loops. */
+const RETRY_AFTER_REFRESH_HEADER = "X-Retry-After-Refresh";
+const TOKEN_KEY = "sr_token";
+const REFRESH_TOKEN_KEY = "sr_refresh_token";
+const TOKEN_EXPIRY_KEY = "sr_token_expiry";
 
 /**
  * Functional HTTP interceptor: standardizes error handling across all API calls.
@@ -31,6 +46,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   408: "The request timed out. Please try again.",
   409: "A conflict occurred. The data may have been modified.",
   422: "The data provided is invalid.",
+  428: "Your Jira account is not connected. Please configure your Jira credentials.",
   429: "Too many requests. Please wait before trying again.",
   500: "An internal server error occurred.",
   502: "The server is temporarily unavailable.",
@@ -92,8 +108,87 @@ function toAppError(
   };
 }
 
+function performLogout(router: Router): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  router.navigate(["/auth/login"]);
+}
+
+/**
+ * Attempts POST /auth/refresh after receiving a 401 on a protected endpoint.
+ * On success  → stores the new tokens and retries the original request.
+ * On failure  → logs out and throws with a message that distinguishes between
+ *               a naturally-expired session (401) and a revoked account (404).
+ *
+ * Uses HttpBackend directly to bypass the interceptor chain and avoid
+ * circular-dependency issues with HttpClient.
+ */
+function attemptRefreshAndRetry(
+  originalError: HttpErrorResponse,
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+  router: Router,
+  httpBackend: HttpBackend,
+): Observable<HttpEvent<unknown>> {
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+  if (!refreshToken) {
+    performLogout(router);
+    return throwError(() =>
+      toAppError(originalError, "Votre session a expiré. Reconnectez-vous."),
+    );
+  }
+
+  const http = new HttpClient(httpBackend);
+  return http
+    .post<AuthResponse>(`${environment.apiBaseUrl}/api/v1/auth/refresh`, {
+      refreshToken,
+    })
+    .pipe(
+      switchMap((res) => {
+        localStorage.setItem(TOKEN_KEY, res.accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, res.refreshToken);
+        localStorage.setItem(
+          TOKEN_EXPIRY_KEY,
+          String(Date.now() + res.expiresIn * 1000),
+        );
+        // Retry the original request with the new token.
+        // The sentinel header prevents a second refresh attempt if this retry also fails.
+        const retryReq = req.clone({
+          headers: req.headers
+            .set("Authorization", `Bearer ${res.accessToken}`)
+            .set(RETRY_AFTER_REFRESH_HEADER, "1"),
+        });
+        return next(retryReq);
+      }),
+      catchError((refreshError: unknown) => {
+        const status =
+          refreshError instanceof HttpErrorResponse ? refreshError.status : 0;
+
+        let message: string;
+        if (status === 404) {
+          // Refresh token not found in DB → account was deleted / revoked
+          message =
+            "Votre accès a été révoqué. Contactez votre administrateur.";
+        } else if (status === 401) {
+          // Refresh token invalid or naturally expired
+          message = "Votre session a expiré. Reconnectez-vous.";
+        } else {
+          // Network error or unexpected status — stay neutral
+          message =
+            "Votre session a pris fin. Reconnectez-vous ou contactez votre administrateur si le problème persiste.";
+        }
+
+        performLogout(router);
+        return throwError(() => toAppError(originalError, message));
+      }),
+    );
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const httpBackend = inject(HttpBackend);
 
   // Skip error handling for requests marked as silent (e.g. permission loading)
   if (req.headers.has("X-Silent-Error")) {
@@ -112,6 +207,21 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           status: 403,
           message: error.error?.message ?? "Feature not available on your plan",
         }));
+      }
+
+      // 428 — Jira account not connected: surface the error, let the UI banner handle guidance
+      if (error.status === 428) {
+        return throwError(() => toAppError(error, STATUS_MESSAGES[428]));
+      }
+
+      // 401 on a protected endpoint: attempt token refresh before giving up.
+      // The RETRY_AFTER_REFRESH_HEADER sentinel prevents a second refresh loop.
+      if (
+        error.status === 401 &&
+        !isAuthEndpoint(req.url) &&
+        !req.headers.has(RETRY_AFTER_REFRESH_HEADER)
+      ) {
+        return attemptRefreshAndRetry(error, req, next, router, httpBackend);
       }
 
       let message: string;

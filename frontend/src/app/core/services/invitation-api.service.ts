@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Observable, of, catchError } from "rxjs";
 import {
   Invitation,
   CreateInvitationRequest,
@@ -17,9 +17,9 @@ export class InvitationApiService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
 
   getInvitations(): Observable<Invitation[]> {
-    return this.http.get<Invitation[]>(
-      `${this.baseUrl}/organization/invitations`,
-    );
+    return this.http
+      .get<Invitation[]>(`${this.baseUrl}/organization/invitations`)
+      .pipe(catchError(() => of([])));
   }
 
   createInvitation(request: CreateInvitationRequest): Observable<Invitation> {

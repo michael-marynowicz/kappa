@@ -9,6 +9,8 @@ import {
   JiraDiscoveredBoard,
   CreateJiraDashboardRequest,
   JiraDashboard,
+  MyJiraCredentials,
+  SaveMyJiraCredentialsRequest,
 } from "../models/jira-config.model";
 import { environment } from "../../../environments/environment";
 
@@ -68,5 +70,20 @@ export class JiraConfigApiService {
 
   sync(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/sync`, {});
+  }
+
+  /** GET /api/v1/jira/my-credentials — personal connection status for the current user */
+  getMyCredentials(): Observable<MyJiraCredentials> {
+    return this.http.get<MyJiraCredentials>(`${this.baseUrl}/my-credentials`);
+  }
+
+  /** PUT /api/v1/jira/my-credentials — save personal Jira credentials */
+  saveMyCredentials(
+    request: SaveMyJiraCredentialsRequest,
+  ): Observable<MyJiraCredentials> {
+    return this.http.put<MyJiraCredentials>(
+      `${this.baseUrl}/my-credentials`,
+      request,
+    );
   }
 }

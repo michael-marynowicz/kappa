@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
@@ -11,11 +11,15 @@ import { AuthStateService } from "../../../../core/services/auth-state.service";
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   readonly authState = inject(AuthStateService);
   email = "";
   password = "";
   showPassword = false;
+
+  ngOnInit(): void {
+    this.authState.clearError();
+  }
 
   onSubmit(): void {
     this.authState.login({ email: this.email, password: this.password });

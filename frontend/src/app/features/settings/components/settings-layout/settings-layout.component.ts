@@ -26,7 +26,9 @@ export class SettingsLayoutComponent {
     return this.authState.user()?.role === "ADMIN";
   }
 
+  // Billing tab: admins only, and only if the plan allows payment pages
+  // subState.showPaymentPages() defaults true until subscription loads
   get showBillingTab(): boolean {
-    return this.subState.showPaymentPages();
+    return this.isAdmin && this.subState.showPaymentPages();
   }
 }

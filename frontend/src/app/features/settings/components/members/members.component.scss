@@ -56,6 +56,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+
+  &--inline {
+    margin-top: 4px;
+  }
 }
 
 .team-badge {

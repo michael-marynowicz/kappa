@@ -127,16 +127,16 @@
                 >{{ member.firstName }} {{ member.lastName }}</span
               >
               <span class="member-email">{{ member.email }}</span>
+              @if (member.dashboardIds.length && availableDashboards().length) {
+                <div class="member-teams member-teams--inline">
+                  @for (dId of member.dashboardIds; track dId) {
+                    <span class="team-badge" [title]="dashboardName(dId)">{{
+                      dashboardName(dId)
+                    }}</span>
+                  }
+                </div>
+              }
             </div>
-            @if (
-              activeDashboardFilter() === null && member.dashboardIds.length
-            ) {
-              <div class="member-teams">
-                @for (dId of member.dashboardIds; track dId) {
-                  <span class="team-badge">{{ dashboardName(dId) }}</span>
-                }
-              </div>
-            }
             <span
               class="role-badge"
               [class]="'role-badge--' + member.role.toLowerCase()"
@@ -236,9 +236,21 @@
                 >{{ "members.pending.invited_on" | translate }}
                 {{ invitation.createdAt | date: "mediumDate" }}</span
               >
+              @if (invitation.dashboards?.length) {
+                <div class="member-teams member-teams--inline">
+                  @for (db of invitation.dashboards!; track db.id) {
+                    <span
+                      class="team-badge team-badge--pending"
+                      [title]="db.name"
+                      >{{ db.name }}</span
+                    >
+                  }
+                </div>
+              }
             </div>
             @if (
               activeDashboardFilter() === null &&
+              !invitation.dashboards?.length &&
               invitation.dashboardIds?.length
             ) {
               <div class="member-teams">
@@ -332,7 +344,7 @@
           pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
           [placeholder]="'members.invite.placeholder' | translate"
           autocomplete="off"
-          [disabled]="inviting"
+          [disabled]="inviting()"
         />
         <div
           class="mr-dropdown"
@@ -342,7 +354,7 @@
             class="mr-trigger"
             type="button"
             [attr.aria-expanded]="inviteRoleDropdownOpen()"
-            [disabled]="inviting"
+            [disabled]="inviting()"
             (click)="toggleInviteRoleDropdown()"
           >
             <span class="mr-trigger__label">{{ inviteRole }}</span>
@@ -405,7 +417,7 @@
               class="db-trigger"
               type="button"
               [attr.aria-expanded]="inviteDashboardDropdownOpen()"
-              [disabled]="inviting"
+              [disabled]="inviting()"
               (click)="toggleInviteDashboardDropdown()"
             >
               <svg
@@ -492,9 +504,9 @@
         <button
           class="btn-invite"
           type="submit"
-          [disabled]="inviteForm.invalid || inviting"
+          [disabled]="inviteForm.invalid || inviting()"
         >
-          @if (inviting) {
+          @if (inviting()) {
             <span class="btn-spinner"></span>
             {{ "members.invite.sending" | translate }}
           } @else {
