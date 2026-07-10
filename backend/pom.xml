@@ -21,7 +21,7 @@
     <properties>
         <java.version>17</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <opencsv.version>5.9</opencsv.version>
+        <opencsv.version>5.12.0</opencsv.version>
     </properties>
 
     <dependencies>
