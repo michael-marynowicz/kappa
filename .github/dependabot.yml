@@ -1,0 +1,46 @@
+version: 2
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Backend (Maven)
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # Frontend (npm)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # Administration (npm)
+  - package-ecosystem: "npm"
+    directory: "/administration"
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "administration"

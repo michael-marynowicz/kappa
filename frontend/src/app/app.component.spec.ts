@@ -1,13 +1,25 @@
 import { TestBed } from "@angular/core/testing";
 import { RouterTestingModule } from "@angular/router/testing";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { AppComponent } from "./app.component";
+import { AuthStateService } from "./core/services/auth-state.service";
+import { OrganizationStateService } from "./core/services/organization-state.service";
 
 describe("AppComponent", () => {
+  const authStateMock = {
+    getToken: jasmine.createSpy("getToken").and.returnValue(null),
+    loadCurrentUser: jasmine.createSpy("loadCurrentUser"),
+  };
+  const organizationStateMock = {
+    loadOrganization: jasmine.createSpy("loadOrganization"),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent, RouterTestingModule],
-      providers: [provideHttpClientTesting()],
+      providers: [
+        { provide: AuthStateService, useValue: authStateMock },
+        { provide: OrganizationStateService, useValue: organizationStateMock },
+      ],
     }).compileComponents();
   });
 

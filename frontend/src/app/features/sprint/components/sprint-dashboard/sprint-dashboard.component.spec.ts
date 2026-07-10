@@ -4,11 +4,19 @@ import { provideRouter } from "@angular/router";
 import { SprintDashboardComponent } from "./sprint-dashboard.component";
 import { SprintStateService } from "../../services/sprint-state.service";
 import { SprintSummary } from "../../models/sprint-issue.model";
+import { CapacityStateService } from "../../services/capacity-state.service";
+import { CurrentIterationService } from "../../services/current-iteration.service";
+import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
+import { AuthStateService } from "../../../../core/services/auth-state.service";
 
 describe("SprintDashboardComponent", () => {
   let component: SprintDashboardComponent;
   let fixture: ComponentFixture<SprintDashboardComponent>;
   let stateMock: any;
+  let capStateMock: any;
+  let currentIterationMock: any;
+  let jiraApiMock: any;
+  let authStateMock: any;
 
   const mockSummary: SprintSummary = {
     totalIssues: 5,
@@ -44,9 +52,37 @@ describe("SprintDashboardComponent", () => {
       clearError: jasmine.createSpy("clearError"),
     };
 
+    capStateMock = {
+      error: signal(null),
+      errorStatus: signal(null),
+      loadGrid: jasmine.createSpy("loadGrid"),
+    };
+
+    currentIterationMock = {
+      name: signal("Sprint 1"),
+      fetch: jasmine.createSpy("fetch"),
+    };
+
+    jiraApiMock = {
+      listDashboards: jasmine
+        .createSpy("listDashboards")
+        .and.returnValue({ subscribe: ({ next }: any) => next([]) }),
+      activateDashboard: jasmine.createSpy("activateDashboard"),
+    };
+
+    authStateMock = {
+      user: signal({ role: "ADMIN" }),
+    };
+
     await TestBed.configureTestingModule({
       imports: [SprintDashboardComponent],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: CapacityStateService, useValue: capStateMock },
+        { provide: CurrentIterationService, useValue: currentIterationMock },
+        { provide: JiraConfigApiService, useValue: jiraApiMock },
+        { provide: AuthStateService, useValue: authStateMock },
+      ],
     })
       .overrideComponent(SprintDashboardComponent, {
         remove: {

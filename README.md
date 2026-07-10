@@ -287,6 +287,51 @@ and not mapped, the build fails.
 
 ---
 
+## CI/CD Pipelines
+
+| Workflow | Déclencheur | Description |
+|----------|-------------|-------------|
+| `backend-ci.yml` | push / PR sur `backend/**` | Lance les tests Maven (`./mvnw test`), upload les rapports Surefire |
+| `frontend-ci.yml` | push / PR sur `frontend/**` ou `administration/**` | Lance les tests Angular en headless Chrome |
+| `docker-build.yml` | push / PR sur `backend/**` ou `frontend/**` | Vérifie que les images Docker se buildent correctement |
+| `dependency-review.yml` | PR uniquement | Bloque les PRs introduisant des dépendances vulnérables (`high`+) |
+| `semgrep.yml` | push / PR | Analyse SAST + détection de secrets (Gitleaks) |
+
+Dependabot ouvre automatiquement des PRs chaque semaine pour mettre à jour les dépendances Maven, npm (frontend & administration) et les GitHub Actions.
+
+---
+
+## Playground — Tester une branche sans setup local
+
+Le workflow `playground.yml` se déclenche automatiquement sur les branches `feature/**`, `fix/**` et `chore/**` (ou manuellement depuis l'onglet **Actions** de GitHub).
+
+Il build les images Docker et les publie sur **GHCR** (GitHub Container Registry) avec un tag correspondant au nom de la branche.
+
+### 1. Se connecter au registre (une seule fois)
+
+Génère un **Personal Access Token** GitHub avec le scope `read:packages` :  
+`GitHub → Settings → Developer settings → Personal access tokens`
+
+```bash
+docker login ghcr.io -u TON_USERNAME --password TON_GITHUB_TOKEN
+```
+
+### 2. Lancer l'appli de la branche
+
+Remplace `<owner>` par le nom de ton organisation ou compte GitHub, et `<branch>` par le nom de la branche (les `/` sont remplacés par `-`) :
+
+```bash
+BACKEND_IMAGE=ghcr.io/<owner>/sprint-reporter-backend:<branch> \
+FRONTEND_IMAGE=ghcr.io/<owner>/sprint-reporter-frontend:<branch> \
+docker compose up
+```
+
+L'appli démarre sans avoir besoin de Java, Maven ou Node.js installés localement.
+
+> Les commandes exactes avec les bons tags sont aussi affichées dans l'onglet **Summary** du workflow sur GitHub après chaque run.
+
+---
+
 ## Extension Roadmap
 
 | Feature | What to add |
