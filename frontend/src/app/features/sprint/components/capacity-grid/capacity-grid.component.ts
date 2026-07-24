@@ -1,14 +1,24 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { CapacityStateService } from "../../services/capacity-state.service";
 import { MemberRole, TeamMember } from "../../models/capacity.model";
 import { PremiumOverlayComponent } from "../../../../shared/components/premium-overlay/premium-overlay.component";
+import { CapacityDetailTableComponent } from "../capacity-detail-table/capacity-detail-table.component";
+import { CapacitySummaryTableComponent } from "../capacity-summary-table/capacity-summary-table.component";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-capacity-grid",
   standalone: true,
-  imports: [CommonModule, FormsModule, PremiumOverlayComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PremiumOverlayComponent,
+    CapacityDetailTableComponent,
+    CapacitySummaryTableComponent,
+    TranslatePipe,
+  ],
   templateUrl: "./capacity-grid.component.html",
   styleUrls: ["./capacity-grid.component.scss"],
 })
@@ -22,76 +32,34 @@ export class CapacityGridComponent implements OnInit {
   editName = "";
   editRole: MemberRole = "DEV";
 
+  readonly roles: MemberRole[] = ["DEV", "PDA", "QA", "SM"];
+  addRoleDropdownOpen = signal(false);
+  editRoleDropdownOpen = signal(false);
+
+  toggleAddRoleDropdown(): void {
+    this.addRoleDropdownOpen.update((v) => !v);
+  }
+  selectAddRole(role: MemberRole): void {
+    this.newMemberRole = role;
+    this.addRoleDropdownOpen.set(false);
+  }
+  toggleEditRoleDropdown(): void {
+    this.editRoleDropdownOpen.update((v) => !v);
+  }
+  selectEditRole(role: MemberRole): void {
+    this.editRole = role;
+    this.editRoleDropdownOpen.set(false);
+  }
+
+  membersExpanded = true;
+  activeTab: "team" | "capacity" | "summary" = "team";
+
   ngOnInit(): void {
     this.capState.loadGrid();
   }
 
   trackMember(_: number, m: TeamMember): string {
     return m.id;
-  }
-
-  getDaysOff(memberId: string, sprint: string): number {
-    return this.capState.grid()?.daysOffGrid[memberId]?.[sprint] ?? 0;
-  }
-
-  getDaysForSprint(sprint: string): number {
-    return this.capState.grid()?.daysPerSprint[sprint] ?? 0;
-  }
-
-  getTotalAvailable(memberId: string): number {
-    const grid = this.capState.grid();
-    if (!grid) return 0;
-    return grid.sprints.reduce(
-      (sum, s) => sum + this.getDaysForSprint(s) - this.getDaysOff(memberId, s),
-      0,
-    );
-  }
-
-  getAvailByRole(role: MemberRole, sprint: string): number {
-    const grid = this.capState.grid();
-    if (!grid) return 0;
-    return grid.members
-      .filter((m) => m.role === role)
-      .reduce(
-        (sum, m) =>
-          sum + this.getDaysForSprint(sprint) - this.getDaysOff(m.id, sprint),
-        0,
-      );
-  }
-
-  getTotalByRole(role: MemberRole): number {
-    const grid = this.capState.grid();
-    if (!grid) return 0;
-    return grid.sprints.reduce(
-      (sum, s) => sum + this.getAvailByRole(role, s),
-      0,
-    );
-  }
-
-  getSprintTotal(sprint: string): number {
-    const grid = this.capState.grid();
-    if (!grid) return 0;
-    return grid.members.reduce(
-      (sum, m) =>
-        sum + this.getDaysForSprint(sprint) - this.getDaysOff(m.id, sprint),
-      0,
-    );
-  }
-
-  getGrandTotal(): number {
-    const grid = this.capState.grid();
-    if (!grid) return 0;
-    return grid.sprints.reduce((sum, s) => sum + this.getSprintTotal(s), 0);
-  }
-
-  onDaysOffChange(memberId: string, sprint: string, value: number): void {
-    const grid = this.capState.grid();
-    if (!grid) return;
-    const clamped = Math.max(
-      0,
-      Math.min(grid.daysPerSprint[sprint] ?? 0, value),
-    );
-    this.capState.updateDaysOff(memberId, sprint, clamped);
   }
 
   onAddMember(): void {

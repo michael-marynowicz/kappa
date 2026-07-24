@@ -3,10 +3,14 @@
   <p class="section-desc">{{ "lang.subtitle" | translate }}</p>
 
   @if (error()) {
-    <div class="feedback feedback--error" role="alert">{{ error() }}</div>
+    <div class="feedback feedback--error" role="alert">
+      {{ error()! | translate }}
+    </div>
   }
   @if (success()) {
-    <div class="feedback feedback--success" role="status">{{ success() }}</div>
+    <div class="feedback feedback--success" role="status">
+      {{ success()! | translate }}
+    </div>
   }
 
   @if (loading()) {

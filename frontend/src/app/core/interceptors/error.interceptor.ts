@@ -55,11 +55,22 @@ const STATUS_MESSAGES: Record<number, string> = {
   503: "The service is undergoing maintenance.",
 };
 
+/** Detect if a 403 is an "email not verified" rejection from the backend. */
+function isEmailUnverified(error: HttpErrorResponse): boolean {
+  if (error.status !== 403) return false;
+  const msg: string = error.error?.message ?? "";
+  return (
+    msg.toLowerCase().includes("not verified") ||
+    msg.toLowerCase().includes("email address not verified")
+  );
+}
+
 /** Detect if a 403 is a feature-gating response from the backend. */
 function isFeatureGated(error: HttpErrorResponse): boolean {
   const msg = error.error?.message ?? "";
   return (
     error.status === 403 &&
+    !isEmailUnverified(error) &&
     (msg.includes("plan does not include") ||
       msg.includes("feature") ||
       msg.includes("FORBIDDEN"))
@@ -202,6 +213,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // 403 email-not-verified: propagate the real backend message + flag so the
+      // login component can show the resend-verification button.
+      if (isEmailUnverified(error)) {
+        return throwError(() => ({
+          emailUnverified: true,
+          status: 403,
+          message:
+            sanitizeErrorMessage(error.error?.message) ??
+            "Email address not verified. Please check your inbox.",
+        }));
+      }
+
       // Feature-gated 403: propagate silently so components can handle gracefully
       if (isFeatureGated(error)) {
         return throwError(() => ({

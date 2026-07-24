@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
 
-import java.util.Objects;
-
 /**
  * Core domain model representing a Jira issue within a sprint.
  * This is the heart of the domain — intentionally decoupled from any
@@ -21,36 +19,36 @@ public class SprintIssue {
     private final String issueKey;
     private final String summary;
     private final String status;
+    private final String statusCategoryKey;
     private final String assignee;
     private final String issueType;
+    private final String topic;
     private final Integer totalStoryPoints;
     private final Integer remainingStoryPoints;
+    private final boolean addedAfterSprintStart;
 
     /**
      * Core business computation: done = total - remaining.
-     * If status is Done, done = total (all points are considered delivered).
-     * If total is unknown, done is unknown too.
+     * If the issue is completed, done = total regardless of remainingSP.
+     * If total or remaining is unknown and not completed, done is unknown.
      */
     public Integer getDoneStoryPoints() {
         if (totalStoryPoints == null) {
             return null;
         }
-        if ("Done".equalsIgnoreCase(status) || "Completed".equalsIgnoreCase(status)) {
+        if (isCompleted()) {
             return totalStoryPoints;
         }
-        // If remaining SP has not been entered yet, we can't compute done SP
         if (remainingStoryPoints == null) {
-            return 0;
+            return 0; // Default: nothing done yet (remaining = total)
         }
         return Math.max(0, totalStoryPoints - remainingStoryPoints);
     }
 
-    /** Displayed remaining = total - done (always consistent with doneStoryPoints). */
-    public Integer getDisplayedRemainingStoryPoints() {
-        if (totalStoryPoints == null) return null;
-        Integer done = getDoneStoryPoints();
-        if (done == null) return totalStoryPoints;
-        return Math.max(0, totalStoryPoints - done);
+    public boolean isCompleted() {
+        return "Done".equalsIgnoreCase(status)
+                || "Completed".equalsIgnoreCase(status)
+                || "done".equalsIgnoreCase(statusCategoryKey);
     }
 
     /**
@@ -72,8 +70,23 @@ public class SprintIssue {
             String status,
             String assignee,
             String issueType,
+            String topic,
             Integer totalStoryPoints,
             Integer remainingStoryPoints) {
+        return create(issueKey, summary, status, assignee, issueType, topic,
+                totalStoryPoints, remainingStoryPoints, false);
+    }
+
+    public static SprintIssue create(
+            String issueKey,
+            String summary,
+            String status,
+            String assignee,
+            String issueType,
+            String topic,
+            Integer totalStoryPoints,
+            Integer remainingStoryPoints,
+            boolean addedAfterSprintStart) {
 
         if (issueKey == null || issueKey.isBlank()) {
             throw new IllegalArgumentException("Issue key must not be blank");
@@ -85,8 +98,10 @@ public class SprintIssue {
                 .status(status)
                 .assignee(assignee)
                 .issueType(issueType)
+                .topic(topic)
                 .totalStoryPoints(totalStoryPoints)
                 .remainingStoryPoints(remainingStoryPoints)
+                .addedAfterSprintStart(addedAfterSprintStart)
                 .build();
 
         if (!issue.isValid()) {

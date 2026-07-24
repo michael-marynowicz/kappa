@@ -2,7 +2,7 @@
   <h2 class="section-title">{{ "jira.title" | translate }}</h2>
 
   @if (error()) {
-    <div class="config-error" role="alert">{{ error() }}</div>
+    <div class="config-error" role="alert">{{ error()! | translate }}</div>
   }
 
   <!-- success toast — positionnement fixe, hors du flux -->
@@ -20,7 +20,7 @@
       >
         <polyline points="20 6 9 17 4 12" />
       </svg>
-      {{ success() }}
+      {{ success()! | translate }}
     </output>
   }
 
@@ -60,7 +60,9 @@
             <span class="dashboard-row__name">{{
               myCredentials()?.username
             }}</span>
-            <span class="dashboard-row__meta">Personal Jira credentials</span>
+            <span class="dashboard-row__meta">{{
+              "jira.form.personal_label" | translate
+            }}</span>
           }
         </div>
         <div class="dashboard-row__status">
@@ -82,7 +84,9 @@
         @if (isAdmin) {
           <!-- Admin: Server credentials form -->
           <div class="form-group">
-            <label class="form-label" for="baseUrlProd">Jira Base URL</label>
+            <label class="form-label" for="baseUrlProd">{{
+              "jira.form.base_url" | translate
+            }}</label>
             <input
               class="form-input"
               id="baseUrlProd"
@@ -96,7 +100,9 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="authTypeProd">Auth Type</label>
+              <label class="form-label" for="authTypeProd">{{
+                "jira.form.auth_type" | translate
+              }}</label>
               <input
                 class="form-input"
                 id="authTypeProd"
@@ -107,9 +113,9 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="userEmailProd"
-                >User Email / Login</label
-              >
+              <label class="form-label" for="userEmailProd">{{
+                "jira.form.user_email" | translate
+              }}</label>
               <input
                 class="form-input"
                 id="userEmailProd"
@@ -137,9 +143,9 @@
         } @else {
           <!-- Non-Admin: Personal credentials form -->
           <div class="form-group">
-            <label class="form-label" for="personalUsername"
-              >Jira Username</label
-            >
+            <label class="form-label" for="personalUsername">{{
+              "jira.form.username" | translate
+            }}</label>
             <input
               class="form-input"
               id="personalUsername"
@@ -152,9 +158,9 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="personalPassword"
-              >Jira Password</label
-            >
+            <label class="form-label" for="personalPassword">{{
+              "jira.form.password_label" | translate
+            }}</label>
             <input
               class="form-input"
               id="personalPassword"
@@ -343,7 +349,9 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="newProjectKey">Project Key</label>
+            <label class="form-label" for="newProjectKey">{{
+              "jira.form.project_key" | translate
+            }}</label>
             <input
               class="form-input"
               id="newProjectKey"
@@ -355,7 +363,9 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="newBoardId">Board ID</label>
+            <label class="form-label" for="newBoardId">{{
+              "jira.form.board_id" | translate
+            }}</label>
             <input
               class="form-input"
               id="newBoardId"

@@ -22,6 +22,7 @@ import {
   BulkInviteResult,
 } from "../../../../core/models/invitation.model";
 import { HttpErrorResponse } from "@angular/common/http";
+import { I18nService } from "../../../../i18n/i18n.service";
 
 @Component({
   selector: "app-members",
@@ -36,6 +37,7 @@ export class MembersComponent implements OnInit {
   private readonly jiraApi = inject(JiraConfigApiService);
   readonly subState = inject(SubscriptionStateService);
   readonly authState = inject(AuthStateService);
+  private readonly i18n = inject(I18nService);
 
   readonly members = signal<OrganizationMember[]>([]);
   readonly invitations = signal<Invitation[]>([]);
@@ -91,7 +93,7 @@ export class MembersComponent implements OnInit {
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   formatLimit(value: number | null): string {
-    return value === null ? "Unlimited" : String(value);
+    return value === null ? this.i18n.t("common.unlimited") : String(value);
   }
 
   private get currentPlan() {
@@ -144,7 +146,7 @@ export class MembersComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set("Failed to load members");
+        this.error.set("members.error.load");
         this.loading.set(false);
       },
     });
@@ -159,7 +161,7 @@ export class MembersComponent implements OnInit {
     const email = this.inviteEmail.trim();
     if (!email) return;
     if (!this.emailRegex.test(email)) {
-      this.error.set("Please enter a valid email address.");
+      this.error.set("members.error.invalid_email");
       return;
     }
 
@@ -178,25 +180,32 @@ export class MembersComponent implements OnInit {
       })
       .subscribe({
         next: (invitation) => {
-          this.invitations.update((list) => [...list, invitation || { id: "", email, role: this.inviteRole, status: "PENDING", createdAt: new Date().toISOString() }]);
+          this.invitations.update((list) => [
+            ...list,
+            invitation || {
+              id: "",
+              email,
+              role: this.inviteRole,
+              status: "PENDING",
+              createdAt: new Date().toISOString(),
+            },
+          ]);
           this.inviteEmail = "";
           this.inviteSelectedDashboards.set([]);
           this.inviting.set(false);
-          this.success.set(`Invitation sent to ${email}`);
+          this.success.set(
+            this.i18n.tWithParams("members.success.invited", { email }),
+          );
           setTimeout(() => this.success.set(null), 4000);
         },
         error: (err: HttpErrorResponse) => {
           this.inviting.set(false);
           if (err.status === 402) {
-            this.error.set(
-              `Member limit reached (${this.formatLimit(this.maxMembers)} Users). Please upgrade your plan.`,
-            );
+            this.error.set("members.error.member_limit");
           } else if (err.status === 409) {
-            this.error.set(
-              "This email is already invited or already a member.",
-            );
+            this.error.set("members.error.invite_conflict");
           } else {
-            this.error.set(err.error?.message ?? "Failed to send invitation.");
+            this.error.set(err.error?.message ?? "members.error.invite_failed");
           }
         },
       });
@@ -268,11 +277,9 @@ export class MembersComponent implements OnInit {
         },
         error: (err) => {
           if (err.status === 402) {
-            this.error.set(
-              `Member limit reached (${this.formatLimit(this.maxMembers)} Users). Please upgrade your plan.`,
-            );
+            this.error.set("members.error.member_limit");
           } else {
-            this.error.set(err.message ?? "Bulk invite failed.");
+            this.error.set(err.message ?? "members.error.bulk_failed");
           }
           this.bulkInviting.set(false);
         },

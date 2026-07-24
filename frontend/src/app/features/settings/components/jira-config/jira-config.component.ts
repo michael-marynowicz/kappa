@@ -15,6 +15,7 @@ import {
   MyJiraCredentials,
 } from "../../../../core/models/jira-config.model";
 import { JiraCredentialsStateService } from "../../../../core/services/jira-credentials-state.service";
+import { I18nService } from "../../../../i18n/i18n.service";
 
 @Component({
   selector: "app-jira-config",
@@ -30,6 +31,7 @@ export class JiraConfigComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly jiraCreds = inject(JiraCredentialsStateService);
+  private readonly i18n = inject(I18nService);
 
   readonly config = signal<JiraConfig | null>(null);
   readonly dashboards = signal<JiraDashboard[]>([]);
@@ -89,7 +91,7 @@ export class JiraConfigComponent implements OnInit {
   }
 
   formatLimit(value: number | null): string {
-    return value === null ? "Unlimited" : String(value);
+    return value === null ? this.i18n.t("common.unlimited") : String(value);
   }
 
   private get dashboardLimitLabel(): string | null {
@@ -111,10 +113,10 @@ export class JiraConfigComponent implements OnInit {
     }
 
     if (oauth === "success") {
-      this.showSuccess("Jira OAuth connected successfully.");
+      this.showSuccess("jira.success.oauth_connected");
       this.error.set(null);
     } else if (oauth === "error") {
-      this.error.set(message || "Jira OAuth connection failed. Please retry.");
+      this.error.set(message || "jira.oauth.error");
       this.success.set(null);
     }
 
@@ -148,11 +150,9 @@ export class JiraConfigComponent implements OnInit {
         },
         error: (err) => {
           if (err?.name === "TimeoutError") {
-            this.error.set(
-              "Server did not respond in time. Is the backend running?",
-            );
+            this.error.set("jira.error.timeout");
           } else {
-            this.error.set(err.message ?? "Failed to load configuration");
+            this.error.set(err.message ?? "jira.error.load_config");
           }
           this.loading.set(false);
         },
@@ -170,7 +170,7 @@ export class JiraConfigComponent implements OnInit {
         this.dashboardsLoading.set(false);
       },
       error: (err) => {
-        this.error.set(err.message ?? "Failed to load dashboards.");
+        this.error.set(err.message ?? "jira.error.load_dashboards");
         this.dashboardsLoading.set(false);
       },
     });
@@ -178,12 +178,12 @@ export class JiraConfigComponent implements OnInit {
 
   private validateWizardInput(): boolean {
     if (!this.form.baseUrl.trim() || !this.form.token.trim()) {
-      this.error.set("Base URL and token are required.");
+      this.error.set("jira.error.base_url_token_required");
       return false;
     }
 
     if (this.form.authType === "BASIC" && !this.form.userEmail.trim()) {
-      this.error.set("User email is required with BASIC auth.");
+      this.error.set("jira.error.email_required_basic");
       return false;
     }
 
@@ -192,17 +192,17 @@ export class JiraConfigComponent implements OnInit {
 
   private validateServerConfigInput(): boolean {
     if (!this.form.baseUrl.trim()) {
-      this.error.set("Jira Base URL is required.");
+      this.error.set("jira.error.base_url_required");
       return false;
     }
 
     if (!this.form.userEmail.trim()) {
-      this.error.set("User email/login is required.");
+      this.error.set("jira.error.email_required");
       return false;
     }
 
     if (!this.form.token.trim()) {
-      this.error.set("AD/SSO password is required.");
+      this.error.set("jira.error.password_required");
       return false;
     }
 
@@ -239,17 +239,12 @@ export class JiraConfigComponent implements OnInit {
           this.api.testConnection().subscribe({
             next: (res) => {
               if (!res.success) {
-                this.error.set(
-                  res.message ||
-                    "Jira test failed. Please check credentials and board settings.",
-                );
+                this.error.set(res.message ?? "jira.error.test_failed");
                 this.configuringServer.set(false);
                 return;
               }
 
-              this.showSuccess(
-                "Jira server-to-server configuration saved and validated.",
-              );
+              this.showSuccess("jira.success.config_saved");
               this.configuringServer.set(false);
               this.editingCredentials.set(false);
               this.credentialsVerified.set(true);
@@ -257,13 +252,13 @@ export class JiraConfigComponent implements OnInit {
               this.loadDashboards();
             },
             error: (err) => {
-              this.error.set(err.message ?? "Jira test failed.");
+              this.error.set(err.message ?? "jira.error.test_failed");
               this.configuringServer.set(false);
             },
           });
         },
         error: (err) => {
-          this.error.set(err.message ?? "Unable to save Jira configuration.");
+          this.error.set(err.message ?? "jira.error.save_config");
           this.configuringServer.set(false);
         },
       });
@@ -295,16 +290,14 @@ export class JiraConfigComponent implements OnInit {
           this.discoveredBoards.set(boards);
           if (boards.length > 0) {
             this.selectedBoardId.set(boards[0].id);
-            this.showSuccess(
-              "Boards discovered. Select one and create dashboard.",
-            );
+            this.showSuccess("jira.success.boards_discovered");
           } else {
-            this.error.set("No boards found for this Jira account.");
+            this.error.set("jira.error.no_boards");
           }
           this.discoveringBoards.set(false);
         },
         error: (err) => {
-          this.error.set(err.message ?? "Unable to discover Jira boards.");
+          this.error.set(err.message ?? "jira.error.discover_boards");
           this.discoveringBoards.set(false);
         },
       });
@@ -313,7 +306,7 @@ export class JiraConfigComponent implements OnInit {
   onAddDashboard(): void {
     const { name, projectKey, boardId } = this.newDashboard;
     if (!name.trim() || !projectKey.trim() || !boardId || boardId <= 0) {
-      this.error.set("Nom, Project Key et Board ID sont requis.");
+      this.error.set("jira.error.dashboard_fields_required");
       return;
     }
 
@@ -328,7 +321,11 @@ export class JiraConfigComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.showSuccess(`Dashboard "${name.trim()}" créé.`);
+          this.showSuccess(
+            this.i18n.tWithParams("jira.success.dashboard_created", {
+              name: name.trim(),
+            }),
+          );
           this.creatingDashboard.set(false);
           this.newDashboard = { name: "", projectKey: "", boardId: null };
           this.loadDashboards();
@@ -336,8 +333,8 @@ export class JiraConfigComponent implements OnInit {
         error: (err) => {
           this.error.set(
             err.status === 402
-              ? `Dashboard limit reached (${this.dashboardLimitLabel ?? "Plan limit"}). Upgrade your plan to add more dashboards.`
-              : (err.message ?? "Impossible de créer le dashboard."),
+              ? "jira.error.dashboard_limit"
+              : (err.message ?? "jira.error.dashboard_create"),
           );
           this.creatingDashboard.set(false);
         },
@@ -348,7 +345,7 @@ export class JiraConfigComponent implements OnInit {
     const boardId = this.selectedBoardId();
     const board = this.discoveredBoards().find((b) => b.id === boardId);
     if (!board) {
-      this.error.set("Please select a board first.");
+      this.error.set("jira.error.select_board");
       return;
     }
 
@@ -363,7 +360,11 @@ export class JiraConfigComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.showSuccess(`Dashboard '${board.name}' created.`);
+          this.showSuccess(
+            this.i18n.tWithParams("jira.success.dashboard_created", {
+              name: board.name,
+            }),
+          );
           this.creatingDashboard.set(false);
           this.loadDashboards();
           this.loadConfig();
@@ -371,8 +372,8 @@ export class JiraConfigComponent implements OnInit {
         error: (err) => {
           this.error.set(
             err.status === 402
-              ? `Dashboard limit reached (${this.dashboardLimitLabel ?? "Plan limit"}). Upgrade your plan to add more dashboards.`
-              : (err.message ?? "Unable to create dashboard."),
+              ? "jira.error.dashboard_limit"
+              : (err.message ?? "jira.error.dashboard_create"),
           );
           this.creatingDashboard.set(false);
         },
@@ -385,12 +386,12 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
     this.api.activateDashboard(dashboardId).subscribe({
       next: () => {
-        this.showSuccess("Active dashboard updated.");
+        this.showSuccess("jira.success.dashboard_activated");
         this.switchingDashboardId.set(null);
         this.loadDashboards();
       },
       error: (err) => {
-        this.error.set(err.message ?? "Unable to switch dashboard.");
+        this.error.set(err.message ?? "jira.error.dashboard_switch");
         this.switchingDashboardId.set(null);
       },
     });
@@ -398,7 +399,9 @@ export class JiraConfigComponent implements OnInit {
 
   onDeleteDashboard(dashboard: JiraDashboard): void {
     const confirmed = globalThis.confirm(
-      `Delete dashboard '${dashboard.name}'?`,
+      this.i18n.tWithParams("jira.dashboards.confirm.delete", {
+        name: dashboard.name,
+      }),
     );
     if (!confirmed) {
       return;
@@ -409,12 +412,12 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
     this.api.deleteDashboard(dashboard.id).subscribe({
       next: () => {
-        this.showSuccess("Dashboard deleted.");
+        this.showSuccess("jira.success.dashboard_deleted");
         this.deletingDashboardId.set(null);
         this.loadDashboards();
       },
       error: (err) => {
-        this.error.set(err.message ?? "Unable to delete dashboard.");
+        this.error.set(err.message ?? "jira.error.dashboard_delete");
         this.deletingDashboardId.set(null);
       },
     });
@@ -432,7 +435,7 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
     this.api.sync().subscribe({
       next: () => {
-        this.showSuccess("Sync completed.");
+        this.showSuccess("jira.success.sync");
         this.syncing.set(false);
       },
       error: (err) => {
@@ -493,7 +496,7 @@ export class JiraConfigComponent implements OnInit {
       !this.personalForm.username.trim() ||
       !this.personalForm.password.trim()
     ) {
-      this.error.set("Username and password are required.");
+      this.error.set("jira.error.username_password_required");
       return;
     }
 
@@ -513,10 +516,10 @@ export class JiraConfigComponent implements OnInit {
           this.editingCredentials.set(false);
           this.savingPersonal.set(false);
           this.loadDashboards();
-          this.showSuccess("Jira account connected successfully.");
+          this.showSuccess("jira.success.personal_connected");
         },
         error: (err) => {
-          this.error.set(err.message ?? "Failed to save Jira credentials.");
+          this.error.set(err.message ?? "jira.error.save_credentials");
           this.savingPersonal.set(false);
         },
       });
@@ -550,7 +553,7 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
     const oauthWindow = globalThis.open("about:blank", "_blank");
     if (!oauthWindow) {
-      this.error.set("Pop-up blocked. Please allow pop-ups and retry.");
+      this.error.set("jira.error.popup_blocked");
       this.connecting.set(false);
       return;
     }
@@ -558,7 +561,7 @@ export class JiraConfigComponent implements OnInit {
     this.api.startOAuthConnect().subscribe({
       next: ({ authUrl }) => {
         if (!authUrl) {
-          this.error.set("OAuth URL was not provided by the server.");
+          this.error.set("jira.error.oauth_url_missing");
           oauthWindow.close();
           this.connecting.set(false);
           return;
@@ -567,7 +570,7 @@ export class JiraConfigComponent implements OnInit {
         this.connecting.set(false);
       },
       error: (err) => {
-        this.error.set(err.message ?? "Unable to initiate Jira OAuth.");
+        this.error.set(err.message ?? "jira.error.oauth_init");
         oauthWindow.close();
         this.connecting.set(false);
       },
@@ -580,13 +583,13 @@ export class JiraConfigComponent implements OnInit {
     this.success.set(null);
     this.api.disconnectOAuth().subscribe({
       next: () => {
-        this.showSuccess("Jira OAuth disconnected.");
+        this.showSuccess("jira.success.oauth_disconnected");
         this.disconnecting.set(false);
         this.loadConfig();
         this.loadDashboards();
       },
       error: (err) => {
-        this.error.set(err.message ?? "Unable to disconnect Jira OAuth.");
+        this.error.set(err.message ?? "jira.error.oauth_disconnect");
         this.disconnecting.set(false);
       },
     });

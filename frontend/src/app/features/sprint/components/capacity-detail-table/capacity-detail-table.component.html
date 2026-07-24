@@ -1,0 +1,355 @@
+<div class="capacity-detail">
+  <!-- Section header -->
+  <div class="section-header">
+    <div>
+      <h3 class="section-title">Member Capacity Detail</h3>
+      <p class="section-desc">
+        Edit <strong>Time Override</strong> (0&ndash;1) and
+        <strong>Days Off</strong> per sprint. &nbsp;Effective Days = (Sprint
+        Days &minus; Days Off) &times; Time Override.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <!-- Sprint dropdown -->
+    <div class="filter-group">
+      <label class="filter-label">Sprint</label>
+      <div class="ds-dropdown" [class.ds-dropdown--open]="sprintDropdownOpen()">
+        <button
+          class="ds-trigger ds-trigger--sm"
+          type="button"
+          (click)="toggleSprintDropdown()"
+          [attr.aria-expanded]="sprintDropdownOpen()"
+        >
+          <span class="ds-trigger__label">
+            @if (filterSprints.size > 0) {
+              <span class="badge-count">{{ filterSprints.size }}</span>
+              selected
+            } @else {
+              All ({{ availableSprints.length }})
+            }
+          </span>
+          <svg
+            class="ds-chevron"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        @if (sprintDropdownOpen()) {
+          <div class="ds-panel">
+            @for (s of availableSprints; track s.key) {
+              <button
+                class="ds-option"
+                [class.ds-option--active]="isSprintSelected(s.key)"
+                type="button"
+                (click)="selectSprint(s.key)"
+              >
+                <span
+                  class="ds-checkbox"
+                  [class.ds-checkbox--checked]="isSprintSelected(s.key)"
+                ></span>
+                <span class="ds-option__info">
+                  <span class="ds-option__name">{{ s.label }}</span>
+                </span>
+                @if (isSprintSelected(s.key)) {
+                  <svg
+                    class="ds-option__check"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Member dropdown -->
+    <div class="filter-group">
+      <label class="filter-label">Member</label>
+      <div class="ds-dropdown" [class.ds-dropdown--open]="memberDropdownOpen()">
+        <button
+          class="ds-trigger ds-trigger--sm"
+          type="button"
+          (click)="toggleMemberDropdown()"
+          [attr.aria-expanded]="memberDropdownOpen()"
+        >
+          <span class="ds-trigger__label">
+            @if (filterMembers.size > 0) {
+              <span class="badge-count">{{ filterMembers.size }}</span>
+              selected
+            } @else {
+              All ({{ availableMembers.length }})
+            }
+          </span>
+          <svg
+            class="ds-chevron"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        @if (memberDropdownOpen()) {
+          <div class="ds-panel">
+            @for (m of availableMembers; track m.id) {
+              <button
+                class="ds-option"
+                [class.ds-option--active]="isMemberSelected(m.id)"
+                type="button"
+                (click)="selectMember(m.id)"
+              >
+                <span
+                  class="ds-checkbox"
+                  [class.ds-checkbox--checked]="isMemberSelected(m.id)"
+                ></span>
+                <span class="ds-option__info">
+                  <span class="ds-option__name">{{ m.name }}</span>
+                </span>
+                @if (isMemberSelected(m.id)) {
+                  <svg
+                    class="ds-option__check"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <button
+      *ngIf="filterSprints.size > 0 || filterMembers.size > 0"
+      class="btn-clear-filters"
+      (click)="resetFilters()"
+      type="button"
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+      Clear filters
+    </button>
+
+    <span class="filter-count"
+      >{{ filteredRows.length }}&thinsp;/&thinsp;{{ rows.length }} rows</span
+    >
+  </div>
+
+  <!-- Validation Error Alert -->
+  <div class="alert-error" *ngIf="validationError" role="alert">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+    {{ validationError }}
+    <button class="alert-close" (click)="cancelEdit()">&times;</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-pi">PI</th>
+          <th class="col-iter">Iter</th>
+          <th class="col-type">Type</th>
+          <th class="col-days">Days</th>
+          <th class="col-name">Member</th>
+          <th class="col-override">Override (%)</th>
+          <th class="col-off">Days Off</th>
+          <th class="col-effective">Effective</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of filteredRows; track trackRow($index, row)) {
+          <tr [class.row--ip]="row.type === 'IP'">
+            <td class="col-pi text-muted">{{ row.pi }}</td>
+            <td class="col-iter text-muted">{{ row.iteration }}</td>
+            <td class="col-type">
+              <span
+                class="type-badge"
+                [class]="'type-badge--' + row.type.toLowerCase()"
+              >
+                {{ row.type }}
+              </span>
+            </td>
+            <td class="col-days ta-right">{{ row.days }}</td>
+            <td class="col-name member-name-cell">{{ row.memberName }}</td>
+            <td class="col-override">
+              @if (isEditingCell(getCellKey(row, "timeOverride"))) {
+                <div class="cell-edit">
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    class="cell-input"
+                    [(ngModel)]="editingValue"
+                    (keydown.enter)="saveDaysOff(row, 'timeOverride')"
+                    (keydown.escape)="cancelEdit()"
+                  />
+                  <button
+                    class="btn-cell btn-cell--save"
+                    (click)="saveDaysOff(row, 'timeOverride')"
+                    title="Save"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+                  <button
+                    class="btn-cell btn-cell--cancel"
+                    (click)="cancelEdit()"
+                    title="Cancel"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div
+                  class="cell-view"
+                  (click)="startEditTimeOverride(row)"
+                  title="Click to edit (decimal 0–1)"
+                >
+                  {{ row.timeOverride * 100 | number:'1.0-0' }}%
+                </div>
+              }
+            </td>
+            <td class="col-off">
+              @if (isEditingCell(getCellKey(row, "daysOff"))) {
+                <div class="cell-edit">
+                  <input
+                    type="number"
+                    min="0"
+                    [max]="row.days"
+                    step="0.5"
+                    class="cell-input"
+                    [(ngModel)]="editingValue"
+                    (keydown.enter)="saveDaysOff(row, 'daysOff')"
+                    (keydown.escape)="cancelEdit()"
+                  />
+                  <button
+                    class="btn-cell btn-cell--save"
+                    (click)="saveDaysOff(row, 'daysOff')"
+                    title="Save"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+                  <button
+                    class="btn-cell btn-cell--cancel"
+                    (click)="cancelEdit()"
+                    title="Cancel"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div
+                  class="cell-view"
+                  (click)="startEditDaysOff(row)"
+                  title="Click to edit"
+                >
+                  {{ row.daysOff }}
+                </div>
+              }
+            </td>
+            <td class="col-effective ta-right effective-val">
+              {{ row.effectiveDays | number: "1.2-2" }}
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty-row">No data matches your filters</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,10 +1,10 @@
 <div class="billing">
-  <h2 class="section-title">Billing & Subscription</h2>
-  <p class="section-desc">Manage your subscription plan and billing.</p>
+  <h2 class="section-title">{{ "billing.title" | translate }}</h2>
+  <p class="section-desc">{{ "billing.subtitle" | translate }}</p>
 
   @if (subState.error()) {
     <div class="billing-error" role="alert">
-      {{ subState.error() }}
+      {{ subState.error()! | translate }}
       <button class="error-close" (click)="subState.clearError()">✕</button>
     </div>
   }
@@ -22,26 +22,30 @@
         <h3 class="plan-name">{{ sub.planName }}</h3>
         @if (sub.currentPeriodEnd) {
           <p class="plan-period">
-            {{ sub.cancelAtPeriodEnd ? "Cancels" : "Renews" }} on
+            {{
+              sub.cancelAtPeriodEnd
+                ? ("billing.cancels" | translate)
+                : ("billing.renews" | translate)
+            }}
             {{ sub.currentPeriodEnd }}
           </p>
         }
       </div>
       @if (sub.status === "ACTIVE" && !sub.cancelAtPeriodEnd) {
         <button class="btn-danger" (click)="onCancel()">
-          Cancel Subscription
+          {{ "billing.cancel_btn" | translate }}
         </button>
       }
     </div>
   } @else if (!subState.loading()) {
     <div class="no-plan">
-      <p class="no-plan__text">No active subscription</p>
-      <p class="no-plan__hint">Choose a plan below to get started.</p>
+      <p class="no-plan__text">{{ "billing.no_plan" | translate }}</p>
+      <p class="no-plan__hint">{{ "billing.no_plan_hint" | translate }}</p>
     </div>
   }
 
   <!-- Plans -->
-  <h3 class="plans-title">Available Plans</h3>
+  <h3 class="plans-title">{{ "billing.plans_title" | translate }}</h3>
   <div class="plans-grid">
     @for (plan of subState.plans(); track plan.code) {
       <div
@@ -50,10 +54,18 @@
       >
         <div class="plan-card__header">
           <h4 class="plan-card__name">{{ plan.name }}</h4>
-          <p class="plan-card__price">
-            {{ plan.priceMonthly | currency: "USD" : "symbol" : "1.0-0" }}
-            <span class="plan-card__period">/mo</span>
-          </p>
+          @if (plan.contactOnly) {
+            <p class="plan-card__price plan-card__price--contact">
+              {{ "billing.contact_us" | translate }}
+            </p>
+          } @else {
+            <p class="plan-card__price">
+              {{ plan.priceMonthly | currency: "USD" : "symbol" : "1.0-0" }}
+              <span class="plan-card__period">{{
+                "billing.per_month" | translate
+              }}</span>
+            </p>
+          }
         </div>
         <p class="plan-card__desc">{{ plan.description }}</p>
         <p class="plan-card__limit">
@@ -81,14 +93,27 @@
           }
         </ul>
         @if (isCurrentPlan(plan.code)) {
-          <span class="plan-card__current">Current Plan</span>
+          <span class="plan-card__current">{{
+            "billing.current_plan" | translate
+          }}</span>
+        } @else if (plan.contactOnly) {
+          <button
+            class="btn-plan btn-plan--contact"
+            (click)="contactEnterprise(plan)"
+          >
+            {{ "billing.contact_us" | translate }}
+          </button>
         } @else {
           <button
             class="btn-plan"
             (click)="onSelectPlan(plan.code)"
             [disabled]="subState.loading()"
           >
-            {{ subState.loading() ? "Processing…" : "Upgrade" }}
+            {{
+              subState.loading()
+                ? ("common.loading" | translate)
+                : ("common.upgrade" | translate)
+            }}
           </button>
         }
       </div>
@@ -97,7 +122,7 @@
 
   <!-- Promo Code -->
   <div class="promo-section">
-    <h3 class="plans-title">Have a promo code?</h3>
+    <h3 class="plans-title">{{ "billing.promo_title" | translate }}</h3>
     <div class="promo-form">
       <input
         class="form-input"
@@ -142,7 +167,9 @@
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <h3 class="modal__title" id="cancel-title">Cancel Subscription?</h3>
+        <h3 class="modal__title" id="cancel-title">
+          {{ "billing.modal.cancel_title" | translate }}
+        </h3>
         <p class="modal__desc">
           Your access continues until the end of the current billing period. You
           can resubscribe at any time.

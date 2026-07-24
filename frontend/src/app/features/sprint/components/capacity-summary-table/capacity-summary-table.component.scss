@@ -1,0 +1,176 @@
+/* ── Section header ─────────────────────────────────────────── */
+.section-header {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e4e7ef;
+  margin: 0 0 4px;
+}
+
+.section-desc {
+  font-size: 13px;
+  color: #8b92a8;
+  margin: 0;
+  line-height: 1.5;
+
+  strong {
+    color: #c8cbdb;
+    font-weight: 600;
+  }
+}
+
+/* ── Table ──────────────────────────────────────────────────── */
+.capacity-summary {
+  margin-bottom: 24px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: transparent;
+}
+
+.data-table thead {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.data-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b92a8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e4e7ef;
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background 150ms ease;
+
+  &:hover:not(.row-subtotal) {
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  &.row--ip {
+    background: rgba(168, 85, 247, 0.02);
+
+    &:hover {
+      background: rgba(168, 85, 247, 0.05);
+    }
+  }
+
+  &.row-subtotal {
+    background: rgba(255, 255, 255, 0.04);
+    border-top: 2px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+
+    td {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+      color: #f0f1f5;
+    }
+
+    &--no-ip {
+      background: rgba(168, 85, 247, 0.04);
+      border-top-color: rgba(168, 85, 247, 0.12);
+      border-bottom-color: rgba(168, 85, 247, 0.12);
+    }
+  }
+}
+
+/* ── Column sizing ──────────────────────────────────────────── */
+.col-pi { width: 50px; }
+.col-iteration { width: 60px; }
+.col-type { width: 70px; }
+.col-total { width: 100px; }
+.col-80-percent { width: 100px; }
+.col-sp { width: 90px; }
+
+/* ── Text utilities ─────────────────────────────────────────── */
+.text-muted {
+  color: #8b92a8;
+}
+
+.ta-right {
+  text-align: right;
+}
+
+.mono {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.sp-value {
+  font-weight: 700;
+  color: #a5b4fc;
+  font-size: 12px;
+}
+
+/* ── Type badge ─────────────────────────────────────────────── */
+.type-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &--it {
+    background: rgba(96, 165, 250, 0.12);
+    color: #60a5fa;
+  }
+
+  &--ip {
+    background: rgba(168, 85, 247, 0.12);
+    color: #c4b5fd;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .data-table th,
+  .data-table td {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+
+  .col-pi { width: 45px; }
+  .col-iteration { width: 55px; }
+  .col-type { width: 60px; }
+  .col-total { width: 85px; }
+  .col-80-percent { width: 85px; }
+  .col-sp { width: 75px; }
+}
+
+@media (max-width: 768px) {
+  .data-table th,
+  .data-table td {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+
+  .mono {
+    font-size: 10px;
+  }
+}

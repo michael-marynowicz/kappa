@@ -35,11 +35,18 @@ export class AuthStateService {
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _registerSuccess = signal<string | null>(null);
+  /** Non-null when the last login failed because the email is not verified. Holds the attempted email. */
+  private readonly _emailUnverified = signal<string | null>(null);
+  private readonly _resendLoading = signal(false);
+  private readonly _resendSuccess = signal(false);
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly registerSuccess = this._registerSuccess.asReadonly();
+  readonly emailUnverified = this._emailUnverified.asReadonly();
+  readonly resendLoading = this._resendLoading.asReadonly();
+  readonly resendSuccess = this._resendSuccess.asReadonly();
   readonly isAuthenticated = computed(
     () => !!this._user() && !!this.getToken(),
   );
@@ -58,12 +65,32 @@ export class AuthStateService {
   login(request: LoginRequest): void {
     this._loading.set(true);
     this._error.set(null);
+    this._emailUnverified.set(null);
     const shouldRedirectToHome = this.router.url.startsWith("/auth");
     this.api.login(request).subscribe({
       next: (res) => this.handleAuthSuccess(res, shouldRedirectToHome),
       error: (err) => {
-        this._error.set(err.message ?? "Login failed");
+        if (err.emailUnverified) {
+          this._emailUnverified.set(request.email);
+          this._error.set(null);
+        } else {
+          this._error.set(err.message ?? "Login failed");
+        }
         this._loading.set(false);
+      },
+    });
+  }
+
+  resendVerificationEmail(email: string): void {
+    this._resendLoading.set(true);
+    this._resendSuccess.set(false);
+    this.api.resendVerificationEmail(email).subscribe({
+      next: () => {
+        this._resendLoading.set(false);
+        this._resendSuccess.set(true);
+      },
+      error: () => {
+        this._resendLoading.set(false);
       },
     });
   }
@@ -110,6 +137,8 @@ export class AuthStateService {
     this._user.set(null);
     this._error.set(null);
     this._registerSuccess.set(null);
+    this._emailUnverified.set(null);
+    this._resendSuccess.set(false);
     this.permissionService.clear();
     this.orgState.clear();
     this.subState.clear();
@@ -123,6 +152,8 @@ export class AuthStateService {
   clearError(): void {
     this._error.set(null);
     this._registerSuccess.set(null);
+    this._emailUnverified.set(null);
+    this._resendSuccess.set(false);
   }
 
   private handleAuthSuccess(

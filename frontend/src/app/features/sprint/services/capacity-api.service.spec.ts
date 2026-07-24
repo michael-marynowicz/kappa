@@ -21,8 +21,8 @@ describe("CapacityApiService", () => {
 
   const mockGrid: CapacityGrid = {
     members: [
-      { id: "m1", name: "Alice", role: "DEV" },
-      { id: "m2", name: "Bob", role: "QA" },
+      { id: "m1", name: "Alice", role: "DEV", timeOverride: 1.0 },
+      { id: "m2", name: "Bob", role: "QA", timeOverride: 0.5 },
     ],
     sprints: ["Sprint 1", "Sprint 2"],
     daysPerSprint: { "Sprint 1": 10, "Sprint 2": 9 },
@@ -30,9 +30,18 @@ describe("CapacityApiService", () => {
       m1: { "Sprint 1": 2, "Sprint 2": 0 },
       m2: { "Sprint 1": 1, "Sprint 2": 3 },
     },
+    sprintDetails: {
+      "Sprint 1": { pi: "1.0", iteration: 1, ip: false },
+      "Sprint 2": { pi: "1.0", iteration: 2, ip: false },
+    },
   };
 
-  const mockMember: TeamMember = { id: "m3", name: "Charlie", role: "PDA" };
+  const mockMember: TeamMember = {
+    id: "m3",
+    name: "Charlie",
+    role: "PDA",
+    timeOverride: 1.0,
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({

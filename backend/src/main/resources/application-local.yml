@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/sprintreporter}
+    username: ${DATABASE_USERNAME:sprintreporter}
+    password: ${DATABASE_PASSWORD:sprintreporter_local}
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    from: noreply@kappa.com
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+jira:
+  base-url: ${JIRA_BASE_URL:https://jira.amadeus.com/agile}
+  user-email: ${JIRA_USER_EMAIL:}
+  pat: ${JIRA_PAT:}
+  project-key: ${JIRA_PROJECT_KEY:ROC}
+  board-id: ${JIRA_BOARD_ID:30025}
+  mock-mode: ${JIRA_MOCK_MODE:false}
+
+atlassian:
+  oauth2:
+    client-id: ${ATLASSIAN_CLIENT_ID:}
+    client-secret: ${ATLASSIAN_CLIENT_SECRET:}
+    redirect-uri: ${ATLASSIAN_REDIRECT_URI:http://localhost:8080/api/v1/jira/oauth/callback}
+
+stripe:
+  enabled: ${STRIPE_ENABLED:false}
+  secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:4200/billing/success?session_id={CHECKOUT_SESSION_ID}}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:4200/billing/cancel}
+
+# Dev-only: account to auto-verify on startup (set via DEV_ADMIN_EMAIL env var)
+dev:
+  admin-email: ${DEV_ADMIN_EMAIL:}

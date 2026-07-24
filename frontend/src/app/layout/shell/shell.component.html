@@ -52,17 +52,23 @@
             <line x1="12" y1="9" x2="12" y2="13" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
-          <span>Please verify your email to activate all features.</span>
+          <span>{{ "shell.email_banner.message" | translate }}</span>
         </div>
         @if (resendSuccess) {
-          <span class="email-banner__sent">Verification email sent!</span>
+          <span class="email-banner__sent">{{
+            "shell.email_banner.sent" | translate
+          }}</span>
         } @else {
           <button
             class="email-banner__btn"
             (click)="resendVerification()"
             [disabled]="resendingEmail"
           >
-            {{ resendingEmail ? "Sending…" : "Resend link" }}
+            {{
+              resendingEmail
+                ? ("shell.email_banner.sending" | translate)
+                : ("shell.email_banner.resend" | translate)
+            }}
           </button>
         }
       </div>
@@ -87,7 +93,9 @@
           </svg>
           <span>{{ "jira.banner.message" | translate }}</span>
         </div>
-        <a class="jira-banner__btn" routerLink="/settings/jira">{{ "jira.banner.action" | translate }}</a>
+        <a class="jira-banner__btn" routerLink="/settings/jira">{{
+          "jira.banner.action" | translate
+        }}</a>
       </div>
     }
 

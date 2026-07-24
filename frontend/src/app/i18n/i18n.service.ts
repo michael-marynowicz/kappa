@@ -35,6 +35,18 @@ export class I18nService {
     return TRANSLATIONS[lang][key] ?? TRANSLATIONS["en"][key] ?? key;
   }
 
+  /**
+   * Translate a key and substitute `{param}` placeholders.
+   * e.g. tWithParams('jira.success.dashboard_created', { name: 'My Board' })
+   */
+  tWithParams(key: string, params: Record<string, string>): string {
+    let text = this.t(key);
+    for (const [k, v] of Object.entries(params)) {
+      text = text.replace(`{${k}}`, v);
+    }
+    return text;
+  }
+
   private resolveInitialLanguage(): AppLanguage {
     const stored = localStorage.getItem("app_language");
     if (stored === "fr" || stored === "en") return stored;

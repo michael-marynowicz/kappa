@@ -21,6 +21,7 @@ public class SprintIssueResponseDto {
     private final String status;
     private final String assignee;
     private final String issueType;
+    private final String topic;
     private final Integer totalStoryPoints;
     private final Integer remainingStoryPoints;
     private final Integer doneStoryPoints;

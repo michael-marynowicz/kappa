@@ -41,7 +41,7 @@ describe("SprintAnalyticsComponent", () => {
       { topic: "Auth", storyPoints: 20 },
       { topic: "UI", storyPoints: 12 },
     ],
-    capacity: { plannedCapacity: 40, realCapacity: 38 },
+    realCapacity: 38,
     teamAvailability: { dev: 3, pda: 1, qa: 1 },
   };
 
@@ -208,7 +208,7 @@ describe("SprintAnalyticsComponent", () => {
     it("should handle positive capacity delta with green color", () => {
       const positiveCap = {
         ...mockMetrics,
-        capacity: { plannedCapacity: 30, realCapacity: 35 },
+        realCapacity: 35,
       };
       component.metrics = positiveCap;
       component.ngOnChanges({

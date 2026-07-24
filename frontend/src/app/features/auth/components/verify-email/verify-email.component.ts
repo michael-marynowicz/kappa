@@ -6,13 +6,14 @@ import { AuthStateService } from "../../../../core/services/auth-state.service";
 import { AuthApiService } from "../../../../core/services/auth-api.service";
 import { VerifyEmailResponse } from "../../../../core/models/invitation.model";
 import { HttpErrorResponse } from "@angular/common/http";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 type VerifyState = "loading" | "success" | "joined" | "invalid" | "expired";
 
 @Component({
   selector: "app-verify-email",
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   templateUrl: "./verify-email.component.html",
   styleUrls: ["./verify-email.component.scss"],
 })

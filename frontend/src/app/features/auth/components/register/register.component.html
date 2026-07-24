@@ -17,8 +17,8 @@
           <path d="M2 12l10 5 10-5" />
         </svg>
       </div>
-      <h1 class="auth-title">Create Account</h1>
-      <p class="auth-subtitle">Start your free trial</p>
+      <h1 class="auth-title">Kappa</h1>
+      <p class="auth-subtitle">{{ "auth.register.subtitle" | translate }}</p>
     </div>
 
     @if (authState.registerSuccess()) {
@@ -37,13 +37,17 @@
           <polyline points="22 4 12 14.01 9 11.01" />
         </svg>
         <div>
-          <p class="auth-success__title">Account created!</p>
+          <p class="auth-success__title">
+            {{ "auth.register.success_title" | translate }}
+          </p>
           <p class="auth-success__desc">{{ authState.registerSuccess() }}</p>
         </div>
       </div>
       <p class="auth-footer">
-        Already verified?
-        <a routerLink="/auth/login" class="auth-link">Sign in</a>
+        {{ "auth.register.already_verified" | translate }}
+        <a routerLink="/auth/login" class="auth-link">{{
+          "auth.register.signin_link" | translate
+        }}</a>
       </p>
     } @else {
       @if (authState.error()) {
@@ -55,7 +59,9 @@
       <form class="auth-form" (ngSubmit)="onSubmit()" #regForm="ngForm">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label" for="firstName">First Name</label>
+            <label class="form-label" for="firstName">{{
+              "auth.register.first_name" | translate
+            }}</label>
             <input
               class="form-input"
               [class.is-invalid]="
@@ -75,18 +81,24 @@
             />
             @if (firstNameField.invalid && firstNameField.touched) {
               @if (firstNameField.errors?.["required"]) {
-                <span class="form-error">First name is required.</span>
+                <span class="form-error">{{
+                  "auth.register.firstname_required" | translate
+                }}</span>
               } @else if (firstNameField.errors?.["minlength"]) {
-                <span class="form-error">At least 2 characters required.</span>
+                <span class="form-error">{{
+                  "auth.register.firstname_min" | translate
+                }}</span>
               } @else if (firstNameField.errors?.["pattern"]) {
-                <span class="form-error"
-                  >Letters, spaces, hyphens and apostrophes only.</span
-                >
+                <span class="form-error">{{
+                  "auth.register.firstname_pattern" | translate
+                }}</span>
               }
             }
           </div>
           <div class="form-group">
-            <label class="form-label" for="lastName">Last Name</label>
+            <label class="form-label" for="lastName">{{
+              "auth.register.last_name" | translate
+            }}</label>
             <input
               class="form-input"
               [class.is-invalid]="
@@ -106,20 +118,26 @@
             />
             @if (lastNameField.invalid && lastNameField.touched) {
               @if (lastNameField.errors?.["required"]) {
-                <span class="form-error">Last name is required.</span>
+                <span class="form-error">{{
+                  "auth.register.lastname_required" | translate
+                }}</span>
               } @else if (lastNameField.errors?.["minlength"]) {
-                <span class="form-error">At least 2 characters required.</span>
+                <span class="form-error">{{
+                  "auth.register.lastname_min" | translate
+                }}</span>
               } @else if (lastNameField.errors?.["pattern"]) {
-                <span class="form-error"
-                  >Letters, spaces, hyphens and apostrophes only.</span
-                >
+                <span class="form-error">{{
+                  "auth.register.lastname_pattern" | translate
+                }}</span>
               }
             }
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="email">Email</label>
+          <label class="form-label" for="email">{{
+            "auth.register.email" | translate
+          }}</label>
           <input
             class="form-input"
             [class.is-invalid]="emailField.invalid && emailField.touched"
@@ -130,22 +148,25 @@
             #emailField="ngModel"
             required
             pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
-            placeholder="you@company.com"
+            placeholder="{{ 'auth.register.email_placeholder' | translate }}"
             autocomplete="email"
             (blur)="onEmailBlur()"
           />
           @if (emailField.invalid && emailField.touched) {
             @if (emailField.errors?.["required"]) {
-              <span class="form-error">Email is required.</span>
+              <span class="form-error">{{
+                "auth.register.email_required" | translate
+              }}</span>
             } @else if (emailField.errors?.["pattern"]) {
-              <span class="form-error"
-                >Please enter a valid email address (e.g.
-                you&#64;company.com).</span
-              >
+              <span class="form-error">{{
+                "auth.register.email_invalid" | translate
+              }}</span>
             }
           }
           @if (checkingInvitation) {
-            <span class="form-hint form-hint--loading">Checking…</span>
+            <span class="form-hint form-hint--loading">{{
+              "auth.register.checking" | translate
+            }}</span>
           }
           @if (isInvited) {
             <div class="invitation-banner">
@@ -163,18 +184,21 @@
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
               <span>
-                You've been invited to join
-                <strong>{{ invitationCheck!.organizationName }}</strong> as
+                {{ "auth.register.invited_join" | translate }}
+                <strong>{{ invitationCheck!.organizationName }}</strong>
+                {{ "auth.register.invited_as" | translate }}
                 <strong>{{ invitationCheck!.role }}</strong
-                >. After verifying your email, your account will be linked
-                automatically.
+                >.
+                {{ "auth.register.invited_auto" | translate }}
               </span>
             </div>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="password">Password</label>
+          <label class="form-label" for="password">{{
+            "auth.register.password" | translate
+          }}</label>
           <div class="input-wrapper">
             <input
               class="form-input"
@@ -190,7 +214,9 @@
               minlength="8"
               maxlength="128"
               pattern="^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$"
-              placeholder="Min. 8 characters, 1 letter & 1 number"
+              placeholder="{{
+                'auth.register.password_placeholder' | translate
+              }}"
               autocomplete="new-password"
             />
             <button
@@ -237,22 +263,26 @@
           </div>
           @if (passwordField.invalid && passwordField.touched) {
             @if (passwordField.errors?.["required"]) {
-              <span class="form-error">Password is required.</span>
+              <span class="form-error">{{
+                "auth.register.password_required" | translate
+              }}</span>
             } @else if (passwordField.errors?.["minlength"]) {
-              <span class="form-error">At least 8 characters required.</span>
+              <span class="form-error">{{
+                "auth.register.password_min" | translate
+              }}</span>
             } @else if (passwordField.errors?.["pattern"]) {
-              <span class="form-error"
-                >Must contain at least one letter and one number.</span
-              >
+              <span class="form-error">{{
+                "auth.register.password_pattern" | translate
+              }}</span>
             }
           }
         </div>
 
         @if (!isInvited) {
           <div class="form-group">
-            <label class="form-label" for="organizationName"
-              >Organization</label
-            >
+            <label class="form-label" for="organizationName">{{
+              "auth.register.org_name" | translate
+            }}</label>
             <input
               class="form-input"
               [class.is-invalid]="orgNameField.invalid && orgNameField.touched"
@@ -269,9 +299,13 @@
             />
             @if (orgNameField.invalid && orgNameField.touched) {
               @if (orgNameField.errors?.["required"]) {
-                <span class="form-error">Organization name is required.</span>
+                <span class="form-error">{{
+                  "auth.register.org_required" | translate
+                }}</span>
               } @else if (orgNameField.errors?.["minlength"]) {
-                <span class="form-error">At least 2 characters required.</span>
+                <span class="form-error">{{
+                  "auth.register.firstname_min" | translate
+                }}</span>
               }
             }
           </div>
@@ -288,16 +322,18 @@
         >
           @if (authState.loading()) {
             <span class="btn-spinner"></span>
-            Creating account…
+            {{ "auth.register.creating" | translate }}
           } @else {
-            Create account
+            {{ "auth.register.submit" | translate }}
           }
         </button>
       </form>
 
       <p class="auth-footer">
-        Already have an account?
-        <a routerLink="/auth/login" class="auth-link">Sign in</a>
+        {{ "auth.register.have_account" | translate }}
+        <a routerLink="/auth/login" class="auth-link">{{
+          "auth.register.signin_link" | translate
+        }}</a>
       </p>
     }
   </div>

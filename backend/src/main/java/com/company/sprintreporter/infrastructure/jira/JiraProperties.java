@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 /**
  * Typed configuration for Jira connectivity.
  * Bound from application.yml under the "jira" prefix.
@@ -17,19 +15,18 @@ import java.util.List;
 public class JiraProperties {
 
     private String baseUrl;
-    /** Personal Access Token for Jira Server / Data Center (Bearer auth). */
-    private String pat;
+    private String apiToken;
     private String userEmail;
     private String projectKey;
-    /** Jira Software board ID — used to discover the active sprint automatically. */
-    private int boardId;
+    private String sprintId;
+    private String boardId;
 
     /**
-     * Jira usernames of team members to include in sprint reports.
-     * When non-empty, only issues assigned to these users are fetched.
-     * Leave empty to include all sprint issues regardless of assignee.
+     * Personal Access Token for Jira Server/Data Center (Jira 8.14+).
+     * When set, used as "Authorization: Bearer <pat>" — no expiry, no cookie refresh needed.
+     * Generate one at: Jira → Profile → Personal Access Tokens.
      */
-    private List<String> teamMembers = List.of();
+    private String pat;
 
     /**
      * When true, all Jira API calls are replaced by mock data.

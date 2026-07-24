@@ -38,4 +38,10 @@ export class AuthApiService {
   me(): Observable<User> {
     return this.http.get<User>(`${this.baseUrl}/me`);
   }
+
+  resendVerificationEmail(email: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/resend-verification`, {
+      email,
+    });
+  }
 }

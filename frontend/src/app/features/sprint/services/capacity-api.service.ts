@@ -47,10 +47,16 @@ export class CapacityApiService {
     return this.http.put<void>(`${this.baseUrl}/days-off/bulk`, requests);
   }
 
-  exportCsv(): Observable<Blob> {
-    return this.http.get(
-      `${environment.apiBaseUrl}/api/v1/export/capacity/csv`,
-      { responseType: "blob" },
+  updateTimeOverride(memberId: string, timeOverride: number): Observable<void> {
+    return this.http.put<void>(
+      `${this.baseUrl}/members/${encodeURIComponent(memberId)}/time-override`,
+      { timeOverride },
     );
+  }
+
+  exportXlsx(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/export`, {
+      responseType: "blob",
+    });
   }
 }
