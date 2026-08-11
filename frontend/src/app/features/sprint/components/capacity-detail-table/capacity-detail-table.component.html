@@ -227,7 +227,9 @@
             <td class="col-days ta-right">{{ row.days }}</td>
             <td class="col-name member-name-cell">{{ row.memberName }}</td>
             <td class="col-override">
-              @if (isEditingCell(getCellKey(row, "timeOverride"))) {
+              @if (row.excludedFromCapacity) {
+                <div class="cell-view cell-view--excluded">0%</div>
+              } @else if (isEditingCell(getCellKey(row, "timeOverride"))) {
                 <div class="cell-edit">
                   <input
                     type="number"
@@ -279,12 +281,16 @@
                   (click)="startEditTimeOverride(row)"
                   title="Click to edit (decimal 0–1)"
                 >
-                  {{ row.timeOverride * 100 | number:'1.0-0' }}%
+                  {{ row.timeOverride * 100 | number: "1.0-0" }}%
                 </div>
               }
             </td>
             <td class="col-off">
-              @if (isEditingCell(getCellKey(row, "daysOff"))) {
+              @if (row.excludedFromCapacity) {
+                <div class="cell-view cell-view--excluded">
+                  {{ row.daysOff }}
+                </div>
+              } @else if (isEditingCell(getCellKey(row, "daysOff"))) {
                 <div class="cell-edit">
                   <input
                     type="number"

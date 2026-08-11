@@ -21,34 +21,62 @@
     </button>
   </header>
 
-  @if (state.error()) {
-    <div class="error-banner" role="alert">
-      <span>⚠ {{ state.error() }}</span>
-      <button (click)="state.clearError()">✕</button>
-    </div>
-  }
+  @if (activeDashboardId) {
+    @if (state.error()) {
+      <div class="error-banner" role="alert">
+        <span>⚠ {{ state.error() }}</span>
+        <button (click)="state.clearError()">✕</button>
+      </div>
+    }
 
-  <app-sprint-summary-card
-    [summary]="state.summary()"
-    [loading]="state.loading()"
-  />
-
-  @if (state.loading()) {
-    <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
-      @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
-        <div class="backlog-skeleton__row">
-          <span class="backlog-skeleton__cell bsk--key"></span>
-          <span class="backlog-skeleton__cell bsk--title"></span>
-          <span class="backlog-skeleton__cell bsk--badge"></span>
-          <span class="backlog-skeleton__cell bsk--num"></span>
-        </div>
-      }
-    </section>
-  } @else {
-    <app-sprint-issue-table
-      [issues]="state.issues()"
-      [savingIssueKey]="state.savingIssueKey()"
-      (updateRemainingSp)="onUpdateSp($event)"
+    <app-sprint-summary-card
+      [summary]="state.summary()"
+      [loading]="state.loading()"
     />
+
+    @if (state.loading()) {
+      <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
+        @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
+          <div class="backlog-skeleton__row">
+            <span class="backlog-skeleton__cell bsk--key"></span>
+            <span class="backlog-skeleton__cell bsk--title"></span>
+            <span class="backlog-skeleton__cell bsk--badge"></span>
+            <span class="backlog-skeleton__cell bsk--num"></span>
+          </div>
+        }
+      </section>
+    } @else {
+      <app-sprint-issue-table
+        [issues]="state.issues()"
+        [savingIssueKey]="state.savingIssueKey()"
+        (updateRemainingSp)="onUpdateSp($event)"
+      />
+    }
+  } @else if (!dashboardsLoading()) {
+    <div class="no-dashboard">
+      <svg
+        class="no-dashboard__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+      </svg>
+      <h2 class="no-dashboard__title">
+        {{ "dashboard.no_dashboard" | translate }}
+      </h2>
+      <p class="no-dashboard__hint">
+        {{ "dashboard.no_dashboard_hint" | translate }}
+      </p>
+      <a class="no-dashboard__cta" routerLink="/settings/jira">{{
+        "dashboard.go_to_settings" | translate
+      }}</a>
+    </div>
   }
 </div>

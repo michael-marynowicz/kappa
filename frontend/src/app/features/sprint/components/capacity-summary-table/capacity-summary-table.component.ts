@@ -70,6 +70,7 @@ export class CapacitySummaryTableComponent implements OnInit, OnChanges {
       // Calculate total for this sprint
       let total = 0;
       for (const member of members) {
+        if (member.excludedFromCapacity) continue;
         const daysOff = daysOffGrid[member.id]?.[sprintName] ?? 0;
         total += calculateEffectiveDays(days, daysOff, member.timeOverride);
       }

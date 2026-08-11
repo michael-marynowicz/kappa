@@ -5,6 +5,7 @@ export interface TeamMember {
   name: string;
   role: MemberRole;
   timeOverride: number; // 0-1
+  excludedFromCapacity?: boolean;
 }
 
 export interface SprintDetails {

@@ -21,74 +21,102 @@
     <div class="metrics__spacer" aria-hidden="true"></div>
   </header>
 
-  <!-- Segmented control -->
-  <nav class="chart-switcher" aria-label="Chart view selector">
-    @for (opt of viewOptions; track opt.value) {
-      <button
-        class="chart-switcher__btn"
-        [class.chart-switcher__btn--active]="focusView() === opt.value"
-        (click)="focusView.set(opt.value)"
-        [attr.aria-pressed]="focusView() === opt.value"
-      >
-        {{ opt.label }}
-      </button>
-    }
-  </nav>
-
-  @if (state.error()) {
-    <div class="error-banner" role="alert">
-      <span>⚠ {{ state.error() }}</span>
-      <button (click)="state.clearError()">✕</button>
-    </div>
-  }
-
-  @if (showAnalyticsSkeleton()) {
-    <section class="metrics-skeleton" aria-live="polite" aria-busy="true">
-      <div class="metrics-skeleton__row metrics-skeleton__row--summary">
-        <div class="metrics-skeleton__card"></div>
-        <div class="metrics-skeleton__card"></div>
-        <div class="metrics-skeleton__card"></div>
-      </div>
-
-      <div class="metrics-skeleton__row metrics-skeleton__row--chart">
-        <div class="metrics-skeleton__chart"></div>
-        <div class="metrics-skeleton__list">
-          <span class="metrics-skeleton__line"></span>
-          <span class="metrics-skeleton__line"></span>
-          <span class="metrics-skeleton__line"></span>
-          <span class="metrics-skeleton__line"></span>
-        </div>
-      </div>
-
-      <div class="metrics-skeleton__row metrics-skeleton__row--table">
-        <span
-          class="metrics-skeleton__line metrics-skeleton__line--full"
-        ></span>
-        <span
-          class="metrics-skeleton__line metrics-skeleton__line--full"
-        ></span>
-        <span
-          class="metrics-skeleton__line metrics-skeleton__line--full"
-        ></span>
-      </div>
-    </section>
-  } @else {
-    <div
-      class="feature-gate"
-      [class.feature-gate--disabled]="state.metricsGated()"
-    >
-      <app-sprint-analytics
-        [metrics]="state.metrics()"
-        [iterations]="state.iterations()"
-        [epicGroups]="state.epicGroups()"
-        [iterationsGated]="state.iterationsGated()"
-        [iterationsLoading]="state.iterationsLoading()"
-        [capacityGated]="state.iterationsGated()"
-        [focusView]="focusView()"
-      />
-      @if (state.metricsGated()) {
-        <app-premium-overlay message="Metrics require a Premium plan" />
+  @if (activeDashboardId) {
+    <!-- Segmented control -->
+    <nav class="chart-switcher" aria-label="Chart view selector">
+      @for (opt of viewOptions; track opt.value) {
+        <button
+          class="chart-switcher__btn"
+          [class.chart-switcher__btn--active]="focusView() === opt.value"
+          (click)="focusView.set(opt.value)"
+          [attr.aria-pressed]="focusView() === opt.value"
+        >
+          {{ opt.label }}
+        </button>
       }
+    </nav>
+
+    @if (activeError()) {
+      <div class="error-banner" role="alert">
+        <span>⚠ {{ activeError() }}</span>
+        <button (click)="clearActiveError()">✕</button>
+      </div>
+    }
+
+    @if (showAnalyticsSkeleton()) {
+      <section class="metrics-skeleton" aria-live="polite" aria-busy="true">
+        <div class="metrics-skeleton__row metrics-skeleton__row--summary">
+          <div class="metrics-skeleton__card"></div>
+          <div class="metrics-skeleton__card"></div>
+          <div class="metrics-skeleton__card"></div>
+        </div>
+
+        <div class="metrics-skeleton__row metrics-skeleton__row--chart">
+          <div class="metrics-skeleton__chart"></div>
+          <div class="metrics-skeleton__list">
+            <span class="metrics-skeleton__line"></span>
+            <span class="metrics-skeleton__line"></span>
+            <span class="metrics-skeleton__line"></span>
+            <span class="metrics-skeleton__line"></span>
+          </div>
+        </div>
+
+        <div class="metrics-skeleton__row metrics-skeleton__row--table">
+          <span
+            class="metrics-skeleton__line metrics-skeleton__line--full"
+          ></span>
+          <span
+            class="metrics-skeleton__line metrics-skeleton__line--full"
+          ></span>
+          <span
+            class="metrics-skeleton__line metrics-skeleton__line--full"
+          ></span>
+        </div>
+      </section>
+    } @else if (state.metrics() || state.metricsGated()) {
+      <div
+        class="feature-gate"
+        [class.feature-gate--disabled]="state.metricsGated()"
+      >
+        <app-sprint-analytics
+          [metrics]="state.metrics()"
+          [iterations]="state.iterations()"
+          [epicGroups]="state.epicGroups()"
+          [iterationsGated]="state.iterationsGated()"
+          [iterationsLoading]="state.iterationsLoading()"
+          [capacityGated]="state.iterationsGated()"
+          [focusView]="focusView()"
+        />
+        @if (state.metricsGated()) {
+          <app-premium-overlay message="Metrics require a Premium plan" />
+        }
+      </div>
+    }
+  } @else if (!dashboardsLoading()) {
+    <div class="no-dashboard">
+      <svg
+        class="no-dashboard__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+      </svg>
+      <h2 class="no-dashboard__title">
+        {{ "dashboard.no_dashboard" | translate }}
+      </h2>
+      <p class="no-dashboard__hint">
+        {{ "dashboard.no_dashboard_hint" | translate }}
+      </p>
+      <a class="no-dashboard__cta" routerLink="/settings/jira">{{
+        "dashboard.go_to_settings" | translate
+      }}</a>
     </div>
   }
 </div>

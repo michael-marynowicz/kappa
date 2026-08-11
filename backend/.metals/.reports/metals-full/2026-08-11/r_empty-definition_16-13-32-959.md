@@ -1,3 +1,14 @@
+error id: file:///C:/Users/mmarynowicz/Downloads/sprint-reporter-v2/sprint-reporter/backend/src/main/java/com/company/sprintreporter/service/CapacityService.java:_empty_/CapacityPlanningResponseDto#builder#members#sprints#daysPerSprint#
+file:///C:/Users/mmarynowicz/Downloads/sprint-reporter-v2/sprint-reporter/backend/src/main/java/com/company/sprintreporter/service/CapacityService.java
+empty definition using pc, found symbol in pc: _empty_/CapacityPlanningResponseDto#builder#members#sprints#daysPerSprint#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 6257
+uri: file:///C:/Users/mmarynowicz/Downloads/sprint-reporter-v2/sprint-reporter/backend/src/main/java/com/company/sprintreporter/service/CapacityService.java
+text:
+```scala
 package com.company.sprintreporter.service;
 
 import com.company.sprintreporter.application.dto.*;
@@ -139,7 +150,7 @@ public class CapacityService {
         return CapacityPlanningResponseDto.builder()
                 .members(members.stream().map(this::toDto).toList())
                 .sprints(sprints)
-                .daysPerSprint(daysPerSprintMap)
+                .@@daysPerSprint(daysPerSprintMap)
                 .daysOffGrid(grid)
                 .sprintDetails(sprintDetails)
                 .build();
@@ -368,13 +379,11 @@ public class CapacityService {
     }
 
     private TeamMemberDto toDto(TeamMember member) {
-        boolean excluded = member.getRole() == TeamMember.Role.SM;
         return TeamMemberDto.builder()
                 .id(member.getId())
                 .name(member.getName())
                 .role(member.getRole().name())
                 .timeOverride(member.getTimeOverride())
-                .excludedFromCapacity(excluded)
                 .build();
     }
 
@@ -394,3 +403,10 @@ public class CapacityService {
         return availableDays * safeTimeOverride;
     }
 }
+
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: _empty_/CapacityPlanningResponseDto#builder#members#sprints#daysPerSprint#

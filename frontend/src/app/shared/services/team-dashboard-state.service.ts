@@ -27,7 +27,10 @@ export class TeamDashboardStateService {
     () => this._dashboards().find((dashboard) => dashboard.active)?.id ?? null,
   );
 
-  loadDashboards(errorMessage = "Unable to load teams."): void {
+  loadDashboards(
+    errorMessage = "Unable to load teams.",
+    onLoaded?: (dashboards: JiraDashboard[]) => void,
+  ): void {
     this._loading.set(true);
     this._error.set(null);
     this.jiraApi.listDashboards().subscribe({
@@ -37,6 +40,7 @@ export class TeamDashboardStateService {
         );
         this._dashboards.set(orderedDashboards);
         this._loading.set(false);
+        onLoaded?.(orderedDashboards);
       },
       error: (err) => {
         this._error.set(err.message ?? errorMessage);

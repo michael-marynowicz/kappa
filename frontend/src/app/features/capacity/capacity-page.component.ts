@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterLink } from "@angular/router";
 import { CapacityGridComponent } from "../sprint/components/capacity-grid/capacity-grid.component";
 import { CapacityStateService } from "../sprint/services/capacity-state.service";
 import { AuthStateService } from "../../core/services/auth-state.service";
@@ -12,6 +13,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     CapacityGridComponent,
     TeamDashboardSwitcherComponent,
     TranslatePipe,

@@ -52,10 +52,6 @@ export class SprintDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboards();
-    this.state.loadIssues();
-    this.state.loadMetrics();
-    this.state.loadIterations();
-    this.currentIteration.fetch();
   }
 
   private loadDashboards(): void {
@@ -69,6 +65,12 @@ export class SprintDashboardComponent implements OnInit {
         this.dashboards.set(orderedDashboards);
         this.dashboardsLoading.set(false);
         this.activateFromQueryParam();
+        if (orderedDashboards.some((d) => d.active)) {
+          this.state.loadIssues();
+          this.state.loadMetrics();
+          this.state.loadIterations();
+          this.currentIteration.fetch();
+        }
       },
       error: (err) => {
         this.dashboardSwitchError.set(
@@ -159,6 +161,10 @@ export class SprintDashboardComponent implements OnInit {
     this.router.navigate(["/settings/billing"]);
   }
 
+  get hasDashboard(): boolean {
+    return this.dashboards().some((d) => d.active);
+  }
+
   get boardError(): string | null {
     return this.state.issuesError();
   }
@@ -214,7 +220,9 @@ export class SprintDashboardComponent implements OnInit {
   }
 
   get shouldShowGoToSettings(): boolean {
-    return this.dashboardErrorStatus === 502;
+    return (
+      this.dashboardErrorStatus === 502 || this.dashboardErrorStatus === 428
+    );
   }
 
   onGoToJiraSettings(): void {
