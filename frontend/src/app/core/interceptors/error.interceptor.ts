@@ -12,6 +12,7 @@ import { Router } from "@angular/router";
 import { Observable, catchError, switchMap, throwError } from "rxjs";
 import { AuthResponse } from "../models/user.model";
 import { environment } from "../../../environments/environment";
+import { I18nService } from "../../i18n/i18n.service";
 
 const AUTH_ENDPOINT_PATTERNS = ["/api/v1/auth", "/api/v1/session"];
 const AUTH_FAILURE_CODES = new Set(["AUTH_EXPIRED", "AUTH_INVALID"]);
@@ -38,8 +39,25 @@ function sanitizeErrorMessage(raw: string | undefined | null): string | null {
   return clean.length > 200 ? clean.substring(0, 200) + "…" : clean;
 }
 
-/** Map HTTP status codes to safe, user-friendly messages. */
-const STATUS_MESSAGES: Record<number, string> = {
+/** Map HTTP status codes to i18n translation keys. */
+const STATUS_KEYS: Record<number, string> = {
+  400: "error.400",
+  401: "error.401",
+  402: "error.402",
+  403: "error.403",
+  404: "error.404",
+  408: "error.408",
+  409: "error.409",
+  422: "error.422",
+  428: "error.428_jira",
+  429: "error.429",
+  500: "error.500",
+  502: "error.502",
+  503: "error.503",
+};
+
+/** English fallbacks used when the i18n key has not been loaded yet. */
+const STATUS_FALLBACKS: Record<number, string> = {
   400: "Invalid request. Please check your input.",
   401: "Authentication required. Please log in.",
   402: "Plan limit reached. Upgrade your plan to continue.",
@@ -55,13 +73,28 @@ const STATUS_MESSAGES: Record<number, string> = {
   503: "The service is undergoing maintenance.",
 };
 
-/** Detect if a 403 is an "email not verified" rejection from the backend. */
+/**
+ * Translate a key via i18n; return null if the key is not yet loaded.
+ * This prevents the raw key from being displayed as a message.
+ */
+function tr(i18n: I18nService, key: string): string | null {
+  const result = i18n.t(key);
+  return result !== key ? result : null;
+}
+function isNoDashboard(error: HttpErrorResponse): boolean {
+  if (error.status !== 428) return false;
+  const msg: string = error.error?.message ?? "";
+  return msg.toLowerCase().includes("no active dashboard");
+}
+
+/** Detect if a 401/403 is an "email not verified" rejection from the backend. */
 function isEmailUnverified(error: HttpErrorResponse): boolean {
-  if (error.status !== 403) return false;
+  if (error.status !== 401 && error.status !== 403) return false;
   const msg: string = error.error?.message ?? "";
   return (
     msg.toLowerCase().includes("not verified") ||
-    msg.toLowerCase().includes("email address not verified")
+    msg.toLowerCase().includes("email address not verified") ||
+    msg.toLowerCase().includes("verify your email")
   );
 }
 
@@ -143,13 +176,18 @@ function attemptRefreshAndRetry(
   next: HttpHandlerFn,
   router: Router,
   httpBackend: HttpBackend,
+  i18n: I18nService,
 ): Observable<HttpEvent<unknown>> {
   const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
   if (!refreshToken) {
     performLogout(router);
     return throwError(() =>
-      toAppError(originalError, "Votre session a expiré. Reconnectez-vous."),
+      toAppError(
+        originalError,
+        tr(i18n, "error.session_expired") ??
+          "Your session has expired. Please log in again.",
+      ),
     );
   }
 
@@ -181,16 +219,17 @@ function attemptRefreshAndRetry(
 
         let message: string;
         if (status === 404) {
-          // Refresh token not found in DB → account was deleted / revoked
           message =
-            "Votre accès a été révoqué. Contactez votre administrateur.";
+            tr(i18n, "error.session_revoked") ??
+            "Your access has been revoked. Contact your administrator.";
         } else if (status === 401) {
-          // Refresh token invalid or naturally expired
-          message = "Votre session a expiré. Reconnectez-vous.";
-        } else {
-          // Network error or unexpected status — stay neutral
           message =
-            "Votre session a pris fin. Reconnectez-vous ou contactez votre administrateur si le problème persiste.";
+            tr(i18n, "error.session_expired") ??
+            "Your session has expired. Please log in again.";
+        } else {
+          message =
+            tr(i18n, "error.session_ended") ??
+            "Your session has ended. Please log in again or contact your administrator if the issue persists.";
         }
 
         performLogout(router);
@@ -202,6 +241,7 @@ function attemptRefreshAndRetry(
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const httpBackend = inject(HttpBackend);
+  const i18n = inject(I18nService);
 
   // Skip error handling for requests marked as silent (e.g. permission loading)
   if (req.headers.has("X-Silent-Error")) {
@@ -234,9 +274,28 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }));
       }
 
-      // 428 — Jira account not connected: surface the error, let the UI banner handle guidance
+      // 428 no active dashboard
+      if (isNoDashboard(error)) {
+        return throwError(() => ({
+          noDashboard: true,
+          status: 428,
+          message:
+            tr(i18n, "error.428_dashboard") ??
+            "No active dashboard configured. Please select a Jira board in Settings.",
+          code: null,
+          integrationFailure: false,
+          retryable: false,
+        }));
+      }
+
+      // 428 — Jira account not connected
       if (error.status === 428) {
-        return throwError(() => toAppError(error, STATUS_MESSAGES[428]));
+        return throwError(() =>
+          toAppError(
+            error,
+            tr(i18n, "error.428_jira") ?? STATUS_FALLBACKS[428],
+          ),
+        );
       }
 
       // 401 on a protected endpoint: attempt token refresh before giving up.
@@ -246,35 +305,47 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         !isAuthEndpoint(req.url) &&
         !req.headers.has(RETRY_AFTER_REFRESH_HEADER)
       ) {
-        return attemptRefreshAndRetry(error, req, next, router, httpBackend);
+        return attemptRefreshAndRetry(
+          error,
+          req,
+          next,
+          router,
+          httpBackend,
+          i18n,
+        );
       }
 
       let message: string;
 
       if (error.status === 0) {
-        message = "Unable to connect to the server. Is the backend running?";
+        message =
+          tr(i18n, "error.no_connection") ??
+          "Unable to connect to the server. Is the backend running?";
       } else if (isAuthFailure(error, req.url)) {
-        // Strict logout policy: only auth/session failures or explicit AUTH_* codes.
         localStorage.removeItem("sr_token");
         localStorage.removeItem("sr_refresh_token");
         localStorage.removeItem("sr_token_expiry");
         router.navigate(["/auth/login"]);
-        message = STATUS_MESSAGES[401];
+        message = tr(i18n, "error.401") ?? STATUS_FALLBACKS[401];
       } else if (error.status === 502 || error.status === 503) {
         message =
           sanitizeErrorMessage(error.error?.message) ??
           (error.status === 503
-            ? "Jira est temporairement inaccessible"
-            : "Le token Jira est invalide ou expire.");
+            ? (tr(i18n, "error.jira_unavailable") ??
+              "Jira is temporarily unavailable.")
+            : (tr(i18n, "error.jira_token") ??
+              "The Jira token is invalid or expired."));
       } else if (isIntegrationUnavailable(error)) {
         message =
-          "Impossible de charger les donnees Jira. Verifie la configuration Jira (token/base URL/projet) ou reessaie plus tard.";
+          tr(i18n, "error.jira_config") ??
+          "Unable to load Jira data. Check your Jira configuration or try again later.";
       } else {
-        // Backend error format: { status, error, message, details[], timestamp }
         const sanitized = sanitizeErrorMessage(error.error?.message);
+        const statusKey = STATUS_KEYS[error.status];
         message =
-          STATUS_MESSAGES[error.status] ??
+          (statusKey ? tr(i18n, statusKey) : null) ??
           sanitized ??
+          STATUS_FALLBACKS[error.status] ??
           `Server error: ${error.status}`;
       }
 

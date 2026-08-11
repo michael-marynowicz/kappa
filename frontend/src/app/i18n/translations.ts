@@ -36,6 +36,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "dashboard.tab.capacity": "Capacity",
     "dashboard.read_only": "Read only",
     "dashboard.retry": "Retry",
+    "dashboard.no_dashboard": "No dashboard configured",
+    "dashboard.no_dashboard_hint":
+      "Create a dashboard in Settings to start loading sprint data.",
+    "dashboard.go_to_settings": "Go to Settings",
 
     // ── Sprint Summary Card ───────────────────────────────────────
     "summary.total_issues": "Total Issues",
@@ -357,6 +361,35 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "common.unlimited": "Unlimited",
     "common.premium": "★ Premium",
     "common.upgrade": "Upgrade to Premium",
+
+    // ── HTTP / interceptor errors ────────────────────────────────────────
+    "error.400": "Invalid request. Please check your input.",
+    "error.401": "Authentication required. Please log in.",
+    "error.402": "Plan limit reached. Upgrade your plan to continue.",
+    "error.403": "You do not have permission to perform this action.",
+    "error.404": "The requested resource was not found.",
+    "error.408": "The request timed out. Please try again.",
+    "error.409": "A conflict occurred. The data may have been modified.",
+    "error.422": "The data provided is invalid.",
+    "error.428_jira":
+      "Your Jira account is not connected. Please configure your Jira credentials.",
+    "error.428_dashboard":
+      "No active dashboard configured. Please select a Jira board in Settings.",
+    "error.429": "Too many requests. Please wait before trying again.",
+    "error.500": "An internal server error occurred.",
+    "error.502": "The server is temporarily unavailable.",
+    "error.503": "The service is undergoing maintenance.",
+    "error.session_expired": "Your session has expired. Please log in again.",
+    "error.session_revoked":
+      "Your access has been revoked. Contact your administrator.",
+    "error.session_ended":
+      "Your session has ended. Please log in again or contact your administrator if the issue persists.",
+    "error.jira_unavailable": "Jira is temporarily unavailable.",
+    "error.jira_token": "The Jira token is invalid or expired.",
+    "error.jira_config":
+      "Unable to load Jira data. Check your Jira configuration or try again later.",
+    "error.no_connection":
+      "Unable to connect to the server. Is the backend running?",
   },
 
   fr: {
@@ -395,6 +428,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "dashboard.tab.capacity": "Capacité",
     "dashboard.read_only": "Lecture seule",
     "dashboard.retry": "Réessayer",
+    "dashboard.no_dashboard": "Aucun dashboard configuré",
+    "dashboard.no_dashboard_hint":
+      "Créez un dashboard dans les paramètres pour charger les données du sprint.",
+    "dashboard.go_to_settings": "Aller aux paramètres",
 
     // ── Sprint Summary Card ───────────────────────────────────────
     "summary.total_issues": "Total tickets",
@@ -727,5 +764,34 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "common.unlimited": "Illimité",
     "common.premium": "★ Premium",
     "common.upgrade": "Mettre à niveau vers Premium",
+    // ── HTTP / interceptor errors ────────────────────────────────────────
+    "error.400": "Requête invalide. Vérifiez votre saisie.",
+    "error.401": "Authentification requise. Veuillez vous connecter.",
+    "error.402": "Limite du forfait atteinte. Mettez à niveau votre forfait.",
+    "error.403": "Vous n'avez pas la permission d'effectuer cette action.",
+    "error.404": "La ressource demandée est introuvable.",
+    "error.408": "La requête a expiré. Veuillez réessayer.",
+    "error.409":
+      "Un conflit est survenu. Les données ont peut-être été modifiées.",
+    "error.422": "Les données fournies sont invalides.",
+    "error.428_jira":
+      "Votre compte Jira n'est pas connecté. Veuillez configurer vos identifiants Jira.",
+    "error.428_dashboard":
+      "Aucun dashboard actif. Sélectionnez un board Jira dans les paramètres.",
+    "error.429": "Trop de requêtes. Veuillez patienter avant de réessayer.",
+    "error.500": "Une erreur interne s'est produite.",
+    "error.502": "Le serveur est temporairement indisponible.",
+    "error.503": "Le service est en cours de maintenance.",
+    "error.session_expired": "Votre session a expiré. Reconnectez-vous.",
+    "error.session_revoked":
+      "Votre accès a été révoqué. Contactez votre administrateur.",
+    "error.session_ended":
+      "Votre session s'est terminée. Reconnectez-vous ou contactez votre administrateur.",
+    "error.jira_unavailable": "Jira est temporairement inaccessible.",
+    "error.jira_token": "Le token Jira est invalide ou expiré.",
+    "error.jira_config":
+      "Impossible de charger les données Jira. Vérifiez la configuration Jira ou réessayez.",
+    "error.no_connection":
+      "Impossible de se connecter au serveur. Le backend est-il en cours d'exécution ?",
   },
 };

@@ -27,7 +27,7 @@
                 ? ("billing.cancels" | translate)
                 : ("billing.renews" | translate)
             }}
-            {{ sub.currentPeriodEnd }}
+            {{ sub.currentPeriodEnd | date: "d MMM yyyy" }}
           </p>
         }
       </div>

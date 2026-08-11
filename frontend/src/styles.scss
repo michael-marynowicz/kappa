@@ -137,6 +137,57 @@ a.feature-gate--disabled {
   }
 }
 
+/* ── No-dashboard empty state (shared across pages) ──────────────── */
+.no-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 72px 24px;
+  text-align: center;
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    color: #3b4265;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c5cbe0;
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: 13px;
+    color: #6b728e;
+    margin: 0;
+    max-width: 360px;
+  }
+
+  &__cta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 24px;
+    background: rgba(96, 165, 250, 0.12);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 150ms ease;
+
+    &:hover {
+      background: rgba(96, 165, 250, 0.2);
+    }
+  }
+}
+
 /* Smooth global transitions */
 a,
 button,

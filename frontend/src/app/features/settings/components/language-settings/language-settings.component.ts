@@ -30,7 +30,7 @@ export class LanguageSettingsComponent {
   readonly error = signal<string | null>(null);
   readonly dropdownOpen = signal(false);
 
-  language: AppLanguage = "fr";
+  language: AppLanguage = this.i18n.language();
 
   readonly languageOptions: Array<{ value: AppLanguage; label: string }> = [
     { value: "fr", label: "Francais" },

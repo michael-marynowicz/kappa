@@ -196,25 +196,21 @@ public class JiraIssueRepositoryImpl implements JiraIssueRepository {
     }
 
     /**
-     * Resolve the effective board ID.
-     * Priority: active dashboard > jira_configurations.board_id > YAML.
+     * Resolve the effective board ID from the active dashboard.
+     * Throws NoDashboardSelectedException when no dashboard is active.
      */
     private String getEffectiveBoardId() {
         return resolveActiveDashboardBoardId()
-                .orElseGet(() -> resolveDbConfig()
-                        .map(c -> String.valueOf(c.getBoardId()))
-                        .orElse(jiraProperties.getBoardId()));
+                .orElseThrow(com.company.sprintreporter.service.exception.NoDashboardSelectedException::new);
     }
 
     /**
-     * Resolve the effective project key.
-     * Priority: active dashboard > jira_configurations.project_key > YAML.
+     * Resolve the effective project key from the active dashboard.
+     * Throws NoDashboardSelectedException when no dashboard is active.
      */
     private String getEffectiveProjectKey() {
         return resolveActiveDashboardProjectKey()
-                .orElseGet(() -> resolveDbConfig()
-                        .map(JiraConfiguration::getProjectKey)
-                        .orElse(jiraProperties.getProjectKey()));
+                .orElseThrow(com.company.sprintreporter.service.exception.NoDashboardSelectedException::new);
     }
 
     private java.util.Optional<String> resolveActiveDashboardBoardId() {

@@ -35,6 +35,7 @@ interface DetailRow {
   timeOverride: number;
   daysOff: number;
   effectiveDays: number;
+  excludedFromCapacity: boolean;
 }
 
 @Component({
@@ -123,12 +124,11 @@ export class CapacityDetailTableComponent implements OnInit, OnChanges {
       const days = daysPerSprint[sprintName];
 
       for (const member of members) {
+        const excluded = member.excludedFromCapacity === true;
         const daysOff = daysOffGrid[member.id]?.[sprintName] ?? 0;
-        const effectiveDays = calculateEffectiveDays(
-          days,
-          daysOff,
-          member.timeOverride,
-        );
+        const effectiveDays = excluded
+          ? 0
+          : calculateEffectiveDays(days, daysOff, member.timeOverride);
 
         this.rows.push({
           sprintName,
@@ -142,6 +142,7 @@ export class CapacityDetailTableComponent implements OnInit, OnChanges {
           timeOverride: member.timeOverride,
           daysOff,
           effectiveDays,
+          excludedFromCapacity: excluded,
         });
       }
     }
