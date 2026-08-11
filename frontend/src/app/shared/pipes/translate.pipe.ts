@@ -6,13 +6,15 @@ import { I18nService } from "../../i18n/i18n.service";
  * Since `I18nService.t()` reads a signal, language changes schedule a new CD
  * cycle (via zone.js integration), causing all pipe calls to re-run.
  *
- * Usage: {{ 'some.key' | translate }}
+ * Usage:
+ *   {{ 'some.key' | translate }}
+ *   {{ 'some.key_with_{name}' | translate: { name: 'value' } }}
  */
 @Pipe({ name: "translate", pure: false, standalone: true })
 export class TranslatePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
 
-  transform(key: string): string {
-    return this.i18n.t(key);
+  transform(key: string, params?: Record<string, string>): string {
+    return params ? this.i18n.tWithParams(key, params) : this.i18n.t(key);
   }
 }

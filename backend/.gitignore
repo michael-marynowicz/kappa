@@ -1,0 +1,21 @@
+# Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Environment secrets — NEVER commit these
+.env
+.env.local
+*.env
+
+# Spring Boot local overrides with real credentials
+application-local-override.yml
+application-local-override.properties
+
+# OS
+.DS_Store
+Thumbs.db

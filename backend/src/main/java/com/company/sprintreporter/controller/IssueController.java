@@ -1,17 +1,23 @@
 package com.company.sprintreporter.controller;
 
+import com.company.sprintreporter.application.dto.EpicSummaryDto;
 import com.company.sprintreporter.application.dto.SprintIssueResponseDto;
 import com.company.sprintreporter.application.dto.UpdateRemainingSpRequestDto;
 import com.company.sprintreporter.application.mapper.SprintIssueMapper;
+import com.company.sprintreporter.config.feature.FeatureCode;
+import com.company.sprintreporter.config.feature.RequiresFeature;
+import com.company.sprintreporter.config.jwt.JwtAuthenticationToken;
 import com.company.sprintreporter.domain.model.SprintIssue;
 import com.company.sprintreporter.service.SprintIssueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST Controller: Issues resource.
@@ -29,6 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/issues")
 @RequiredArgsConstructor
+@RequiresFeature(FeatureCode.SPRINT_TRACKING)
 public class IssueController {
 
     private final SprintIssueService sprintIssueService;
@@ -41,8 +48,18 @@ public class IssueController {
     @GetMapping
     public ResponseEntity<List<SprintIssueResponseDto>> getSprintIssues() {
         log.debug("GET /api/v1/issues");
-        List<SprintIssue> issues = sprintIssueService.getSprintIssues();
+        List<SprintIssue> issues = sprintIssueService.getSprintIssues(getOrgId());
         return ResponseEntity.ok(mapper.toResponseDtoList(issues));
+    }
+
+    /**
+     * GET /api/v1/issues/grouped
+     * Returns sprint issues grouped by epic with aggregated KPIs.
+     */
+    @GetMapping("/grouped")
+    public ResponseEntity<List<EpicSummaryDto>> getIssuesGroupedByEpic() {
+        log.debug("GET /api/v1/issues/grouped");
+        return ResponseEntity.ok(sprintIssueService.getIssuesGroupedByEpic(getOrgId()));
     }
 
     /**
@@ -57,10 +74,15 @@ public class IssueController {
                 request.getIssueKey(), request.getRemainingStoryPoints());
 
         SprintIssue updated = sprintIssueService.updateRemainingStoryPoints(
+                getOrgId(),
                 request.getIssueKey(),
                 request.getRemainingStoryPoints()
         );
 
         return ResponseEntity.ok(mapper.toResponseDto(updated));
+    }
+
+    private UUID getOrgId() {
+        return ((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getOrganizationId();
     }
 }

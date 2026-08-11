@@ -33,6 +33,7 @@ export interface Plan {
   priceYearly: number;
   trialDays: number;
   features: string[];
+  contactOnly?: boolean;
 }
 
 export interface SubscribeRequest {

@@ -1,0 +1,27 @@
+spring:
+  profiles:
+    active: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+jira:
+  mock-mode: true
+
+jwt:
+  secret: TestSecretKeyForUnitTestsThatIsAtLeast32Characters!!
+  expiration-minutes: 60
+  refresh-token-days: 7

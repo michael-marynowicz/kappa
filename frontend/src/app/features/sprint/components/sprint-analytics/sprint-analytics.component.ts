@@ -265,15 +265,12 @@ export class SprintAnalyticsComponent implements OnChanges {
   }
 
   private buildCapacity(): void {
-    const cap = this.metrics?.capacity;
-    const planned = cap?.plannedCapacity ?? 0;
-    const real = cap?.realCapacity ?? 0;
-    this.capacityMax = Math.max(planned, real, 1);
-    this.capacityDelta = real - planned;
-    this.capacityDeltaColor = this.capacityDelta >= 0 ? "#34d399" : "#f87171";
-
+    const cap = this.metrics?.realCapacity ?? 0;
     const avail = this.metrics?.teamAvailability;
     this.totalEft = (avail?.dev ?? 0) + (avail?.pda ?? 0) + (avail?.qa ?? 0);
+    this.capacityMax = Math.max(cap, 1);
+    this.capacityDelta = 0;
+    this.capacityDeltaColor = "#34d399";
   }
 
   private buildIterations(): void {

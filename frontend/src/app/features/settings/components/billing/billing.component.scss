@@ -168,6 +168,13 @@
   font-weight: 800;
   color: #e4e7ef;
   margin: 4px 0 0;
+
+  &--contact {
+    font-size: 18px;
+    font-weight: 700;
+    color: #a78bfa;
+    letter-spacing: 0.01em;
+  }
 }
 
 .plan-card__period {
@@ -250,6 +257,17 @@
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  &--contact {
+    background: transparent;
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    color: #a78bfa;
+
+    &:hover {
+      background: rgba(167, 139, 250, 0.08);
+      border-color: rgba(167, 139, 250, 0.7);
+    }
   }
 }
 

@@ -1,0 +1,87 @@
+<div class="capacity-summary">
+  <!-- Section header -->
+  <div class="section-header">
+    <h3 class="section-title">Sprint Summary</h3>
+    <p class="section-desc">
+      Capacity totals per sprint. <strong>80%</strong> = safety buffer.
+      &nbsp;<strong>SP</strong> = round(80% ÷ 1.5).
+    </p>
+  </div>
+
+  <!-- Table -->
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-pi">PI</th>
+          <th class="col-iteration">Iteration</th>
+          <th class="col-type">Type</th>
+          <th class="col-total ta-right">Total Days</th>
+          <th class="col-80-percent ta-right">80% Buffer</th>
+          <th class="col-sp ta-right">Story Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let row of rows; trackBy: trackRow"
+          [class.row--ip]="row.isIPWeek"
+        >
+          <td class="col-pi text-muted">{{ row.pi }}</td>
+          <td class="col-iteration text-muted">{{ row.iteration }}</td>
+          <td class="col-type">
+            <span
+              class="type-badge"
+              [class]="'type-badge--' + row.type.toLowerCase()"
+            >
+              {{ row.type }}
+            </span>
+          </td>
+          <td class="col-total ta-right mono">
+            {{ row.total | number: "1.1-2" }}
+          </td>
+          <td class="col-80-percent ta-right mono">
+            {{ row.percent80 | number: "1.1-2" }}
+          </td>
+          <td class="col-sp ta-right mono sp-value">{{ row.sp }}</td>
+        </tr>
+
+        <!-- Subtotal row -->
+        <tr class="row-subtotal" *ngIf="totalRow">
+          <td class="col-pi">
+            <strong>{{ totalRow.pi }}</strong>
+          </td>
+          <td class="col-iteration">—</td>
+          <td class="col-type">—</td>
+          <td class="col-total ta-right mono">
+            <strong>{{ totalRow.total | number: "1.1-2" }}</strong>
+          </td>
+          <td class="col-80-percent ta-right mono">
+            <strong>{{ totalRow.percent80 | number: "1.1-2" }}</strong>
+          </td>
+          <td class="col-sp ta-right mono sp-value">
+            <strong>{{ totalRow.sp }}</strong>
+          </td>
+        </tr>
+
+        <!-- Total without IP week -->
+        <!-- Total without IP row -->
+        <tr class="row-subtotal row-subtotal--no-ip" *ngIf="totalWithoutIPRow">
+          <td class="col-pi">
+            <strong>{{ totalWithoutIPRow.pi }} (no IP)</strong>
+          </td>
+          <td class="col-iteration">—</td>
+          <td class="col-type">—</td>
+          <td class="col-total ta-right mono">
+            <strong>{{ totalWithoutIPRow.total | number: "1.1-2" }}</strong>
+          </td>
+          <td class="col-80-percent ta-right mono">
+            <strong>{{ totalWithoutIPRow.percent80 | number: "1.1-2" }}</strong>
+          </td>
+          <td class="col-sp ta-right mono sp-value">
+            <strong>{{ totalWithoutIPRow.sp }}</strong>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

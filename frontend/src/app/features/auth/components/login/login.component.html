@@ -18,10 +18,36 @@
         </svg>
       </div>
       <h1 class="auth-title">Kappa</h1>
-      <p class="auth-subtitle">Sign in to your account</p>
+      <p class="auth-subtitle">{{ "auth.login.subtitle" | translate }}</p>
     </div>
 
-    @if (authState.error()) {
+    @if (authState.emailUnverified()) {
+      <div class="auth-error auth-error--unverified" role="alert">
+        <p class="unverified-message">
+          {{ "auth.login.email_unverified" | translate }}
+        </p>
+        @if (authState.resendSuccess()) {
+          <p class="resend-success">
+            {{ "auth.login.resend_success" | translate }}
+          </p>
+        }
+        <button
+          type="button"
+          class="btn-resend"
+          (click)="resendVerification()"
+          [disabled]="resendCooldown() > 0 || authState.resendLoading()"
+        >
+          @if (authState.resendLoading()) {
+            <span class="btn-spinner"></span>
+            {{ "auth.login.resend_sending" | translate }}
+          } @else if (resendCooldown() > 0) {
+            {{ resendCountdownLabel() }}
+          } @else {
+            {{ "auth.login.resend" | translate }}
+          }
+        </button>
+      </div>
+    } @else if (authState.error()) {
       <div class="auth-error" role="alert">
         {{ authState.error() }}
       </div>
@@ -29,7 +55,9 @@
 
     <form class="auth-form" (ngSubmit)="onSubmit()" #loginForm="ngForm">
       <div class="form-group">
-        <label class="form-label" for="email">Email</label>
+        <label class="form-label" for="email">{{
+          "auth.login.email_label" | translate
+        }}</label>
         <input
           class="form-input"
           [class.input-error]="emailField.invalid && emailField.touched"
@@ -40,22 +68,24 @@
           #emailField="ngModel"
           required
           email
-          placeholder="you@company.com"
+          placeholder="{{ 'auth.login.email_placeholder' | translate }}"
           autocomplete="email"
         />
         @if (emailField.invalid && emailField.touched) {
           <span class="field-error">
             @if (emailField.errors?.["required"]) {
-              Email is required.
+              {{ "auth.login.email_required" | translate }}
             } @else if (emailField.errors?.["email"]) {
-              Please enter a valid email address.
+              {{ "auth.login.email_invalid" | translate }}
             }
           </span>
         }
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="password">Password</label>
+        <label class="form-label" for="password">{{
+          "auth.login.password_label" | translate
+        }}</label>
         <div class="input-wrapper">
           <input
             class="form-input"
@@ -110,7 +140,9 @@
           </button>
         </div>
         @if (passwordField.invalid && passwordField.touched) {
-          <span class="field-error"> Password is required. </span>
+          <span class="field-error">
+            {{ "auth.login.password_required" | translate }}
+          </span>
         }
       </div>
 
@@ -121,16 +153,18 @@
       >
         @if (authState.loading()) {
           <span class="btn-spinner"></span>
-          Signing in…
+          {{ "auth.login.signing_in" | translate }}
         } @else {
-          Sign in
+          {{ "auth.login.submit" | translate }}
         }
       </button>
     </form>
 
     <p class="auth-footer">
-      Don't have an account?
-      <a routerLink="/auth/register" class="auth-link">Create one</a>
+      {{ "auth.login.no_account" | translate }}
+      <a routerLink="/auth/register" class="auth-link">{{
+        "auth.login.create_account" | translate
+      }}</a>
     </p>
   </div>
 </div>

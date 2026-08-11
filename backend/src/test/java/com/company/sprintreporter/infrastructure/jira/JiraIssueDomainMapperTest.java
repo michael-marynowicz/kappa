@@ -38,7 +38,7 @@ class JiraIssueDomainMapperTest {
         issueType.setName(type);
         fields.setIssueType(issueType);
 
-        fields.setExtraField("customfield_10016", sp);
+        fields.setStoryPoints(sp);
         issue.setFields(fields);
 
         return issue;

@@ -6,8 +6,10 @@
         <div class="verify-icon verify-icon--loading">
           <div class="spinner-large"></div>
         </div>
-        <h2 class="verify-title">Verifying your email…</h2>
-        <p class="verify-desc">Please wait while we validate your link.</p>
+        <h2 class="verify-title">{{ "auth.verify.verifying" | translate }}</h2>
+        <p class="verify-desc">
+          {{ "auth.verify.verifying_desc" | translate }}
+        </p>
       </div>
     }
 
@@ -29,13 +31,10 @@
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h2 class="verify-title">Email verified successfully</h2>
-        <p class="verify-desc">
-          Your email has been confirmed. You now have full access to all
-          features.
-        </p>
+        <h2 class="verify-title">{{ "auth.verify.success" | translate }}</h2>
+        <p class="verify-desc">{{ "auth.verify.success_desc" | translate }}</p>
         <button class="btn-primary" (click)="goToDashboard()">
-          Go to Dashboard
+          {{ "auth.verify.go_dashboard" | translate }}
         </button>
       </div>
     }
@@ -61,17 +60,15 @@
           </svg>
         </div>
         <h2 class="verify-title">
-          Welcome to
-          {{ result()?.organizationId ? "the team" : "your organization" }}!
+          {{ "auth.verify.joined_title" | translate }}
         </h2>
         <p class="verify-desc">
-          Your email has been verified and your account is now linked to the
-          organization as
+          {{ "auth.verify.joined_desc" | translate }}
           <strong class="role-highlight">{{ result()?.role }}</strong
           >.
         </p>
         <button class="btn-primary" (click)="goToDashboard()">
-          Go to Dashboard
+          {{ "auth.verify.go_dashboard" | translate }}
         </button>
       </div>
     }
@@ -95,12 +92,11 @@
             <line x1="9" y1="9" x2="15" y2="15" />
           </svg>
         </div>
-        <h2 class="verify-title">Invalid verification link</h2>
-        <p class="verify-desc">
-          This link is invalid or has already been used. Please request a new
-          verification email.
-        </p>
-        <a class="btn-secondary" routerLink="/auth/login">Back to Login</a>
+        <h2 class="verify-title">{{ "auth.verify.invalid" | translate }}</h2>
+        <p class="verify-desc">{{ "auth.verify.invalid_desc" | translate }}</p>
+        <a class="btn-secondary" routerLink="/auth/login">{{
+          "auth.verify.back" | translate
+        }}</a>
       </div>
     }
 
@@ -122,10 +118,8 @@
             <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <h2 class="verify-title">Link expired</h2>
-        <p class="verify-desc">
-          This verification link has expired. Click below to receive a new one.
-        </p>
+        <h2 class="verify-title">{{ "auth.verify.expired" | translate }}</h2>
+        <p class="verify-desc">{{ "auth.verify.expired_desc" | translate }}</p>
         @if (resent()) {
           <div class="resent-message">
             <svg
@@ -140,7 +134,7 @@
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            A new verification email has been sent.
+            {{ "auth.verify.resent" | translate }}
           </div>
         } @else {
           <button
@@ -150,9 +144,9 @@
           >
             @if (resending()) {
               <span class="btn-spinner"></span>
-              Sending…
+              {{ "auth.verify.resending" | translate }}
             } @else {
-              Resend Verification Email
+              {{ "auth.verify.resend" | translate }}
             }
           </button>
         }

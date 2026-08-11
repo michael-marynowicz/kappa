@@ -83,7 +83,7 @@ export class SubscriptionStateService {
         this._loading.set(false);
       },
       error: (err) => {
-        this._error.set(err.message ?? "Failed to load subscription");
+        this._error.set(err.message ?? "billing.error.load");
         this._loading.set(false);
       },
     });
@@ -92,7 +92,8 @@ export class SubscriptionStateService {
   loadPlans(): void {
     this.api.getPlans().subscribe({
       next: (plans) => this._plans.set(plans),
-      error: (err) => this._error.set(err.message ?? "Failed to load plans"),
+      error: (err) =>
+        this._error.set(err.message ?? "billing.error.load_plans"),
     });
   }
 
@@ -108,7 +109,7 @@ export class SubscriptionStateService {
         this._loading.set(false);
       },
       error: (err) => {
-        this._error.set(err.message ?? "Subscription failed");
+        this._error.set(err.message ?? "billing.error.subscribe");
         this._loading.set(false);
       },
     });
@@ -122,7 +123,7 @@ export class SubscriptionStateService {
         globalThis.location.href = session.checkoutUrl;
       },
       error: (err) => {
-        this._error.set(err.message ?? "Failed to start checkout");
+        this._error.set(err.message ?? "billing.error.checkout");
         this._loading.set(false);
       },
     });
@@ -136,7 +137,7 @@ export class SubscriptionStateService {
         this._loading.set(false);
       },
       error: (err) => {
-        this._error.set(err.message ?? "Redemption failed");
+        this._error.set(err.message ?? "billing.error.redemption");
         this._loading.set(false);
       },
     });
@@ -154,7 +155,7 @@ export class SubscriptionStateService {
         this._loading.set(false);
       },
       error: (err) => {
-        this._error.set(err.message ?? "Cancellation failed");
+        this._error.set(err.message ?? "billing.error.cancellation");
         this._loading.set(false);
       },
     });

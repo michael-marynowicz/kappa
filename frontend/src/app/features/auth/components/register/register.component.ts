@@ -5,11 +5,12 @@ import { RouterLink } from "@angular/router";
 import { AuthStateService } from "../../../../core/services/auth-state.service";
 import { InvitationApiService } from "../../../../core/services/invitation-api.service";
 import { InvitationCheck } from "../../../../core/models/invitation.model";
+import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 
 @Component({
   selector: "app-register",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
 })

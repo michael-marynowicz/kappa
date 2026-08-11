@@ -111,6 +111,30 @@ export class CapacityStateService {
       });
   }
 
+  updateTimeOverride(memberId: string, timeOverride: number): void {
+    const key = `timeOverride:${memberId}`;
+    this._savingCell.set(key);
+    this.api.updateTimeOverride(memberId, timeOverride).subscribe({
+      next: () => {
+        this._grid.update((g) => {
+          if (!g) return g;
+          const updated = {
+            ...g,
+            members: g.members.map((m) =>
+              m.id === memberId ? { ...m, timeOverride } : m,
+            ),
+          };
+          return updated;
+        });
+        this._savingCell.set(null);
+      },
+      error: (err) => {
+        this._error.set(err.message ?? "Failed to update time override");
+        this._savingCell.set(null);
+      },
+    });
+  }
+
   clearError(): void {
     this._error.set(null);
     this._errorStatus.set(null);
@@ -125,13 +149,13 @@ export class CapacityStateService {
     this._gated.set(false);
   }
 
-  exportCsv(): void {
-    this.api.exportCsv().subscribe({
+  exportXlsx(): void {
+    this.api.exportXlsx().subscribe({
       next: (blob) => {
         const url = globalThis.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `capacity-report-${new Date().toISOString().split("T")[0]}.csv`;
+        a.download = `capacity-report-${new Date().toISOString().split("T")[0]}.xlsx`;
         a.click();
         globalThis.URL.revokeObjectURL(url);
       },
@@ -139,7 +163,7 @@ export class CapacityStateService {
         if (isFeatureGatedError(err)) {
           this._gated.set(true);
         } else {
-          this._error.set(err.message ?? "Failed to export capacity CSV");
+          this._error.set(err.message ?? "Failed to export capacity");
         }
       },
     });

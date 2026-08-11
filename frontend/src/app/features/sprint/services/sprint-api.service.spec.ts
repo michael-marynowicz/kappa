@@ -57,7 +57,7 @@ describe("SprintApiService", () => {
     workInProgress: 2,
     carryOverIssues: 1,
     topicBreakdown: [{ topic: "Auth", storyPoints: 20 }],
-    capacity: { plannedCapacity: 40, realCapacity: 38 },
+    realCapacity: 38,
     teamAvailability: { dev: 3, pda: 1, qa: 1 },
   };
 

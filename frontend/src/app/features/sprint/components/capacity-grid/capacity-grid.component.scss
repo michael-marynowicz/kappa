@@ -552,3 +552,375 @@
   font-weight: 700;
   color: var(--color-accent-light);
 }
+
+/* ── Tab Bar ────────────────────────────────────────────────── */
+.cap-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 28px;
+}
+
+.cap-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #8b92a8;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  margin-bottom: -1px;
+  transition: color 150ms ease, border-color 150ms ease;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    color: #c8cbdb;
+  }
+
+  &--active {
+    color: #e4e7ef;
+    border-bottom-color: #6366f1;
+    font-weight: 600;
+
+    svg {
+      opacity: 1;
+    }
+  }
+}
+
+.cap-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #a5b4fc;
+}
+
+.cap-tab-panel {
+  animation: fadeIn 180ms ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Members List (Team tab) ────────────────────────────────── */
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  transition: background 150ms ease;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  &:hover:not(.member-row--editing) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &--editing {
+    background: rgba(99, 102, 241, 0.04);
+    border-left: 2px solid rgba(99, 102, 241, 0.4);
+  }
+}
+
+.member-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15));
+  color: #818cf8;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e4e7ef;
+}
+
+.member-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-override {
+  font-size: 11px;
+  color: #5a6178;
+}
+
+.member-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Role pills ─────────────────────────────────────────────── */
+.role-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+
+  &--dev {
+    background: rgba(59, 130, 246, 0.1);
+    color: #93bbfd;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  &--pda {
+    background: rgba(139, 92, 246, 0.1);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+  }
+
+  &--qa {
+    background: rgba(16, 185, 129, 0.1);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  &--sm {
+    background: rgba(245, 158, 11, 0.1);
+    color: #fcd34d;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+}
+
+.ds-dropdown {
+  position: relative;
+  display: inline-block;
+
+  &--open .ds-chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.ds-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #e4e7ef;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(99, 102, 241, 0.06);
+  }
+
+  &--sm {
+    padding: 6px 10px;
+    min-height: 34px;
+  }
+}
+
+.ds-trigger__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ds-chevron {
+  flex-shrink: 0;
+  color: #8b92a8;
+  transition: transform 200ms ease;
+}
+
+.ds-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 200;
+  min-width: 110px;
+  background: #1a1d27;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ds-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #e4e7ef;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &--active {
+    background: rgba(99, 102, 241, 0.12);
+  }
+}
+
+/* ── Capacity Layout (kept for potential reuse) ─────────────── */
+.cap-tab-panel app-capacity-summary-table {
+  display: block;
+}
+
+.members-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background-color: rgba(255, 255, 255, 0.02);
+
+  thead {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #b8bcc4;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #e4e7ef;
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  tbody tr.row-editing {
+    background-color: rgba(100, 150, 200, 0.08);
+  }
+
+  .col-name {
+    width: 40%;
+  }
+
+  .col-role {
+    width: 15%;
+  }
+
+  .col-time-override {
+    width: 20%;
+    text-align: center;
+  }
+
+  .col-actions {
+    width: 25%;
+    text-align: center;
+  }
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cap-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .cap-tab__badge {
+    display: none;
+  }
+
+  .members-table th,
+  .members-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .members-table .col-name {
+    width: 35%;
+  }
+
+  .members-table .col-role {
+    width: 20%;
+  }
+
+  .members-table .col-time-override {
+    width: 20%;
+  }
+
+  .members-table .col-actions {
+    width: 25%;
+  }
+}

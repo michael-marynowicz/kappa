@@ -67,55 +67,19 @@
           <div class="capacity-bars">
             <div class="capacity-bar-group">
               <div class="capacity-bar-header">
-                <span class="capacity-bar-label">{{
-                  "analytics.planned" | translate
-                }}</span>
-                <span class="capacity-bar-val">{{
-                  metrics.capacity.plannedCapacity
+                <span class="capacity-bar-label">Capacity</span>
+                <span class="capacity-bar-val" style="color: #60a5fa">{{
+                  metrics.realCapacity
                 }}</span>
               </div>
               <div class="bar-track bar-track--tall">
                 <div
                   class="bar-fill"
-                  [style.width.%]="
-                    barWidth(metrics.capacity.plannedCapacity, capacityMax)
-                  "
+                  [style.width.%]="barWidth(metrics.realCapacity, capacityMax)"
                   style="background: #60a5fa"
                 ></div>
               </div>
             </div>
-            <div class="capacity-bar-group">
-              <div class="capacity-bar-header">
-                <span class="capacity-bar-label">{{
-                  "analytics.real" | translate
-                }}</span>
-                <span
-                  class="capacity-bar-val"
-                  [style.color]="capacityDeltaColor"
-                  >{{ metrics.capacity.realCapacity }}</span
-                >
-              </div>
-              <div class="bar-track bar-track--tall">
-                <div
-                  class="bar-fill"
-                  [style.width.%]="
-                    barWidth(metrics.capacity.realCapacity, capacityMax)
-                  "
-                  [style.background]="capacityDeltaColor"
-                ></div>
-              </div>
-            </div>
-          </div>
-          <div class="capacity-delta">
-            <span class="capacity-delta__label">{{
-              "analytics.delta" | translate
-            }}</span>
-            <span
-              class="capacity-delta__value"
-              [style.color]="capacityDeltaColor"
-            >
-              {{ capacityDelta >= 0 ? "+" : "" }}{{ capacityDelta }}
-            </span>
           </div>
         </div>
 

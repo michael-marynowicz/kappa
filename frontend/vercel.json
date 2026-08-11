@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build:prod",
+  "outputDirectory": "dist/sprint-reporter-ui/browser",
+  "framework": null,
+  "env": {
+    "API_BASE_URL": "@api_base_url",
+    "STRIPE_PUBLIC_KEY": "@stripe_public_key"
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

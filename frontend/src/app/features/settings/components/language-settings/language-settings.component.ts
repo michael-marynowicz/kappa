@@ -47,16 +47,16 @@ export class LanguageSettingsComponent {
 
     this.api.getLanguageSettings().subscribe({
       next: (response) => {
-        this.language = response.language ?? "fr";
-        this.i18n.setLanguage(this.language);
+        // Only populate the dropdown — do NOT apply the language.
+        // The active language must only change when the user explicitly saves.
+        this.language = response.language ?? this.i18n.language();
         this.loading.set(false);
       },
       error: () => {
-        // Keep the app usable if backend has not implemented this endpoint yet.
+        // Fallback: mirror whatever is already active so the dropdown is coherent.
         const local = localStorage.getItem("app_language");
         if (local === "fr" || local === "en") {
           this.language = local;
-          this.i18n.setLanguage(this.language);
         }
         this.loading.set(false);
       },
@@ -72,11 +72,11 @@ export class LanguageSettingsComponent {
       next: (response) => {
         this.language = response.language;
         this.i18n.setLanguage(this.language);
-        this.success.set(this.i18n.t("lang.saved"));
+        this.success.set("lang.saved");
         this.saving.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message ?? this.i18n.t("lang.error"));
+        this.error.set(err?.message ?? "lang.error");
         this.saving.set(false);
       },
     });

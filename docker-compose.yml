@@ -2,6 +2,14 @@ version: '3.9'
 
 services:
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sprint-reporter-mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI → http://localhost:8025
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend

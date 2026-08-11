@@ -18,7 +18,6 @@ import java.util.List;
 public interface SprintIssueMapper {
 
     @Mapping(target = "doneStoryPoints", expression = "java(issue.getDoneStoryPoints())")
-    @Mapping(target = "remainingStoryPoints", expression = "java(issue.getDisplayedRemainingStoryPoints())")
     SprintIssueResponseDto toResponseDto(SprintIssue issue);
 
     List<SprintIssueResponseDto> toResponseDtoList(List<SprintIssue> issues);

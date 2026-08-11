@@ -51,8 +51,8 @@ class SprintIssueTest {
         }
 
         @Test
-        @DisplayName("should return 0 when remaining is null (SP not yet entered)")
-        void returnsZeroWhenRemainingNotEntered() {
+        @DisplayName("should treat null remaining as zero done")
+        void treatsNullRemainingAsZero() {
             SprintIssue issue = SprintIssue.builder()
                     .issueKey("SCRUM-1")
                     .totalStoryPoints(8)
@@ -60,19 +60,6 @@ class SprintIssueTest {
                     .build();
 
             assertThat(issue.getDoneStoryPoints()).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("should return total when status is Done and remaining is null")
-        void returnsTotalWhenDoneRegardlessOfRemaining() {
-            SprintIssue issue = SprintIssue.builder()
-                    .issueKey("SCRUM-1")
-                    .status("Done")
-                    .totalStoryPoints(8)
-                    .remainingStoryPoints(null)
-                    .build();
-
-            assertThat(issue.getDoneStoryPoints()).isEqualTo(8);
         }
     }
 
@@ -84,7 +71,7 @@ class SprintIssueTest {
         @DisplayName("should throw when issueKey is blank")
         void throwsOnBlankIssueKey() {
             assertThatThrownBy(() ->
-                SprintIssue.create("", "Summary", "Done", "Alice", "Story", 5, 2)
+                SprintIssue.create("", "Summary", "Done", "Alice", "Story", null, 5, 2)
             ).isInstanceOf(IllegalArgumentException.class)
              .hasMessageContaining("Issue key must not be blank");
         }
@@ -93,7 +80,7 @@ class SprintIssueTest {
         @DisplayName("should throw when remaining exceeds total")
         void throwsWhenRemainingExceedsTotal() {
             assertThatThrownBy(() ->
-                SprintIssue.create("SCRUM-1", "Summary", "To Do", "Bob", "Story", 5, 8)
+                SprintIssue.create("SCRUM-1", "Summary", "To Do", "Bob", "Story", null, 5, 8)
             ).isInstanceOf(IllegalArgumentException.class)
              .hasMessageContaining("cannot exceed total");
         }
@@ -102,7 +89,7 @@ class SprintIssueTest {
         @DisplayName("should succeed with valid data")
         void createsIssueSuccessfully() {
             SprintIssue issue = SprintIssue.create(
-                    "SCRUM-42", "Do the thing", "In Progress", "Carol", "Story", 8, 3);
+                    "SCRUM-42", "Do the thing", "In Progress", "Carol", "Story", "Backend", 8, 3);
 
             assertThat(issue.getIssueKey()).isEqualTo("SCRUM-42");
             assertThat(issue.getDoneStoryPoints()).isEqualTo(5);

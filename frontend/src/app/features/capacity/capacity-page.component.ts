@@ -124,6 +124,6 @@ export class CapacityPageComponent implements OnInit {
   }
 
   onExportCsv(): void {
-    this.capState.exportCsv();
+    this.capState.exportXlsx();
   }
 }

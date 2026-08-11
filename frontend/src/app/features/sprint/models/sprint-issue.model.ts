@@ -58,8 +58,8 @@ export interface SprintMetrics {
   issueCount?: number;
   /** Story points grouped by topic/epic */
   topicBreakdown: TopicStoryPoints[];
-  /** Capacity planning vs actual */
-  capacity: CapacityData;
+  /** Real capacity in EFT days */
+  realCapacity: number;
   /** Team availability in EFT */
   teamAvailability: TeamAvailability;
 }
@@ -69,11 +69,6 @@ export interface TopicStoryPoints {
   storyPoints: number;
   /** Issue count for this topic */
   issueCount?: number;
-}
-
-export interface CapacityData {
-  plannedCapacity: number;
-  realCapacity: number;
 }
 
 export interface TeamAvailability {
