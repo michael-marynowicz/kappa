@@ -8,6 +8,14 @@
   gap: 24px;
 }
 
+/* ── Gated / Premium overlay container ─────────────────────── */
+.cap-gated {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Error banner ───────────────────────────────────────────── */
 .cap-error {
   display: flex;

@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterLink } from "@angular/router";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
 import {
   ChartFocusView,
@@ -17,6 +18,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     SprintAnalyticsComponent,
     PremiumOverlayComponent,
     TeamDashboardSwitcherComponent,
@@ -211,13 +213,30 @@ export class MetricsComponent implements OnInit {
   readonly showAnalyticsSkeleton = computed(() => {
     const loadingByRequest = this.state.metricsLoading();
     const loadingBySwitch = this.switchingDashboardId() !== null;
+    const hasError =
+      !!this.state.metricsError() ||
+      !!this.state.iterationsError() ||
+      !!this.state.error();
     const initialEmptyState =
-      this.state.metrics() === null &&
-      !this.state.metricsGated() &&
-      !this.state.metricsError();
+      this.state.metrics() === null && !this.state.metricsGated() && !hasError;
 
-    return loadingByRequest || loadingBySwitch || initialEmptyState;
+    return (
+      !hasError && (loadingByRequest || loadingBySwitch || initialEmptyState)
+    );
   });
+
+  readonly activeError = computed(
+    () =>
+      this.state.metricsError() ??
+      this.state.iterationsError() ??
+      this.state.error(),
+  );
+
+  clearActiveError(): void {
+    this.state.clearMetricsError();
+    this.state.clearIterationsError();
+    this.state.clearError();
+  }
 
   readonly focusView = signal<ChartFocusView>("all");
   private readonly i18n = inject(I18nService);
@@ -232,10 +251,13 @@ export class MetricsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.teamDash.loadDashboards("Unable to load teams.");
-    this.state.loadMetrics();
-    this.state.loadIterations();
-    this.state.loadGroupedIssues();
+    this.teamDash.loadDashboards("Unable to load teams.", (dashboards) => {
+      if (dashboards.some((d) => d.active)) {
+        this.state.loadMetrics();
+        this.state.loadIterations();
+        this.state.loadGroupedIssues();
+      }
+    });
   }
 
   get activeDashboardId(): string | null {

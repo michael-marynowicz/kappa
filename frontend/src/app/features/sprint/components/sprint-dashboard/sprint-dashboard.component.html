@@ -98,8 +98,8 @@
     }
   </header>
 
-  <!-- Global Error Banner -->
-  @if (state.error()) {
+  <!-- Global Error Banner (only when no tab-specific error is already shown) -->
+  @if (state.error() && !dashboardError) {
     <div class="error-banner" role="alert">
       <span class="error-banner__icon">⚠</span>
       <span class="error-banner__message">{{ state.error() }}</span>
@@ -138,169 +138,201 @@
     </div>
   }
 
-  <!-- KPI Summary Cards -->
-  <app-sprint-summary-card
-    [summary]="state.summary()"
-    [loading]="state.loading()"
-  />
+  <!-- No dashboard configured -->
+  @if (!dashboardsLoading() && !hasDashboard && !dashboardSwitchError()) {
+    <div class="no-dashboard">
+      <svg
+        class="no-dashboard__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+      </svg>
+      <h2 class="no-dashboard__title">
+        {{ "dashboard.no_dashboard" | translate }}
+      </h2>
+      <p class="no-dashboard__hint">
+        {{ "dashboard.no_dashboard_hint" | translate }}
+      </p>
+      <button class="no-dashboard__cta" (click)="onGoToJiraSettings()">
+        {{ "dashboard.go_to_settings" | translate }}
+      </button>
+    </div>
+  } @else {
+    <!-- KPI Summary Cards -->
+    <app-sprint-summary-card
+      [summary]="state.summary()"
+      [loading]="state.loading()"
+    />
 
-  <!-- Tab Bar -->
-  <div class="tab-bar" role="tablist" aria-label="Dashboard tabs">
-    <button
-      class="tab-btn"
-      role="tab"
-      [class.tab-btn--active]="activeTab === 'board'"
-      [attr.aria-selected]="activeTab === 'board'"
-      (click)="activeTab = 'board'"
-    >
-      <span class="tab-btn__icon">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-        </svg>
-      </span>
-      <span>{{ "dashboard.tab.board" | translate }}</span>
-    </button>
-    <button
-      class="tab-btn"
-      role="tab"
-      [class.tab-btn--active]="activeTab === 'metrics'"
-      [attr.aria-selected]="activeTab === 'metrics'"
-      (click)="activeTab = 'metrics'"
-    >
-      <span class="tab-btn__icon">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-      </span>
-      <span>{{ "dashboard.tab.metrics" | translate }}</span>
-    </button>
-    <button
-      class="tab-btn"
-      role="tab"
-      [class.tab-btn--active]="activeTab === 'capacity'"
-      [attr.aria-selected]="activeTab === 'capacity'"
-      (click)="activeTab = 'capacity'"
-    >
-      <span class="tab-btn__icon">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-      </span>
-      <span>{{ "dashboard.tab.capacity" | translate }}</span>
-    </button>
-  </div>
+    <!-- Tab Bar -->
+    <div class="tab-bar" role="tablist" aria-label="Dashboard tabs">
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="activeTab === 'board'"
+        [attr.aria-selected]="activeTab === 'board'"
+        (click)="activeTab = 'board'"
+      >
+        <span class="tab-btn__icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+        </span>
+        <span>{{ "dashboard.tab.board" | translate }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="activeTab === 'metrics'"
+        [attr.aria-selected]="activeTab === 'metrics'"
+        (click)="activeTab = 'metrics'"
+      >
+        <span class="tab-btn__icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+        </span>
+        <span>{{ "dashboard.tab.metrics" | translate }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="activeTab === 'capacity'"
+        [attr.aria-selected]="activeTab === 'capacity'"
+        (click)="activeTab = 'capacity'"
+      >
+        <span class="tab-btn__icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </span>
+        <span>{{ "dashboard.tab.capacity" | translate }}</span>
+      </button>
+    </div>
 
-  <!-- Tab: Board (Issues Table) -->
-  @if (activeTab === "board") {
-    <main class="dashboard__content">
-      @if (state.loading()) {
-        <section class="board-skeleton" aria-busy="true" aria-live="polite">
-          @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
-            <div class="board-skeleton__row">
-              <span
-                class="board-skeleton__cell board-skeleton__cell--key"
-              ></span>
-              <span class="board-skeleton__cell"></span>
-              <span
-                class="board-skeleton__cell board-skeleton__cell--badge"
-              ></span>
-              <span
-                class="board-skeleton__cell board-skeleton__cell--num"
-              ></span>
-            </div>
-          }
-        </section>
-      } @else {
-        <app-sprint-issue-table
-          [issues]="state.issues()"
-          [savingIssueKey]="state.savingIssueKey()"
-          (updateRemainingSp)="onUpdateRemainingStoryPoints($event)"
-        />
-      }
-    </main>
-  }
-
-  <!-- Tab: Metrics (Analytics) -->
-  @if (activeTab === "metrics") {
-    <main class="dashboard__content">
-      @if (state.metricsLoading() || switchingDashboardId() !== null) {
-        <section class="metrics-sk" aria-busy="true" aria-live="polite">
-          <div class="metrics-sk__row metrics-sk__row--summary">
-            <div class="metrics-sk__card"></div>
-            <div class="metrics-sk__card"></div>
-            <div class="metrics-sk__card"></div>
-          </div>
-          <div class="metrics-sk__row metrics-sk__row--chart">
-            <div class="metrics-sk__chart"></div>
-            <div class="metrics-sk__panel">
-              <span class="metrics-sk__line"></span>
-              <span class="metrics-sk__line"></span>
-              <span class="metrics-sk__line"></span>
-              <span class="metrics-sk__line"></span>
-            </div>
-          </div>
-        </section>
-      } @else {
-        <div
-          class="feature-gate"
-          [class.feature-gate--disabled]="state.metricsGated()"
-        >
-          <app-sprint-analytics
-            [metrics]="state.metrics()"
-            [iterations]="state.iterations()"
-            [iterationsGated]="state.iterationsGated()"
-            [iterationsLoading]="state.iterationsLoading()"
-            [capacityGated]="state.iterationsGated()"
+    <!-- Tab: Board (Issues Table) -->
+    @if (activeTab === "board") {
+      <main class="dashboard__content">
+        @if (state.loading()) {
+          <section class="board-skeleton" aria-busy="true" aria-live="polite">
+            @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
+              <div class="board-skeleton__row">
+                <span
+                  class="board-skeleton__cell board-skeleton__cell--key"
+                ></span>
+                <span class="board-skeleton__cell"></span>
+                <span
+                  class="board-skeleton__cell board-skeleton__cell--badge"
+                ></span>
+                <span
+                  class="board-skeleton__cell board-skeleton__cell--num"
+                ></span>
+              </div>
+            }
+          </section>
+        } @else {
+          <app-sprint-issue-table
+            [issues]="state.issues()"
+            [savingIssueKey]="state.savingIssueKey()"
+            (updateRemainingSp)="onUpdateRemainingStoryPoints($event)"
           />
-          @if (state.metricsGated()) {
-            <app-premium-overlay message="Metrics require a Premium plan" />
-          }
-        </div>
-      }
-    </main>
-  }
+        }
+      </main>
+    }
 
-  <!-- Tab: Capacity -->
-  @if (activeTab === "capacity") {
-    <main class="dashboard__content">
-      <app-capacity-grid />
-    </main>
+    <!-- Tab: Metrics (Analytics) -->
+    @if (activeTab === "metrics") {
+      <main class="dashboard__content">
+        @if (state.metricsLoading() || switchingDashboardId() !== null) {
+          <section class="metrics-sk" aria-busy="true" aria-live="polite">
+            <div class="metrics-sk__row metrics-sk__row--summary">
+              <div class="metrics-sk__card"></div>
+              <div class="metrics-sk__card"></div>
+              <div class="metrics-sk__card"></div>
+            </div>
+            <div class="metrics-sk__row metrics-sk__row--chart">
+              <div class="metrics-sk__chart"></div>
+              <div class="metrics-sk__panel">
+                <span class="metrics-sk__line"></span>
+                <span class="metrics-sk__line"></span>
+                <span class="metrics-sk__line"></span>
+                <span class="metrics-sk__line"></span>
+              </div>
+            </div>
+          </section>
+        } @else if (state.metrics() || state.metricsGated()) {
+          <div
+            class="feature-gate"
+            [class.feature-gate--disabled]="state.metricsGated()"
+          >
+            <app-sprint-analytics
+              [metrics]="state.metrics()"
+              [iterations]="state.iterations()"
+              [iterationsGated]="state.iterationsGated()"
+              [iterationsLoading]="state.iterationsLoading()"
+              [capacityGated]="state.iterationsGated()"
+            />
+            @if (state.metricsGated()) {
+              <app-premium-overlay message="Metrics require a Premium plan" />
+            }
+          </div>
+        }
+      </main>
+    }
+
+    <!-- Tab: Capacity -->
+    @if (activeTab === "capacity") {
+      <main class="dashboard__content">
+        @if (hasDashboard) {
+          <app-capacity-grid />
+        }
+      </main>
+    }
   }
+  <!-- end @else hasDashboard -->
 
   <footer class="dashboard__footer">
     <p>

@@ -501,8 +501,7 @@
 
 .member-name-cell {
   font-weight: 500;
-  display: inline-block;
-  max-width: 100%;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -547,6 +546,16 @@
   &:hover {
     background: rgba(99, 102, 241, 0.1);
     color: #a5b4fc;
+  }
+
+  &--excluded {
+    cursor: default;
+    color: #4b5268;
+
+    &:hover {
+      background: transparent;
+      color: #4b5268;
+    }
   }
 }
 

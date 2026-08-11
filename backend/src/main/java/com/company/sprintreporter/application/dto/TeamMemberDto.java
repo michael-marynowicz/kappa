@@ -25,4 +25,7 @@ public class TeamMemberDto {
 
     @Builder.Default
     private final double timeOverride = 1.0;
+
+    @Builder.Default
+    private final boolean excludedFromCapacity = false;
 }

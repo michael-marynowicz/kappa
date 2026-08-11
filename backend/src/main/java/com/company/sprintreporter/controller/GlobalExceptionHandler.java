@@ -6,6 +6,7 @@ import com.company.sprintreporter.service.exception.IssueNotFoundException;
 import com.company.sprintreporter.service.exception.JiraException;
 import com.company.sprintreporter.service.exception.JiraAuthenticationException;
 import com.company.sprintreporter.service.exception.JiraNotConnectedException;
+import com.company.sprintreporter.service.exception.NoDashboardSelectedException;
 import com.company.sprintreporter.service.exception.JiraPermissionException;
 import com.company.sprintreporter.service.exception.JiraApiException;
 import com.company.sprintreporter.service.exception.JiraConnectionException;
@@ -118,6 +119,17 @@ public class GlobalExceptionHandler {
                         .status(HttpStatus.FORBIDDEN.value())
                         .error("Forbidden")
                         .message("You do not have permission to access this resource.")
+                        .build());
+    }
+
+    @ExceptionHandler(NoDashboardSelectedException.class)
+    public ResponseEntity<ApiErrorResponseDto> handleNoDashboard(NoDashboardSelectedException ex) {
+        log.warn("No active dashboard: {}", ex.getMessage());
+        return ResponseEntity.status(ex.getHttpStatus())
+                .body(ApiErrorResponseDto.builder()
+                        .status(ex.getHttpStatus().value())
+                        .error("No Dashboard Selected")
+                        .message(ex.getMessage())
                         .build());
     }
 

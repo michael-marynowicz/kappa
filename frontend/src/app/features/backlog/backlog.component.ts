@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterLink } from "@angular/router";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
 import { SprintIssueTableComponent } from "../sprint/components/sprint-issue-table/sprint-issue-table.component";
 import { SprintSummaryCardComponent } from "../sprint/components/sprint-summary-card/sprint-summary-card.component";
@@ -13,6 +14,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     SprintIssueTableComponent,
     SprintSummaryCardComponent,
     TeamDashboardSwitcherComponent,

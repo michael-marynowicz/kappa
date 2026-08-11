@@ -31,15 +31,10 @@
 
   <!-- Gated -->
   <div
-    class="feature-gate"
+    class="feature-gate cap-gated"
     [class.feature-gate--disabled]="capState.gated()"
     *ngIf="capState.gated() && !capState.loading()"
   >
-    <div class="cap-grid-wrapper">
-      <p style="color: #b8bcc4">
-        {{ "capacity.premium_required" | translate }}
-      </p>
-    </div>
     <app-premium-overlay message="Capacity planning requires a Premium plan" />
   </div>
 

@@ -222,6 +222,16 @@ export class SprintStateService {
     this._iterationsErrorStatus.set(null);
   }
 
+  clearMetricsError(): void {
+    this._metricsError.set(null);
+    this._metricsErrorStatus.set(null);
+  }
+
+  clearIterationsError(): void {
+    this._iterationsError.set(null);
+    this._iterationsErrorStatus.set(null);
+  }
+
   clear(): void {
     this._issues.set([]);
     this._metrics.set(null);
