@@ -19,3 +19,7 @@ application-local-override.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Metals / Bloop (local IDE state)
+.metals/
+.bloop/

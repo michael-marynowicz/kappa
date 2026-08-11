@@ -38,3 +38,9 @@ Thumbs.db
 
 # ── Docker ───────────────────────────────────────────
 .docker/
+
+# ── Metals / Bloop IDE state ─────────────────────────
+.metals/
+**/.metals/
+.bloop/
+**/.bloop/
