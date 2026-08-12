@@ -49,6 +49,9 @@ public class Plan {
     @Builder.Default
     private BigDecimal priceYearly = BigDecimal.ZERO;
 
+    @Column(name = "stripe_price_id", length = 255)
+    private String stripePriceId;
+
     @Column(name = "trial_days", nullable = false)
     @Builder.Default
     private Integer trialDays = 0;

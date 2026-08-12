@@ -99,7 +99,7 @@
   </header>
 
   <!-- Global Error Banner -->
-  @if (state.error()) {
+  @if (state.error() && !dashboardError && !noDashboardConfigured()) {
     <div class="error-banner" role="alert">
       <span class="error-banner__icon">⚠</span>
       <span class="error-banner__message">{{ state.error() }}</span>
@@ -118,7 +118,7 @@
     }
   </section>
 
-  @if (dashboardError) {
+  @if (dashboardError && !noDashboardConfigured()) {
     <div class="dashboard-error" role="alert">
       <span class="dashboard-error__icon">⚠</span>
       <span class="dashboard-error__message">{{ dashboardError }}</span>
@@ -228,7 +228,14 @@
   <!-- Tab: Board (Issues Table) -->
   @if (activeTab === "board") {
     <main class="dashboard__content">
-      @if (state.loading()) {
+      @if (noDashboardConfigured()) {
+        <app-empty-state
+          [title]="'common.no_dashboard.title' | translate"
+          [message]="'common.no_dashboard.message' | translate"
+          [actionLabel]="'common.no_dashboard.action' | translate"
+          actionLink="/settings/jira"
+        />
+      } @else if (state.loading()) {
         <section class="board-skeleton" aria-busy="true" aria-live="polite">
           @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
             <div class="board-skeleton__row">
@@ -258,7 +265,14 @@
   <!-- Tab: Metrics (Analytics) -->
   @if (activeTab === "metrics") {
     <main class="dashboard__content">
-      @if (state.metricsLoading() || switchingDashboardId() !== null) {
+      @if (noDashboardConfigured() && hasMetricsAccess()) {
+        <app-empty-state
+          [title]="'common.no_dashboard.title' | translate"
+          [message]="'common.no_dashboard.message' | translate"
+          [actionLabel]="'common.no_dashboard.action' | translate"
+          actionLink="/settings/jira"
+        />
+      } @else if (state.metricsLoading() || switchingDashboardId() !== null) {
         <section class="metrics-sk" aria-busy="true" aria-live="polite">
           <div class="metrics-sk__row metrics-sk__row--summary">
             <div class="metrics-sk__card"></div>
@@ -298,7 +312,16 @@
   <!-- Tab: Capacity -->
   @if (activeTab === "capacity") {
     <main class="dashboard__content">
-      <app-capacity-grid />
+      @if (noDashboardConfigured() && hasCapacityAccess()) {
+        <app-empty-state
+          [title]="'common.no_dashboard.title' | translate"
+          [message]="'common.no_dashboard.message' | translate"
+          [actionLabel]="'common.no_dashboard.action' | translate"
+          actionLink="/settings/jira"
+        />
+      } @else {
+        <app-capacity-grid />
+      }
     </main>
   }
 

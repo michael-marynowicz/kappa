@@ -38,3 +38,9 @@ Thumbs.db
 
 # ── Docker ───────────────────────────────────────────
 .docker/
+
+# ── IDE build servers (Metals/Bloop) ────────────────
+.metals/
+**/.metals/
+.bloop/
+**/.bloop/

@@ -28,27 +28,35 @@
     </div>
   }
 
-  <app-sprint-summary-card
-    [summary]="state.summary()"
-    [loading]="state.loading()"
-  />
-
-  @if (state.loading()) {
-    <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
-      @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
-        <div class="backlog-skeleton__row">
-          <span class="backlog-skeleton__cell bsk--key"></span>
-          <span class="backlog-skeleton__cell bsk--title"></span>
-          <span class="backlog-skeleton__cell bsk--badge"></span>
-          <span class="backlog-skeleton__cell bsk--num"></span>
-        </div>
-      }
-    </section>
-  } @else {
-    <app-sprint-issue-table
-      [issues]="state.issues()"
-      [savingIssueKey]="state.savingIssueKey()"
-      (updateRemainingSp)="onUpdateSp($event)"
+  @if (noDashboardConfigured()) {
+    <app-empty-state
+      [title]="'common.no_dashboard.title' | translate"
+      [message]="'common.no_dashboard.message' | translate"
+      [actionLabel]="'common.no_dashboard.action' | translate"
+      actionLink="/settings/jira"
     />
+  } @else {
+    <app-sprint-summary-card
+      [summary]="state.summary()"
+      [loading]="state.loading()"
+    />
+    @if (state.loading()) {
+      <section class="backlog-skeleton" aria-busy="true" aria-live="polite">
+        @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
+          <div class="backlog-skeleton__row">
+            <span class="backlog-skeleton__cell bsk--key"></span>
+            <span class="backlog-skeleton__cell bsk--title"></span>
+            <span class="backlog-skeleton__cell bsk--badge"></span>
+            <span class="backlog-skeleton__cell bsk--num"></span>
+          </div>
+        }
+      </section>
+    } @else {
+      <app-sprint-issue-table
+        [issues]="state.issues()"
+        [savingIssueKey]="state.savingIssueKey()"
+        (updateRemainingSp)="onUpdateSp($event)"
+      />
+    }
   }
 </div>

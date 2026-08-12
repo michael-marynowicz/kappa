@@ -27,7 +27,7 @@
                 ? ("billing.cancels" | translate)
                 : ("billing.renews" | translate)
             }}
-            {{ sub.currentPeriodEnd }}
+            {{ sub.currentPeriodEnd | date: "mediumDate" }}
           </p>
         }
       </div>
@@ -112,7 +112,7 @@
             {{
               subState.loading()
                 ? ("common.loading" | translate)
-                : ("common.upgrade" | translate)
+                : ("common.upgrade" | translate: { name: plan.name })
             }}
           </button>
         }

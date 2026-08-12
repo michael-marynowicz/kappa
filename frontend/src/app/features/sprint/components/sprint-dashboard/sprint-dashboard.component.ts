@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CurrentIterationService } from "../../services/current-iteration.service";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -14,7 +14,10 @@ import { TeamDashboardStateService } from "../../../../shared/services/team-dash
 import { JiraConfigApiService } from "../../../../core/services/jira-config-api.service";
 import { JiraDashboard } from "../../../../core/models/jira-config.model";
 import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { PermissionService } from "../../../../core/services/permission.service";
+import { Permission } from "../../../../core/models/permission.model";
 import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
+import { EmptyStateComponent } from "../../../../shared/components/empty-state/empty-state.component";
 import { I18nService } from "../../../../i18n/i18n.service";
 
 @Component({
@@ -28,6 +31,7 @@ import { I18nService } from "../../../../i18n/i18n.service";
     CapacityGridComponent,
     PremiumOverlayComponent,
     TeamDashboardSwitcherComponent,
+    EmptyStateComponent,
     TranslatePipe,
   ],
   providers: [TeamDashboardStateService],
@@ -39,6 +43,7 @@ export class SprintDashboardComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly jiraApi = inject(JiraConfigApiService);
   private readonly authState = inject(AuthStateService);
+  readonly permService = inject(PermissionService);
   readonly state = inject(SprintStateService);
   readonly capState = inject(CapacityStateService);
   readonly currentIteration = inject(CurrentIterationService);
@@ -49,6 +54,20 @@ export class SprintDashboardComponent implements OnInit {
   readonly switchingDashboardId = signal<string | null>(null);
   readonly dashboardSwitchError = signal<string | null>(null);
   activeTab: "board" | "metrics" | "capacity" = "board";
+
+  readonly noDashboardConfigured = computed(
+    () =>
+      !this.dashboardsLoading() &&
+      !this.dashboardSwitchError() &&
+      !this.dashboards().some((d) => d.active),
+  );
+
+  readonly hasMetricsAccess = this.permService.hasPermissionSignal(
+    Permission.METRICS_BASIC,
+  );
+  readonly hasCapacityAccess = this.permService.hasPermissionSignal(
+    Permission.CAPACITY_VIEW,
+  );
 
   ngOnInit(): void {
     this.loadDashboards();

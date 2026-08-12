@@ -29,6 +29,7 @@ public class PlanController {
                         .maxDashboards(plan.getMaxDashboards() == -1 ? null : plan.getMaxDashboards())
                         .priceMonthly(plan.getPriceMonthly())
                         .priceYearly(plan.getPriceYearly())
+                        .currency("EUR")
                         .trialDays(plan.getTrialDays())
                         .features(plan.getFeatures().stream().map(f -> f.getCode()).toList())
                         .contactOnly("enterprise".equals(plan.getCode()))

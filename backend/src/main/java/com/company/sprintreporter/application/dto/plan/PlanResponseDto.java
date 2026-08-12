@@ -21,6 +21,7 @@ public class PlanResponseDto {
     private Integer maxDashboards;
     private BigDecimal priceMonthly;
     private BigDecimal priceYearly;
+    private String currency;
     private Integer trialDays;
     private List<String> features;
     private boolean contactOnly;

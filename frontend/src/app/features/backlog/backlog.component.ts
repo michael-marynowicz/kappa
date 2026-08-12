@@ -1,4 +1,11 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  untracked,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
 import { SprintIssueTableComponent } from "../sprint/components/sprint-issue-table/sprint-issue-table.component";
@@ -7,6 +14,7 @@ import { AuthStateService } from "../../core/services/auth-state.service";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
 import { TranslatePipe } from "../../shared/pipes/translate.pipe";
+import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
 
 @Component({
   selector: "app-backlog",
@@ -17,6 +25,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
     SprintSummaryCardComponent,
     TeamDashboardSwitcherComponent,
     TranslatePipe,
+    EmptyStateComponent,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./backlog.component.html",
@@ -165,9 +174,31 @@ export class BacklogComponent implements OnInit {
   readonly switchingDashboardId = this.teamDash.switchingDashboardId;
   readonly dashboardError = this.teamDash.error;
 
+  readonly noDashboardConfigured = computed(
+    () =>
+      !this.teamDash.loading() &&
+      !this.teamDash.error() &&
+      !this.teamDash.dashboards().some((d) => d.active),
+  );
+
+  private issuesLoadedOnce = false;
+
+  constructor() {
+    effect(() => {
+      const dashboards = this.teamDash.dashboards();
+      if (
+        !this.teamDash.loading() &&
+        !this.issuesLoadedOnce &&
+        dashboards.some((d) => d.active)
+      ) {
+        this.issuesLoadedOnce = true;
+        untracked(() => this.state.loadIssues());
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.teamDash.loadDashboards("Unable to load teams.");
-    this.state.loadIssues();
   }
 
   get activeDashboardId(): string | null {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { CapacityGridComponent } from "../sprint/components/capacity-grid/capacity-grid.component";
 import { CapacityStateService } from "../sprint/services/capacity-state.service";
@@ -6,6 +6,9 @@ import { AuthStateService } from "../../core/services/auth-state.service";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
 import { TranslatePipe } from "../../shared/pipes/translate.pipe";
+import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
+import { PermissionService } from "../../core/services/permission.service";
+import { Permission } from "../../core/models/permission.model";
 
 @Component({
   selector: "app-capacity-page",
@@ -15,6 +18,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
     CapacityGridComponent,
     TeamDashboardSwitcherComponent,
     TranslatePipe,
+    EmptyStateComponent,
   ],
   providers: [TeamDashboardStateService],
   templateUrl: "./capacity-page.component.html",
@@ -88,10 +92,22 @@ export class CapacityPageComponent implements OnInit {
   private readonly teamDash = inject(TeamDashboardStateService);
 
   readonly capState = inject(CapacityStateService);
+  readonly permService = inject(PermissionService);
   readonly dashboards = this.teamDash.dashboards;
   readonly dashboardsLoading = this.teamDash.loading;
   readonly switchingDashboardId = this.teamDash.switchingDashboardId;
   readonly dashboardError = this.teamDash.error;
+
+  readonly noDashboardConfigured = computed(
+    () =>
+      !this.teamDash.loading() &&
+      !this.teamDash.error() &&
+      !this.teamDash.dashboards().some((d) => d.active),
+  );
+
+  readonly hasCapacityAccess = this.permService.hasPermissionSignal(
+    Permission.CAPACITY_VIEW,
+  );
 
   ngOnInit(): void {
     this.teamDash.loadDashboards("Unable to load teams.");

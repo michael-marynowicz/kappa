@@ -1,4 +1,12 @@
-import { Component, computed, inject, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
 import {
@@ -6,7 +14,10 @@ import {
   SprintAnalyticsComponent,
 } from "../sprint/components/sprint-analytics/sprint-analytics.component";
 import { PremiumOverlayComponent } from "../../shared/components/premium-overlay/premium-overlay.component";
+import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
 import { AuthStateService } from "../../core/services/auth-state.service";
+import { PermissionService } from "../../core/services/permission.service";
+import { Permission } from "../../core/models/permission.model";
 import { TeamDashboardSwitcherComponent } from "../../shared/components/team-dashboard-switcher/team-dashboard-switcher.component";
 import { TeamDashboardStateService } from "../../shared/services/team-dashboard-state.service";
 import { I18nService } from "../../i18n/i18n.service";
@@ -19,6 +30,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
     CommonModule,
     SprintAnalyticsComponent,
     PremiumOverlayComponent,
+    EmptyStateComponent,
     TeamDashboardSwitcherComponent,
     TranslatePipe,
   ],
@@ -202,22 +214,72 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
 export class MetricsComponent implements OnInit {
   private readonly authState = inject(AuthStateService);
   private readonly teamDash = inject(TeamDashboardStateService);
+  readonly permService = inject(PermissionService);
 
   readonly state = inject(SprintStateService);
   readonly dashboards = this.teamDash.dashboards;
   readonly dashboardsLoading = this.teamDash.loading;
   readonly switchingDashboardId = this.teamDash.switchingDashboardId;
   readonly dashboardError = this.teamDash.error;
+
+  private metricsLoadedOnce = false;
+
+  constructor() {
+    effect(() => {
+      const dashboards = this.teamDash.dashboards();
+      if (
+        !this.teamDash.loading() &&
+        !this.metricsLoadedOnce &&
+        dashboards.some((d) => d.active)
+      ) {
+        this.metricsLoadedOnce = true;
+        untracked(() => {
+          this.state.loadMetrics();
+          this.state.loadIterations();
+          this.state.loadGroupedIssues();
+        });
+      }
+    });
+  }
+
+  readonly noDashboardConfigured = computed(() => {
+    return (
+      !this.teamDash.loading() &&
+      !this.teamDash.error() &&
+      !this.teamDash.dashboards().some((d) => d.active)
+    );
+  });
+
+  readonly hasMetricsAccess = this.permService.hasPermissionSignal(
+    Permission.METRICS_BASIC,
+  );
+
   readonly showAnalyticsSkeleton = computed(() => {
+    if (this.noDashboardConfigured()) return false;
     const loadingByRequest = this.state.metricsLoading();
     const loadingBySwitch = this.switchingDashboardId() !== null;
+    const hasError =
+      !!this.state.metricsError() ||
+      !!this.state.iterationsError() ||
+      !!this.state.error();
     const initialEmptyState =
-      this.state.metrics() === null &&
-      !this.state.metricsGated() &&
-      !this.state.metricsError();
+      this.state.metrics() === null && !this.state.metricsGated() && !hasError;
 
-    return loadingByRequest || loadingBySwitch || initialEmptyState;
+    return (
+      !hasError && (loadingByRequest || loadingBySwitch || initialEmptyState)
+    );
   });
+
+  readonly activeError = computed(
+    () =>
+      this.state.metricsError() ??
+      this.state.iterationsError() ??
+      this.state.error(),
+  );
+
+  clearActiveError(): void {
+    this.state.clearError();
+  }
 
   readonly focusView = signal<ChartFocusView>("all");
   private readonly i18n = inject(I18nService);
@@ -233,9 +295,6 @@ export class MetricsComponent implements OnInit {
 
   ngOnInit(): void {
     this.teamDash.loadDashboards("Unable to load teams.");
-    this.state.loadMetrics();
-    this.state.loadIterations();
-    this.state.loadGroupedIssues();
   }
 
   get activeDashboardId(): string | null {

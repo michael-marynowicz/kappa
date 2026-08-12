@@ -22,6 +22,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "metrics.view.velocity": "Velocity",
     "metrics.view.capacity": "Capacity",
     "metrics.view.topics": "Topics",
+    "metrics.no_dashboard.title": "No dashboard configured",
+    "metrics.no_dashboard.message":
+      "Configure a Jira dashboard to start viewing metrics and analytics.",
+    "metrics.no_dashboard.action": "Go to Settings",
 
     // ── Capacity page ─────────────────────────────────────────────
     "capacity.title": "Capacity Planning",
@@ -356,7 +360,11 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "common.loading": "Loading…",
     "common.unlimited": "Unlimited",
     "common.premium": "★ Premium",
-    "common.upgrade": "Upgrade to Premium",
+    "common.upgrade": "Upgrade to {name}",
+    "common.no_dashboard.title": "No dashboard configured",
+    "common.no_dashboard.message":
+      "Configure a Jira dashboard to start using this feature.",
+    "common.no_dashboard.action": "Go to Settings",
   },
 
   fr: {
@@ -380,6 +388,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "metrics.view.velocity": "Vélocité",
     "metrics.view.capacity": "Capacité",
     "metrics.view.topics": "Sujets",
+    "metrics.no_dashboard.title": "Aucun dashboard configuré",
+    "metrics.no_dashboard.message":
+      "Configurez un dashboard Jira pour commencer à visualiser les métriques et analyses.",
+    "metrics.no_dashboard.action": "Aller aux paramètres",
 
     // ── Capacity page ─────────────────────────────────────────────
     "capacity.title": "Planification de capacité",
@@ -726,6 +738,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "common.loading": "Chargement…",
     "common.unlimited": "Illimité",
     "common.premium": "★ Premium",
-    "common.upgrade": "Mettre à niveau vers Premium",
+    "common.upgrade": "Mettre à niveau vers {name}",
+    "common.no_dashboard.title": "Aucun dashboard configuré",
+    "common.no_dashboard.message":
+      "Configurez un dashboard Jira pour commencer à utiliser cette fonctionnalité.",
+    "common.no_dashboard.action": "Aller aux paramètres",
   },
 };

@@ -35,14 +35,21 @@
     }
   </nav>
 
-  @if (state.error()) {
+  @if (activeError()) {
     <div class="error-banner" role="alert">
-      <span>⚠ {{ state.error() }}</span>
-      <button (click)="state.clearError()">✕</button>
+      <span>⚠ {{ activeError() }}</span>
+      <button (click)="clearActiveError()">✕</button>
     </div>
   }
 
-  @if (showAnalyticsSkeleton()) {
+  @if (noDashboardConfigured() && hasMetricsAccess()) {
+    <app-empty-state
+      [title]="'metrics.no_dashboard.title' | translate"
+      [message]="'metrics.no_dashboard.message' | translate"
+      [actionLabel]="'metrics.no_dashboard.action' | translate"
+      actionLink="/settings/jira"
+    />
+  } @else if (showAnalyticsSkeleton()) {
     <section class="metrics-skeleton" aria-live="polite" aria-busy="true">
       <div class="metrics-skeleton__row metrics-skeleton__row--summary">
         <div class="metrics-skeleton__card"></div>
@@ -72,7 +79,7 @@
         ></span>
       </div>
     </section>
-  } @else {
+  } @else if (state.metrics() || state.metricsGated()) {
     <div
       class="feature-gate"
       [class.feature-gate--disabled]="state.metricsGated()"

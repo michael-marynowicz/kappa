@@ -23,5 +23,14 @@
     </button>
   </header>
 
-  <app-capacity-grid />
+  @if (noDashboardConfigured() && hasCapacityAccess()) {
+    <app-empty-state
+      [title]="'common.no_dashboard.title' | translate"
+      [message]="'common.no_dashboard.message' | translate"
+      [actionLabel]="'common.no_dashboard.action' | translate"
+      actionLink="/settings/jira"
+    />
+  } @else {
+    <app-capacity-grid />
+  }
 </div>

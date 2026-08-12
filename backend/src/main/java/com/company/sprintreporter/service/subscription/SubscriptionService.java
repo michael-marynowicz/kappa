@@ -7,6 +7,7 @@ import com.company.sprintreporter.domain.entity.Subscription;
 import com.company.sprintreporter.domain.entity.enums.BillingProvider;
 import com.company.sprintreporter.domain.entity.enums.SubscriptionStatus;
 import com.company.sprintreporter.domain.entity.enums.SubscriptionType;
+import com.company.sprintreporter.config.StripeProperties;
 import com.company.sprintreporter.domain.port.BillingProviderPort;
 import com.company.sprintreporter.infrastructure.persistence.OrganizationRepository;
 import com.company.sprintreporter.infrastructure.persistence.PlanRepository;
@@ -33,6 +34,7 @@ public class SubscriptionService {
     private final PlanRepository planRepository;
     private final OrganizationRepository organizationRepository;
     private final BillingProviderPort billingProvider;
+    private final StripeProperties stripeProperties;
 
     public Subscription getByOrganizationId(UUID organizationId) {
         return subscriptionRepository.findByOrganizationIdWithPlan(organizationId)
@@ -101,6 +103,17 @@ public class SubscriptionService {
         Organization org = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new BusinessException("Organization not found", HttpStatus.NOT_FOUND));
 
+        // Free plan: downgrade directly, no Stripe required
+        if (plan.getPriceMonthly() != null && plan.getPriceMonthly().compareTo(java.math.BigDecimal.ZERO) == 0) {
+            Subscription subscription = getByOrganizationId(organizationId);
+            subscription.setPlan(plan);
+            subscription.setStatus(SubscriptionStatus.ACTIVE);
+            subscription.setCurrentPeriodStart(Instant.now());
+            subscription.setCurrentPeriodEnd(null);
+            subscriptionRepository.save(subscription);
+            return CheckoutResponseDto.builder().checkoutUrl(null).build();
+        }
+
         // Create or retrieve billing customer
         String customerId = org.getStripeCustomerId();
         if (customerId == null || customerId.isBlank()) {
@@ -110,7 +123,25 @@ public class SubscriptionService {
         }
 
         // Create checkout session via billing provider
-        var result = billingProvider.createCheckoutSession(customerId, planCode, promoCode);
+        String priceId = plan.getStripePriceId();
+        if ((priceId == null || priceId.isBlank()) && stripeProperties.isEnabled()) {
+            throw new BusinessException(
+                "No Stripe Price ID configured for plan '" + planCode + "'. " +
+                "Set it via: UPDATE plans SET stripe_price_id = 'price_...' WHERE code = '" + planCode + "';",
+                HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        if (priceId == null || priceId.isBlank()) {
+            priceId = "mock_price_" + planCode; // mock mode — no real price ID needed
+        }
+
+        // Support direct Payment Link URLs (https://buy.stripe.com/...)
+        if (priceId.startsWith("https://")) {
+            return CheckoutResponseDto.builder()
+                    .checkoutUrl(priceId)
+                    .build();
+        }
+
+        var result = billingProvider.createCheckoutSession(customerId, priceId, promoCode);
 
         // Store provider subscription ID on the subscription
         Subscription subscription = getByOrganizationId(organizationId);
