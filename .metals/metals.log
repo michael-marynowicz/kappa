@@ -1,6 +1,0 @@
-2026.08.11 15:39:55 INFO  Started: Metals version 1.6.8 in folders 'C:\Users\mmarynowicz\Downloads\sprint-reporter-v2\sprint-reporter' for client Visual Studio Code 1.129.1.
-2026.08.11 15:39:55 INFO  Memory monitor started
-2026.08.11 15:39:57 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
-2026.08.11 15:42:24 INFO  no build target found for C:\Users\mmarynowicz\Downloads\sprint-reporter-v2\sprint-reporter\backend\src\main\java\com\company\sprintreporter\controller\GlobalExceptionHandler.java. Using fallback presentation compiler.
-2026.08.11 15:42:24 INFO  no build target found for C:\Users\mmarynowicz\Downloads\sprint-reporter-v2\sprint-reporter\backend\src\main\java\com\company\sprintreporter\infrastructure\jira\JiraIssueRepositoryImpl.java. Using fallback presentation compiler.
-2026.08.11 15:42:24 INFO  no build target found for C:\Users\mmarynowicz\Downloads\sprint-reporter-v2\sprint-reporter\backend\src\main\java\com\company\sprintreporter\service\exception\NoDashboardSelectedException.java. Using fallback presentation compiler.
