@@ -68,6 +68,23 @@ Suggested settings:
 - Build command: `npm run build:prod`
 - Output directory: `dist/sprint-reporter-ui/browser`
 
+### API calls: direct-to-backend, no proxy
+
+The frontend calls the backend directly using an absolute URL — see
+[frontend/src/environments/environment.prod.ts](frontend/src/environments/environment.prod.ts)
+(`apiBaseUrl`). There is no `/api` rewrite/proxy on Vercel; every environment (dev, prod) uses
+the same strategy, just with a different base URL.
+
+Because the browser calls the backend origin directly, the backend must allow the frontend
+origin(s) via `CORS_ALLOWED_ORIGINS` (comma-separated, no trailing slash), for example:
+
+```
+CORS_ALLOWED_ORIGINS=https://kappa-app.com,https://www.kappa-app.com
+```
+
+If `CORS_ALLOWED_ORIGINS` does not match the exact origin the browser sends, requests will fail
+CORS preflight — this is the correct place to fix that, not a rewrite on the frontend host.
+
 The frontend currently uses `environment.prod.ts` for the API base URL. Before the final production deploy, point it to the real backend URL or switch to a runtime configuration strategy.
 
 ## First things to do
