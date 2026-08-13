@@ -96,9 +96,18 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification() {
-        var auth = getAuth();
-        AppUser user = authService.getMe(auth.getUserId());
+    public ResponseEntity<Void> resendVerification(@RequestBody(required = false) java.util.Map<String, String> body) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        AppUser user;
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            user = authService.getMe(jwtAuth.getUserId());
+        } else {
+            String email = body != null ? body.get("email") : null;
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.badRequest().build();
+            }
+            user = authService.getUserByEmail(email);
+        }
         if (user.getEmailVerified()) {
             return ResponseEntity.noContent().build();
         }

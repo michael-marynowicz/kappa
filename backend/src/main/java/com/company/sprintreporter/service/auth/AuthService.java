@@ -154,6 +154,11 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
     }
 
+    public AppUser getUserByEmail(String email) {
+        return userRepository.findByEmail(email.toLowerCase().trim())
+                .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
+    }
+
     @Transactional
     public void logout(UUID userId) {
         refreshTokenRepository.revokeAllByUserId(userId);
