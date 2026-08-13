@@ -1,12 +1,15 @@
 <section class="capacity-section">
   <!-- Error (non-gated errors only) -->
   <div
-    class="cap-error"
-    *ngIf="capState.error() && !capState.gated()"
+    class="error-banner"
+    *ngIf="showError && capState.error() && !capState.gated()"
     role="alert"
   >
-    <span>&#9888; {{ capState.error() }}</span>
-    <button (click)="capState.clearError()">&times;</button>
+    <span class="error-banner__icon">&#9888;</span>
+    <span class="error-banner__message">{{ capState.error() }}</span>
+    <button class="error-banner__close" (click)="capState.clearError()">
+      &#10005;
+    </button>
   </div>
 
   <!-- Skeleton loading -->

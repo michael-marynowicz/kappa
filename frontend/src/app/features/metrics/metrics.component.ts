@@ -104,24 +104,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
           inset 0 0 0 1px rgba(96, 165, 250, 0.25);
       }
 
-      .error-banner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(248, 113, 113, 0.08);
-        border: 1px solid rgba(248, 113, 113, 0.2);
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 12px;
-        color: #f87171;
-        margin-bottom: 16px;
-        button {
-          background: none;
-          border: none;
-          color: #f87171;
-          cursor: pointer;
-        }
-      }
+      /* .error-banner styles live in global styles.scss */
 
       .metrics-skeleton {
         display: flex;

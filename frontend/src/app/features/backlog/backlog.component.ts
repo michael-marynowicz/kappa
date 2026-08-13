@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { SprintStateService } from "../sprint/services/sprint-state.service";
@@ -136,24 +136,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
       .bsk--num {
         width: 40%;
       }
-      .error-banner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(248, 113, 113, 0.08);
-        border: 1px solid rgba(248, 113, 113, 0.2);
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 12px;
-        color: #f87171;
-        margin-bottom: 16px;
-      }
-      .error-banner button {
-        background: none;
-        border: none;
-        color: #f87171;
-        cursor: pointer;
-      }
+      /* .error-banner styles live in global styles.scss */
     `,
   ],
 })
@@ -166,6 +149,19 @@ export class BacklogComponent implements OnInit {
   readonly dashboardsLoading = this.teamDash.loading;
   readonly switchingDashboardId = this.teamDash.switchingDashboardId;
   readonly dashboardError = this.teamDash.error;
+
+  /**
+   * Surfaces both the initial issues-load error and any other sprint-state
+   * error (update/export/grouped-issues) in a single banner, so a failed
+   * backlog load is never silently swallowed.
+   */
+  readonly activeError = computed(
+    () => this.state.issuesError() ?? this.state.error(),
+  );
+
+  clearActiveError(): void {
+    this.state.clearError();
+  }
 
   ngOnInit(): void {
     this.teamDash.loadDashboards("Unable to load teams.");

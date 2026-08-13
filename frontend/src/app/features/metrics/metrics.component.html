@@ -38,8 +38,11 @@
 
     @if (activeError()) {
       <div class="error-banner" role="alert">
-        <span>⚠ {{ activeError() }}</span>
-        <button (click)="clearActiveError()">✕</button>
+        <span class="error-banner__icon">⚠</span>
+        <span class="error-banner__message">{{ activeError() }}</span>
+        <button class="error-banner__close" (click)="clearActiveError()">
+          ✕
+        </button>
       </div>
     }
 

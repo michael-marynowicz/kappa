@@ -192,10 +192,9 @@ export class SprintDashboardComponent implements OnInit {
   }
 
   get dashboardError(): string | null {
-    if (this.dashboardSwitchError()) {
-      return this.dashboardSwitchError();
-    }
-
+    // Dashboard load/switch errors are already surfaced inline next to the
+    // team switcher (see [errorMessage] binding above) — do not repeat them
+    // here, otherwise the same message would appear in two banners at once.
     if (this.activeTab === "metrics") {
       return this.metricsError;
     }

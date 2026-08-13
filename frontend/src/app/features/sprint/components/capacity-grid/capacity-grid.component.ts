@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, Input, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { CapacityStateService } from "../../services/capacity-state.service";
@@ -24,6 +24,15 @@ import { TranslatePipe } from "../../../../shared/pipes/translate.pipe";
 })
 export class CapacityGridComponent implements OnInit {
   readonly capState = inject(CapacityStateService);
+
+  /**
+   * Whether this component should render its own error banner.
+   * Set to `false` when an ancestor page already shows a page-level
+   * error banner for the same CapacityStateService.error() signal
+   * (e.g. the sprint dashboard's "Capacity" tab), to avoid showing
+   * the same error message twice on screen.
+   */
+  @Input() showError = true;
 
   newMemberName = "";
   newMemberRole: MemberRole = "DEV";

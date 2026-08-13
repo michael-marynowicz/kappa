@@ -14,7 +14,11 @@
 
 .team-switcher__error {
   font-size: 11px;
-  color: #f87171;
+  font-weight: 500;
+  color: var(--color-danger-light, #f87171);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .ds-dropdown {

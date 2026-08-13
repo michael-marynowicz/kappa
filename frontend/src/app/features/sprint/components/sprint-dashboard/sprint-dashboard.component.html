@@ -119,19 +119,19 @@
   </section>
 
   @if (dashboardError) {
-    <div class="dashboard-error" role="alert">
-      <span class="dashboard-error__icon">⚠</span>
-      <span class="dashboard-error__message">{{ dashboardError }}</span>
-      <div class="dashboard-error__actions">
+    <div class="error-banner" role="alert">
+      <span class="error-banner__icon">⚠</span>
+      <span class="error-banner__message">{{ dashboardError }}</span>
+      <div class="error-banner__actions">
         @if (shouldShowGoToSettings) {
           <button
-            class="dashboard-error__settings"
+            class="error-banner__settings"
             (click)="onGoToJiraSettings()"
           >
             Go to Settings
           </button>
         }
-        <button class="dashboard-error__retry" (click)="retryActiveTab()">
+        <button class="error-banner__retry" (click)="retryActiveTab()">
           {{ "dashboard.retry" | translate }}
         </button>
       </div>
@@ -327,7 +327,7 @@
     @if (activeTab === "capacity") {
       <main class="dashboard__content">
         @if (hasDashboard) {
-          <app-capacity-grid />
+          <app-capacity-grid [showError]="false" />
         }
       </main>
     }

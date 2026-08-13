@@ -3,6 +3,50 @@
    Modern, warm dark theme with glassmorphism
    ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Design tokens — single source of truth for the whole app.
+   These MUST live in the global stylesheet (not inside a component's
+   scoped styles) so every route/lazy chunk can rely on them, even when
+   that route never loads the sprint-dashboard feature module. */
+:root {
+  --color-bg: #0f1117;
+  --color-surface: rgba(22, 25, 35, 0.7);
+  --color-surface-solid: #161921;
+  --color-surface-raised: rgba(30, 34, 48, 0.8);
+  --color-glass: rgba(255, 255, 255, 0.03);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-border-active: rgba(99, 102, 241, 0.5);
+  --color-text-primary: #f1f3f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-accent: #6366f1;
+  --color-accent-light: #818cf8;
+  --color-accent-dim: rgba(99, 102, 241, 0.1);
+  --color-accent-glow: rgba(99, 102, 241, 0.2);
+  --color-success: #10b981;
+  --color-success-light: #34d399;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fbbf24;
+  --color-danger: #ef4444;
+  --color-danger-light: #f87171;
+  --color-info: #3b82f6;
+  --color-info-light: #60a5fa;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 *,
 *::before,
 *::after {
@@ -214,33 +258,97 @@ select {
 }
 
 /* ============================================================
-   Error Banner
+   Error Banner — single canonical style for every page-level error.
+   Use these BEM parts consistently everywhere:
+     .error-banner
+       .error-banner__icon     (leading ⚠ glyph)
+       .error-banner__message  (the text)
+       .error-banner__actions  (optional wrapper for action buttons)
+       .error-banner__retry    (optional "Retry" action button)
+       .error-banner__settings (optional "Go to Settings" action button)
+       .error-banner__close    (dismiss "✕" button)
    ============================================================ */
 .error-banner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
-  background: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-left: 3px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 16px;
   font-size: 13px;
-  color: #f87171;
-  margin-bottom: 20px;
-  animation: slideDown 200ms ease;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-danger-light);
+  animation: slideDown 250ms ease;
 
-  button {
+  &__icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    opacity: 0.9;
+  }
+
+  &__message {
+    flex: 1;
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  &__close {
+    flex-shrink: 0;
     background: none;
     border: none;
-    color: #f87171;
+    color: inherit;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
     opacity: 0.7;
+    transition:
+      opacity 150ms ease,
+      background 150ms ease;
 
     &:hover {
       opacity: 1;
+      background: rgba(239, 68, 68, 0.12);
+    }
+  }
+
+  &__retry,
+  &__settings {
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  &__retry {
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    background: rgba(127, 29, 29, 0.45);
+    color: #ffffff;
+
+    &:hover {
+      background: rgba(153, 27, 27, 0.6);
+    }
+  }
+
+  &__settings {
+    border: 1px solid rgba(99, 102, 241, 0.45);
+    background: rgba(55, 48, 163, 0.42);
+    color: #e0e7ff;
+
+    &:hover {
+      background: rgba(67, 56, 202, 0.6);
     }
   }
 }

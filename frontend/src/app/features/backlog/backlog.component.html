@@ -22,10 +22,13 @@
   </header>
 
   @if (activeDashboardId) {
-    @if (state.error()) {
+    @if (activeError()) {
       <div class="error-banner" role="alert">
-        <span>⚠ {{ state.error() }}</span>
-        <button (click)="state.clearError()">✕</button>
+        <span class="error-banner__icon">⚠</span>
+        <span class="error-banner__message">{{ activeError() }}</span>
+        <button class="error-banner__close" (click)="clearActiveError()">
+          ✕
+        </button>
       </div>
     }
 
