@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
 
     if (this.authState.getToken()) {
       this.authState.loadCurrentUser();
-      this.orgState.loadOrganization();
+      if (!this.orgState.organization()) this.orgState.loadOrganization();
     }
   }
 }

@@ -34,7 +34,7 @@ export class BillingComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.subState.showPaymentPages()) {
-      this.subState.loadSubscription();
+      if (!this.subState.subscription()) this.subState.loadSubscription();
       this.subState.loadPlans();
     }
   }
