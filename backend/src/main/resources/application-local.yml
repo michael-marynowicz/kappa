@@ -8,7 +8,6 @@ spring:
     port: 1025
     username:
     password:
-    from: noreply@kappa.com
     properties:
       mail.smtp.auth: false
       mail.smtp.starttls.enable: false

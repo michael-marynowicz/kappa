@@ -45,11 +45,13 @@ Minimum required values:
 
 If you use email or billing features, also set:
 
-- `MAIL_HOST`
-- `MAIL_PORT`
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
-- `MAIL_FROM`
+- `BREVO_API_KEY` — production sends transactional emails via Brevo's HTTPS
+  API (not SMTP), because platforms like Railway block outbound SMTP ports
+  (587/465) at the network level. Generate this key in the Brevo dashboard
+  under **Settings → SMTP & API → API Keys** — it is *not* the same as any
+  SMTP username/password.
+- `MAIL_FROM` (sender address, e.g. `noreply@kappa.com`)
+- `MAIL_FROM_NAME` (optional, defaults to `Kappa`)
 - `STRIPE_ENABLED`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
