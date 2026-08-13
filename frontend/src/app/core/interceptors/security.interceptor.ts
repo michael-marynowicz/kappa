@@ -10,10 +10,7 @@ import { HttpInterceptorFn } from "@angular/common/http";
 export const securityInterceptor: HttpInterceptorFn = (req, next) => {
   const securedReq = req.clone({
     setHeaders: {
-      "X-Content-Type-Options": "nosniff",
       "X-Requested-With": "XMLHttpRequest",
-      "Cache-Control": "no-store",
-      Pragma: "no-cache",
     },
   });
   return next(securedReq);
