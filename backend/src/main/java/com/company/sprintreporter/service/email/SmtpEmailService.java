@@ -147,8 +147,8 @@ public class SmtpEmailService implements EmailService {
             helper.setText(htmlBody, true);
             mailSender.send(message);
             log.info("Email sent to {}: {}", to, subject);
-        } catch (MessagingException e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to send email to {} (subject: {}): {}", to, subject, e.getMessage(), e);
         }
     }
 
