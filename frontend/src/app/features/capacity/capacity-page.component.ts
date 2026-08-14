@@ -65,23 +65,7 @@ import { TranslatePipe } from "../../shared/pipes/translate.pipe";
         color: #8b92a8;
         margin: 0;
       }
-      .btn-export {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        color: #e4e7ef;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 150ms ease;
-      }
-      .btn-export:hover {
-        background: rgba(255, 255, 255, 0.08);
-      }
+      /* .btn-export (Export CSV button) styles live in global styles.scss */
     `,
   ],
 })
