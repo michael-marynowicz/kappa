@@ -50,7 +50,7 @@ public class StripeBillingProvider implements BillingProviderPort {
     }
 
     @Override
-    public CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String promoCode) {
+    public CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String stripePriceId, String promoCode) {
         try {
             SessionCreateParams.Builder builder = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
@@ -59,7 +59,7 @@ public class StripeBillingProvider implements BillingProviderPort {
                     .setCancelUrl(stripeProperties.getCancelUrl())
                     .putMetadata("plan_code", planCode)
                     .addLineItem(SessionCreateParams.LineItem.builder()
-                            .setPrice(planCode) // planCode should map to a Stripe Price ID
+                            .setPrice(stripePriceId)
                             .setQuantity(1L)
                             .build());
 

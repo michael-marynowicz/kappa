@@ -18,7 +18,7 @@ public class MockBillingProvider implements BillingProviderPort {
     }
 
     @Override
-    public CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String promoCode) {
+    public CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String stripePriceId, String promoCode) {
         String subscriptionId = "mock_sub_" + UUID.randomUUID().toString().substring(0, 8);
         return new CheckoutSessionResult("https://mock-billing.local/checkout/" + subscriptionId, subscriptionId);
     }

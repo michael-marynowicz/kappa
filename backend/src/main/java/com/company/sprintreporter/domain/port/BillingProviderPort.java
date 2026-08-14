@@ -6,7 +6,7 @@ public interface BillingProviderPort {
 
     String createCustomer(String email, String organizationName);
 
-    CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String promoCode);
+    CheckoutSessionResult createCheckoutSession(String customerId, String planCode, String stripePriceId, String promoCode);
 
     SubscriptionStatusResult getSubscriptionStatus(String providerSubscriptionId);
 

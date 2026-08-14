@@ -13,6 +13,7 @@ import com.company.sprintreporter.infrastructure.persistence.PlanRepository;
 import com.company.sprintreporter.infrastructure.persistence.SubscriptionRepository;
 import com.company.sprintreporter.service.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,9 @@ public class SubscriptionService {
     private final PlanRepository planRepository;
     private final OrganizationRepository organizationRepository;
     private final BillingProviderPort billingProvider;
+
+    @Value("${stripe.enabled:false}")
+    private boolean stripeEnabled;
 
     public Subscription getByOrganizationId(UUID organizationId) {
         return subscriptionRepository.findByOrganizationIdWithPlan(organizationId)
@@ -109,8 +113,12 @@ public class SubscriptionService {
             organizationRepository.save(org);
         }
 
+        if (stripeEnabled && (plan.getStripePriceId() == null || plan.getStripePriceId().isBlank())) {
+            throw new BusinessException("Plan is not configured for billing: " + planCode, HttpStatus.CONFLICT);
+        }
+
         // Create checkout session via billing provider
-        var result = billingProvider.createCheckoutSession(customerId, planCode, promoCode);
+        var result = billingProvider.createCheckoutSession(customerId, planCode, plan.getStripePriceId(), promoCode);
 
         // Store provider subscription ID on the subscription
         Subscription subscription = getByOrganizationId(organizationId);
