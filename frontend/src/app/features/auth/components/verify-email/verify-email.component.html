@@ -33,9 +33,9 @@
         </div>
         <h2 class="verify-title">{{ "auth.verify.success" | translate }}</h2>
         <p class="verify-desc">{{ "auth.verify.success_desc" | translate }}</p>
-        <button class="btn-primary" (click)="goToDashboard()">
-          {{ "auth.verify.go_dashboard" | translate }}
-        </button>
+        <a class="btn-primary" routerLink="/auth/login">
+          {{ "auth.verify.back" | translate }}
+        </a>
       </div>
     }
 

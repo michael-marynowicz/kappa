@@ -23,6 +23,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  flyway:
+    out-of-order: true
+
   mvc:
     cors:
       allowed-origins: "${CORS_ALLOWED_ORIGINS:https://kappa.com}"
