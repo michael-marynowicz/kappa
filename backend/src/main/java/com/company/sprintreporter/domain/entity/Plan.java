@@ -57,6 +57,9 @@ public class Plan {
     @Builder.Default
     private Boolean active = true;
 
+    @Column(name = "stripe_price_id")
+    private String stripePriceId;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "plan_features",
