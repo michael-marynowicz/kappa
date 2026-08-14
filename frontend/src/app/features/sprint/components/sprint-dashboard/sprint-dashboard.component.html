@@ -124,10 +124,7 @@
       <span class="error-banner__message">{{ dashboardError }}</span>
       <div class="error-banner__actions">
         @if (shouldShowGoToSettings) {
-          <button
-            class="error-banner__settings"
-            (click)="onGoToJiraSettings()"
-          >
+          <button class="error-banner__settings" (click)="onGoToJiraSettings()">
             Go to Settings
           </button>
         }

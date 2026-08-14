@@ -3,6 +3,8 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/sprintreporter}
     username: ${DATABASE_USERNAME:sprintreporter}
     password: ${DATABASE_PASSWORD:sprintreporter_local}
+  flyway:
+    out-of-order: true
   mail:
     host: localhost
     port: 1025

@@ -124,9 +124,16 @@ export class AuthStateService {
           this.subState.loadFeatures();
         }
       },
-      error: () => {
-        this.clearToken();
+      error: (err) => {
         this._loading.set(false);
+        // Only a genuine auth rejection (invalid/expired token) should log the
+        // user out. A network/connection error (status 0) or a transient
+        // server error (5xx) must NOT clear the session — otherwise a brief
+        // backend outage silently kicks the user out to the marketing home
+        // page instead of letting them retry from where they were.
+        if (err?.status === 401 || err?.status === 403) {
+          this.clearToken();
+        }
       },
     });
   }
