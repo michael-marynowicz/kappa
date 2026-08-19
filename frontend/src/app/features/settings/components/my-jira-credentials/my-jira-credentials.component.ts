@@ -25,6 +25,9 @@ export class MyJiraCredentialsComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
   readonly editing = signal(false);
+  /** Set when Jira returns a CAPTCHA lockout (403 AUTHENTICATION_DENIED) so the
+   *  template can show a guided "log in via browser first" link. */
+  readonly captchaLoginUrl = signal<string | null>(null);
 
   form = {
     baseUrl: "",
@@ -66,12 +69,14 @@ export class MyJiraCredentialsComponent implements OnInit {
     };
     this.error.set(null);
     this.success.set(null);
+    this.captchaLoginUrl.set(null);
     this.editing.set(true);
   }
 
   cancelEditing(): void {
     this.editing.set(false);
     this.error.set(null);
+    this.captchaLoginUrl.set(null);
   }
 
   submit(): void {
@@ -86,6 +91,7 @@ export class MyJiraCredentialsComponent implements OnInit {
 
     this.saving.set(true);
     this.error.set(null);
+    this.captchaLoginUrl.set(null);
 
     this.api
       .saveMyCredentials({
@@ -106,6 +112,9 @@ export class MyJiraCredentialsComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
+          if (err?.jiraCaptchaRequired) {
+            this.captchaLoginUrl.set(this.form.baseUrl.trim());
+          }
           this.error.set(err?.message ?? "my_jira.error.save_failed");
         },
       });

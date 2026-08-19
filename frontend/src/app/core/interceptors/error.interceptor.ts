@@ -110,6 +110,15 @@ function isFeatureGated(error: HttpErrorResponse): boolean {
   );
 }
 
+/**
+ * Detect Jira's CAPTCHA lockout: a 403 raised after too many failed login
+ * attempts, requiring the user to solve a CAPTCHA via the Jira web login
+ * before any authentication (including this app) will work again.
+ */
+function isJiraCaptchaRequired(error: HttpErrorResponse): boolean {
+  return error.status === 403 && normalizeErrorCode(error) === "JIRA_CAPTCHA_REQUIRED";
+}
+
 function normalizeErrorCode(error: HttpErrorResponse): string | null {
   const code =
     error.error?.code ?? error.error?.errorCode ?? error.error?.error ?? null;
@@ -238,6 +247,61 @@ function attemptRefreshAndRetry(
     );
 }
 
+/**
+ * Handles the well-known "special case" error shapes (email unverified,
+ * feature gating, Jira CAPTCHA lockout, no active dashboard) that need a
+ * distinct propagated shape instead of a generic status-based message.
+ * Extracted out of the main catchError callback to keep its complexity low.
+ * Returns an Observable to propagate, or null if none of these cases match.
+ */
+function handleKnownErrorCase(
+  error: HttpErrorResponse,
+  i18n: I18nService,
+): Observable<never> | null {
+  if (isEmailUnverified(error)) {
+    return throwError(() => ({
+      emailUnverified: true,
+      status: 403,
+      message:
+        sanitizeErrorMessage(error.error?.message) ??
+        "Email address not verified. Please check your inbox.",
+    }));
+  }
+
+  if (isFeatureGated(error)) {
+    return throwError(() => ({
+      featureGated: true,
+      status: 403,
+      message: error.error?.message ?? "Feature not available on your plan",
+    }));
+  }
+
+  if (isJiraCaptchaRequired(error)) {
+    return throwError(() => ({
+      jiraCaptchaRequired: true,
+      status: 403,
+      message:
+        sanitizeErrorMessage(error.error?.message) ??
+        "Your Jira account is temporarily locked and requires solving a CAPTCHA. Please log in via your browser first.",
+    }));
+  }
+
+  if (isNoDashboard(error)) {
+    return throwError(() => ({
+      noDashboard: true,
+      status: 428,
+      message:
+        tr(i18n, "error.428_dashboard") ??
+        "No active dashboard configured. Please select a Jira board in Settings.",
+      code: null,
+      integrationFailure: false,
+      retryable: false,
+    }));
+  }
+
+  return null;
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const httpBackend = inject(HttpBackend);
@@ -253,39 +317,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // 403 email-not-verified: propagate the real backend message + flag so the
-      // login component can show the resend-verification button.
-      if (isEmailUnverified(error)) {
-        return throwError(() => ({
-          emailUnverified: true,
-          status: 403,
-          message:
-            sanitizeErrorMessage(error.error?.message) ??
-            "Email address not verified. Please check your inbox.",
-        }));
-      }
-
-      // Feature-gated 403: propagate silently so components can handle gracefully
-      if (isFeatureGated(error)) {
-        return throwError(() => ({
-          featureGated: true,
-          status: 403,
-          message: error.error?.message ?? "Feature not available on your plan",
-        }));
-      }
-
-      // 428 no active dashboard
-      if (isNoDashboard(error)) {
-        return throwError(() => ({
-          noDashboard: true,
-          status: 428,
-          message:
-            tr(i18n, "error.428_dashboard") ??
-            "No active dashboard configured. Please select a Jira board in Settings.",
-          code: null,
-          integrationFailure: false,
-          retryable: false,
-        }));
+      // Known special-case shapes (email verification, feature gating, Jira
+      // CAPTCHA lockout, no active dashboard) get a distinct propagated shape.
+      const special = handleKnownErrorCase(error, i18n);
+      if (special) {
+        return special;
       }
 
       // 428 — Jira account not connected

@@ -9,6 +9,7 @@ import com.company.sprintreporter.infrastructure.persistence.OrganizationReposit
 import com.company.sprintreporter.infrastructure.persistence.UserRepository;
 import com.company.sprintreporter.service.exception.BusinessException;
 import com.company.sprintreporter.service.exception.JiraAuthenticationException;
+import com.company.sprintreporter.service.exception.JiraCaptchaRequiredException;
 import com.company.sprintreporter.service.exception.JiraConnectionException;
 import com.company.sprintreporter.service.exception.JiraPermissionException;
 import com.company.sprintreporter.service.exception.JiraApiException;
@@ -66,7 +67,7 @@ public class JiraConfigService {
                         .organization(org)
                         .build());
 
-        config.setBaseUrl(trimTrailingSlash(baseUrl));
+        config.setBaseUrl(normalizeBaseUrl(baseUrl));
         config.setAuthType(authType != null ? authType : JiraAuthType.PAT);
         config.setUserEmail(userEmail);
         config.setEncryptedToken(encryptToken(token));
@@ -91,7 +92,7 @@ public class JiraConfigService {
                         .organization(org)
                         .build());
 
-        config.setBaseUrl(trimTrailingSlash(baseUrl));
+        config.setBaseUrl(normalizeBaseUrl(baseUrl));
         config.setAuthType(authType != null ? authType : JiraAuthType.PAT);
         config.setUserEmail(userEmail);
         config.setEncryptedToken(encryptToken(token));
@@ -177,6 +178,9 @@ public class JiraConfigService {
             log.warn("Jira permission denied for org {} on {}", organizationId, failingEndpoint);
             config.setActive(false);
             jiraConfigRepository.save(config);
+            if (isCaptchaLocked(e)) {
+                throw new JiraCaptchaRequiredException(baseUrl);
+            }
             if (MYSELF_ENDPOINT.equals(failingEndpoint)) {
                 throw new JiraPermissionException(
                         "Jira permission denied (HTTP 403) on " + failingEndpoint + ": your credentials were " +
@@ -208,6 +212,18 @@ public class JiraConfigService {
             trimmed = trimmed.substring(0, trimmed.length() - 1);
         }
         return trimmed;
+    }
+
+    /**
+     * Detects Jira's CAPTCHA lockout response, returned as a 403 Forbidden with
+     * reason "AUTHENTICATION_DENIED" after too many failed login attempts.
+     * When locked, Jira rejects ALL authentication (even correct credentials)
+     * until the user solves a CAPTCHA via the standard web login form.
+     */
+    private boolean isCaptchaLocked(WebClientResponseException.Forbidden e) {
+        String body = e.getResponseBodyAsString();
+        String lower = body.toLowerCase();
+        return lower.contains("authentication_denied") || lower.contains("captcha");
     }
 
     @Transactional
@@ -257,6 +273,9 @@ public class JiraConfigService {
         } catch (WebClientResponseException.Unauthorized e) {
             throw new JiraAuthenticationException(username, normalizedBaseUrl);
         } catch (WebClientResponseException.Forbidden e) {
+            if (isCaptchaLocked(e)) {
+                throw new JiraCaptchaRequiredException(normalizedBaseUrl);
+            }
             throw new JiraPermissionException(
                     "Jira permission denied (HTTP 403) on " + MYSELF_ENDPOINT + ": your credentials were " +
                     "rejected before any project/board check. This usually means the auth type doesn't match " +
@@ -281,14 +300,7 @@ public class JiraConfigService {
         if (url == null) {
             return null;
         }
-        String normalized = trimTrailingSlash(url.trim());
-        if (normalized.endsWith("/agile")) {
-            normalized = normalized.substring(0, normalized.length() - 6);
-        }
-        if (normalized.endsWith("/rest")) {
-            normalized = normalized.substring(0, normalized.length() - 5);
-        }
-        return normalized;
+        return trimTrailingSlash(url.trim());
     }
 
     /**

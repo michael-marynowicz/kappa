@@ -53,6 +53,12 @@ export class JiraConfigComponent implements OnInit {
   readonly success = signal<string | null>(null);
   readonly myCredentials = signal<MyJiraCredentials | null>(null);
   readonly savingPersonal = signal(false);
+  /** Set when Jira returns a CAPTCHA lockout (403 AUTHENTICATION_DENIED) so the
+   *  template can show a guided "log in via browser first" link. */
+  readonly captchaLoginUrl = signal<string | null>(null);
+  /** Fixed for all admins — the base URL and auth type are never user-editable. */
+  readonly adminBaseUrl = "https://jira.amadeus.com/agile";
+  readonly adminAuthType: JiraAuthType = "BASIC";
   private successTimer: ReturnType<typeof setTimeout> | null = null;
 
   private showSuccess(msg: string): void {
@@ -70,8 +76,8 @@ export class JiraConfigComponent implements OnInit {
   };
 
   form = {
-    baseUrl: "https://jira.amadeus.com/agile",
-    authType: "BASIC" as JiraAuthType,
+    baseUrl: this.adminBaseUrl,
+    authType: this.adminAuthType,
     userEmail: "",
     token: "",
   };
@@ -139,8 +145,8 @@ export class JiraConfigComponent implements OnInit {
           if (cfg) {
             this.config.set(cfg);
             this.form = {
-              baseUrl: cfg.baseUrl,
-              authType: (cfg.authType as JiraAuthType) || "BASIC",
+              baseUrl: this.adminBaseUrl,
+              authType: this.adminAuthType,
               userEmail: cfg.userEmail || "",
               token: cfg.token,
             };
@@ -191,12 +197,7 @@ export class JiraConfigComponent implements OnInit {
   }
 
   private validateServerConfigInput(): boolean {
-    if (!this.form.baseUrl.trim()) {
-      this.error.set("jira.error.base_url_required");
-      return false;
-    }
-
-    if (this.form.authType === "BASIC" && !this.form.userEmail.trim()) {
+    if (!this.form.userEmail.trim()) {
       this.error.set("jira.error.email_required");
       return false;
     }
@@ -207,11 +208,6 @@ export class JiraConfigComponent implements OnInit {
     }
 
     return true;
-  }
-
-  useAmadeusDefaults(): void {
-    this.form.baseUrl = "https://jira.amadeus.com/agile";
-    this.form.authType = "BASIC";
   }
 
   onSaveAndTestServerConfig(): void {
@@ -226,13 +222,13 @@ export class JiraConfigComponent implements OnInit {
     this.configuringServer.set(true);
     this.error.set(null);
     this.success.set(null);
+    this.captchaLoginUrl.set(null);
 
     this.api
       .updateCredentials({
-        baseUrl: this.form.baseUrl.trim() || "https://jira.amadeus.com/agile",
-        authType: this.form.authType,
-        userEmail:
-          this.form.authType === "BASIC" ? this.form.userEmail.trim() : "",
+        baseUrl: this.adminBaseUrl,
+        authType: this.adminAuthType,
+        userEmail: this.form.userEmail.trim(),
         token: this.form.token,
       })
       .subscribe({
@@ -253,12 +249,18 @@ export class JiraConfigComponent implements OnInit {
               this.loadDashboards();
             },
             error: (err) => {
+              if (err?.jiraCaptchaRequired) {
+                this.captchaLoginUrl.set(this.adminBaseUrl);
+              }
               this.error.set(err.message ?? "jira.error.test_failed");
               this.configuringServer.set(false);
             },
           });
         },
         error: (err) => {
+          if (err?.jiraCaptchaRequired) {
+            this.captchaLoginUrl.set(this.adminBaseUrl);
+          }
           this.error.set(err.message ?? "jira.error.save_config");
           this.configuringServer.set(false);
         },
@@ -424,12 +426,6 @@ export class JiraConfigComponent implements OnInit {
     });
   }
 
-  onAuthTypeChange(): void {
-    if (this.form.authType === "PAT") {
-      this.form.userEmail = "";
-    }
-  }
-
   onSync(): void {
     this.syncing.set(true);
     this.error.set(null);
@@ -504,6 +500,7 @@ export class JiraConfigComponent implements OnInit {
 
     this.savingPersonal.set(true);
     this.error.set(null);
+    this.captchaLoginUrl.set(null);
 
     this.api
       .saveMyCredentials({
@@ -522,6 +519,9 @@ export class JiraConfigComponent implements OnInit {
           this.showSuccess("jira.success.personal_connected");
         },
         error: (err) => {
+          if (err?.jiraCaptchaRequired) {
+            this.captchaLoginUrl.set(this.personalForm.baseUrl.trim());
+          }
           this.error.set(err.message ?? "jira.error.save_credentials");
           this.savingPersonal.set(false);
         },
@@ -533,8 +533,8 @@ export class JiraConfigComponent implements OnInit {
       const cfg = this.config();
       if (cfg) {
         this.form = {
-          baseUrl: cfg.baseUrl,
-          authType: (cfg.authType as JiraAuthType) || "BASIC",
+          baseUrl: this.adminBaseUrl,
+          authType: this.adminAuthType,
           userEmail: cfg.userEmail || "",
           token: "",
         };
@@ -549,6 +549,7 @@ export class JiraConfigComponent implements OnInit {
     }
     this.editingCredentials.set(true);
     this.error.set(null);
+    this.captchaLoginUrl.set(null);
   }
 
   onConnectOAuth(): void {

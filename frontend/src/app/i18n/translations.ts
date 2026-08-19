@@ -216,6 +216,9 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     "jira.error.oauth_init": "Unable to initiate Jira OAuth.",
     "jira.error.oauth_disconnect": "Unable to disconnect Jira OAuth.",
     "jira.oauth.error": "Jira OAuth connection failed. Please retry.",
+    "jira.error.captcha_hint":
+      "Jira has locked this account after too many failed login attempts and requires solving a CAPTCHA. Log in via your browser below, complete the CAPTCHA if shown, then come back and try again.",
+    "jira.error.captcha_open_login": "Open Jira login",
 
     // ── Jira Config – success ──────────────────────────────────────────────────
     "jira.success.oauth_connected": "Jira OAuth connected successfully.",
@@ -618,6 +621,9 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
       "Impossible d'initier l'authentification OAuth Jira.",
     "jira.error.oauth_disconnect": "Impossible de déconnecter l'OAuth Jira.",
     "jira.oauth.error": "Connexion OAuth Jira échouée. Veuillez réessayer.",
+    "jira.error.captcha_hint":
+      "Jira a verrouillé ce compte après trop de tentatives de connexion échouées et exige de résoudre un CAPTCHA. Connectez-vous via votre navigateur ci-dessous, complétez le CAPTCHA si demandé, puis revenez réessayer.",
+    "jira.error.captcha_open_login": "Ouvrir la connexion Jira",
 
     // ── Jira Config – success ──────────────────────────────────────────────────
     "jira.success.oauth_connected": "Connexion OAuth Jira réussie.",

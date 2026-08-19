@@ -22,6 +22,7 @@ public class ApiErrorResponseDto {
     private final String error;
     private final String message;
     private final List<String> details;
+    private final String errorCode;
 
     @Builder.Default
     private final Instant timestamp = Instant.now();

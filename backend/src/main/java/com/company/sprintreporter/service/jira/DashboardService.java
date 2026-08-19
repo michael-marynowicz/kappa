@@ -28,15 +28,18 @@ public class DashboardService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
     private final SubscriptionService subscriptionService;
+    private final JiraDashboardValidationService jiraDashboardValidationService;
 
     public DashboardService(DashboardRepository dashboardRepository,
                             OrganizationRepository organizationRepository,
                             UserRepository userRepository,
-                            @Lazy SubscriptionService subscriptionService) {
+                            @Lazy SubscriptionService subscriptionService,
+                            JiraDashboardValidationService jiraDashboardValidationService) {
         this.dashboardRepository = dashboardRepository;
         this.organizationRepository = organizationRepository;
         this.userRepository = userRepository;
         this.subscriptionService = subscriptionService;
+        this.jiraDashboardValidationService = jiraDashboardValidationService;
     }
 
     public List<DashboardDto> listDashboards(UUID orgId, UUID userId) {
@@ -65,6 +68,10 @@ public class DashboardService {
             throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
                     "Your plan allows a maximum of " + maxDashboards + " dashboard(s). Upgrade to PRO or ENTERPRISE for more.");
         }
+
+        // Verify the board/project actually returns data on Jira before creating
+        // the dashboard, so admins get a clear error instead of a dead dashboard.
+        jiraDashboardValidationService.validateBoardAccess(orgId, creatorId, boardId, projectKey);
 
         Organization org = organizationRepository.getReferenceById(orgId);
         long count = existing.size();

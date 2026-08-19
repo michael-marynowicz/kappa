@@ -5,6 +5,20 @@
     <div class="config-error" role="alert">{{ error()! | translate }}</div>
   }
 
+  @if (captchaLoginUrl()) {
+    <div class="config-error captcha-hint" role="alert">
+      <p>{{ "jira.error.captcha_hint" | translate }}</p>
+      <a
+        [href]="captchaLoginUrl()"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-primary"
+      >
+        {{ "jira.error.captcha_open_login" | translate }}
+      </a>
+    </div>
+  }
+
   <!-- success toast — positionnement fixe, hors du flux -->
   @if (success()) {
     <output class="toast-success">
@@ -82,55 +96,22 @@
       <!-- Credentials form -->
       <div class="config-form">
         @if (isAdmin) {
-          <!-- Admin: Server credentials form -->
+          <!-- Admin: Server credentials — the Jira base URL and auth type are
+               fixed (Basic auth against the company Jira instance) and are
+               never editable here: login + password only. -->
           <div class="form-group">
-            <label class="form-label" for="baseUrlProd">{{
-              "jira.form.base_url" | translate
+            <label class="form-label" for="userEmailProd">{{
+              "jira.form.user_email" | translate
             }}</label>
             <input
               class="form-input"
-              id="baseUrlProd"
-              type="url"
-              name="baseUrlProd"
-              [(ngModel)]="form.baseUrl"
+              id="userEmailProd"
+              type="text"
+              name="userEmailProd"
+              [(ngModel)]="form.userEmail"
               required
-              placeholder="https://jira.amadeus.com/agile"
+              placeholder="firstname.lastname@amadeus.com"
             />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="authTypeProd">{{
-                "jira.form.auth_type" | translate
-              }}</label>
-              <select
-                class="form-input"
-                id="authTypeProd"
-                name="authTypeProd"
-                [(ngModel)]="form.authType"
-                (ngModelChange)="onAuthTypeChange()"
-              >
-                <option value="BASIC">Basic (email + token/password)</option>
-                <option value="PAT">Personal Access Token (Bearer)</option>
-              </select>
-            </div>
-
-            @if (form.authType === "BASIC") {
-              <div class="form-group">
-                <label class="form-label" for="userEmailProd">{{
-                  "jira.form.user_email" | translate
-                }}</label>
-                <input
-                  class="form-input"
-                  id="userEmailProd"
-                  type="text"
-                  name="userEmailProd"
-                  [(ngModel)]="form.userEmail"
-                  required
-                  placeholder="firstname.lastname@amadeus.com"
-                />
-              </div>
-            }
           </div>
 
           <div class="form-group">
@@ -210,7 +191,6 @@
               (click)="onSaveAndTestServerConfig()"
               [disabled]="
                 configuringServer() ||
-                !form.baseUrl.trim() ||
                 !form.userEmail.trim() ||
                 !form.token.trim()
               "

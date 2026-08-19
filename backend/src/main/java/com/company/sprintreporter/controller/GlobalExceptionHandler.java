@@ -10,6 +10,7 @@ import com.company.sprintreporter.service.exception.NoDashboardSelectedException
 import com.company.sprintreporter.service.exception.JiraPermissionException;
 import com.company.sprintreporter.service.exception.JiraApiException;
 import com.company.sprintreporter.service.exception.JiraConnectionException;
+import com.company.sprintreporter.service.exception.JiraCaptchaRequiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -151,6 +152,18 @@ public class GlobalExceptionHandler {
                 .body(ApiErrorResponseDto.builder()
                         .status(ex.getHttpStatus().value())
                         .error("Jira Authentication Failed")
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(JiraCaptchaRequiredException.class)
+    public ResponseEntity<ApiErrorResponseDto> handleJiraCaptchaRequired(JiraCaptchaRequiredException ex) {
+        log.warn("Jira CAPTCHA lock detected: {}", ex.getMessage());
+        return ResponseEntity.status(ex.getHttpStatus())
+                .body(ApiErrorResponseDto.builder()
+                        .status(ex.getHttpStatus().value())
+                        .error("Jira Captcha Required")
+                        .errorCode("JIRA_CAPTCHA_REQUIRED")
                         .message(ex.getMessage())
                         .build());
     }
