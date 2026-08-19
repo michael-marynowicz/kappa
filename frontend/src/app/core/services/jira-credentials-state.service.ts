@@ -23,8 +23,8 @@ export class JiraCredentialsStateService {
   }
 
   /** Called after a successful PUT /my-credentials */
-  setConnected(username: string): void {
-    this._credentials.set({ connected: true, username });
+  setConnected(username: string, baseUrl: string): void {
+    this._credentials.set({ connected: true, username, baseUrl });
   }
 
   /** Reset on logout */

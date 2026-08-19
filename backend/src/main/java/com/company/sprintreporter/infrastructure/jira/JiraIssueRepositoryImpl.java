@@ -119,12 +119,13 @@ public class JiraIssueRepositoryImpl implements JiraIssueRepository {
             var userWithCreds = jiraConfigService.findUserWithJiraCredentials(jwt.getUserId());
             if (userWithCreds.isPresent()) {
                 var user = userWithCreds.get();
+                String baseUrl = user.getJiraBaseUrl();
+                if (baseUrl == null || baseUrl.isBlank()) {
+                    throw new JiraNotConnectedException();
+                }
                 String password = jiraConfigService.decryptToken(user.getJiraEncryptedPassword());
                 String credentials = user.getJiraUsername() + ":" + password;
                 String headerValue = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
-                Optional<JiraConfiguration> dbConfig = jiraConfigService.findByOrganizationId(jwt.getOrganizationId());
-                String baseUrl = dbConfig.map(JiraConfiguration::getBaseUrl).orElse(jiraProperties.getBaseUrl());
                 log.info("Using per-user Jira credentials for user [{}] on baseUrl={}", jwt.getUserId(), baseUrl);
                 return WebClient.builder()
                         .baseUrl(baseUrl)

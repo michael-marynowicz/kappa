@@ -76,7 +76,7 @@ export class JiraConfigComponent implements OnInit {
     token: "",
   };
 
-  personalForm = { username: "", password: "" };
+  personalForm = { baseUrl: "", username: "", password: "" };
 
   ngOnInit(): void {
     this.handleOAuthRedirectResult();
@@ -196,7 +196,7 @@ export class JiraConfigComponent implements OnInit {
       return false;
     }
 
-    if (!this.form.userEmail.trim()) {
+    if (this.form.authType === "BASIC" && !this.form.userEmail.trim()) {
       this.error.set("jira.error.email_required");
       return false;
     }
@@ -230,8 +230,9 @@ export class JiraConfigComponent implements OnInit {
     this.api
       .updateCredentials({
         baseUrl: this.form.baseUrl.trim() || "https://jira.amadeus.com/agile",
-        authType: "BASIC",
-        userEmail: this.form.userEmail.trim(),
+        authType: this.form.authType,
+        userEmail:
+          this.form.authType === "BASIC" ? this.form.userEmail.trim() : "",
         token: this.form.token,
       })
       .subscribe({
@@ -493,6 +494,7 @@ export class JiraConfigComponent implements OnInit {
 
   onSavePersonalCredentials(): void {
     if (
+      !this.personalForm.baseUrl.trim() ||
       !this.personalForm.username.trim() ||
       !this.personalForm.password.trim()
     ) {
@@ -505,12 +507,13 @@ export class JiraConfigComponent implements OnInit {
 
     this.api
       .saveMyCredentials({
+        baseUrl: this.personalForm.baseUrl.trim(),
         username: this.personalForm.username.trim(),
         password: this.personalForm.password,
       })
       .subscribe({
         next: (creds) => {
-          this.jiraCreds.setConnected(creds.username!);
+          this.jiraCreds.setConnected(creds.username!, creds.baseUrl!);
           this.myCredentials.set(creds);
           this.personalForm.password = "";
           this.editingCredentials.set(false);
@@ -539,6 +542,7 @@ export class JiraConfigComponent implements OnInit {
     } else {
       const creds = this.myCredentials();
       if (creds) {
+        this.personalForm.baseUrl = creds.baseUrl || "";
         this.personalForm.username = creds.username || "";
         this.personalForm.password = "";
       }

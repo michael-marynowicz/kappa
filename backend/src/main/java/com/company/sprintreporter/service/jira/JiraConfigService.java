@@ -30,6 +30,8 @@ import java.util.UUID;
 @Slf4j
 public class JiraConfigService {
 
+    private static final String MYSELF_ENDPOINT = "/rest/api/2/myself";
+
     private final JiraConfigurationRepository jiraConfigRepository;
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
@@ -93,11 +95,13 @@ public class JiraConfigService {
         config.setAuthType(authType != null ? authType : JiraAuthType.PAT);
         config.setUserEmail(userEmail);
         config.setEncryptedToken(encryptToken(token));
-        config.setActive(true);
+        // Not verified yet — testConnection() will flip this to true/false once actually checked.
+        config.setActive(false);
 
         return jiraConfigRepository.save(config);
     }
 
+    @Transactional
     public boolean testConnection(UUID organizationId) {
         JiraConfiguration config = getByOrganizationId(organizationId);
         
@@ -114,7 +118,7 @@ public class JiraConfigService {
         }
 
         String baseUrl = config.getBaseUrl();
-        String failingEndpoint = "/rest/api/2/myself";
+        String failingEndpoint = MYSELF_ENDPOINT;
 
         try {
             WebClient webClient = WebClient.builder()
@@ -126,7 +130,7 @@ public class JiraConfigService {
             // Step 1: validate credentials only.
             webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                    .path("/rest/api/2/myself")
+                    .path(MYSELF_ENDPOINT)
                     .build())
                     .retrieve()
                     .bodyToMono(String.class)
@@ -161,18 +165,36 @@ public class JiraConfigService {
 
             log.info("Jira connection test successful for org {} (board={} project={})",
                 organizationId, config.getBoardId(), config.getProjectKey());
+            config.setActive(true);
+            jiraConfigRepository.save(config);
             return true;
         } catch (WebClientResponseException.Unauthorized e) {
             log.warn("Jira authentication failed for org {}", organizationId);
+            config.setActive(false);
+            jiraConfigRepository.save(config);
             throw new JiraAuthenticationException(decryptToken(config.getEncryptedToken()), baseUrl);
         } catch (WebClientResponseException.Forbidden e) {
-            log.warn("Jira permission denied for org {}", organizationId);
+            log.warn("Jira permission denied for org {} on {}", organizationId, failingEndpoint);
+            config.setActive(false);
+            jiraConfigRepository.save(config);
+            if (MYSELF_ENDPOINT.equals(failingEndpoint)) {
+                throw new JiraPermissionException(
+                        "Jira permission denied (HTTP 403) on " + failingEndpoint + ": your credentials were " +
+                        "rejected before any project/board check. This usually means the auth type doesn't match " +
+                        "your Jira instance (e.g. a Personal Access Token only works with Bearer auth on Jira " +
+                        "Server/Data Center, while Jira Cloud requires Basic auth with email + API token), or the " +
+                        "token/account lacks API access. Verify base URL, auth type and token.");
+            }
             throw new JiraPermissionException(config.getProjectKey(), String.valueOf(config.getBoardId()));
         } catch (WebClientResponseException e) {
             log.error("Jira API error for org {}: HTTP {} on {}", organizationId, e.getStatusCode().value(), failingEndpoint);
+            config.setActive(false);
+            jiraConfigRepository.save(config);
             throw new JiraApiException(e.getStatusCode().value(), e.getStatusText(), failingEndpoint);
         } catch (Exception e) {
             log.error("Jira connection error for org {}", organizationId, e);
+            config.setActive(false);
+            jiraConfigRepository.save(config);
             throw new JiraConnectionException(baseUrl, e);
         }
     }
@@ -215,37 +237,58 @@ public class JiraConfigService {
      * Tests the credentials against the org's Jira baseUrl before persisting.
      */
     @Transactional
-    public AppUser saveMyCredentials(UUID userId, UUID orgId, String username, String password) {
-        JiraConfiguration config = getByOrganizationId(orgId);
-        String baseUrl = config.getBaseUrl();
+    public AppUser saveMyCredentials(UUID userId, UUID orgId, String baseUrl, String username, String password) {
+        String normalizedBaseUrl = normalizeBaseUrl(baseUrl);
 
         // Test credentials before saving
         String credentials = username + ":" + password;
         String basicHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
         try {
             WebClient.builder()
-                    .baseUrl(baseUrl)
+                    .baseUrl(normalizedBaseUrl)
                     .defaultHeader("Authorization", basicHeader)
                     .defaultHeader("Accept", "application/json")
                     .build()
                     .get()
-                    .uri("/rest/api/2/myself")
+                    .uri(MYSELF_ENDPOINT)
                     .retrieve()
                     .bodyToMono(String.class)
                     .blockOptional(Duration.ofSeconds(10));
         } catch (WebClientResponseException.Unauthorized e) {
-            throw new JiraAuthenticationException(username, baseUrl);
+            throw new JiraAuthenticationException(username, normalizedBaseUrl);
+        } catch (WebClientResponseException.Forbidden e) {
+            throw new JiraPermissionException(
+                    "Jira permission denied (HTTP 403) on " + MYSELF_ENDPOINT + ": your credentials were " +
+                    "rejected before any project/board check. This usually means the auth type doesn't match " +
+                    "your Jira instance, or the account/token lacks API access. Verify base URL, auth type and token.");
+        } catch (WebClientResponseException e) {
+            throw new JiraApiException(e.getStatusCode().value(), e.getStatusText(), MYSELF_ENDPOINT);
         } catch (Exception e) {
-            throw new JiraConnectionException(baseUrl, e);
+            throw new JiraConnectionException(normalizedBaseUrl, e);
         }
 
         AppUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
 
+        user.setJiraBaseUrl(normalizedBaseUrl);
         user.setJiraUsername(username);
         user.setJiraEncryptedPassword(encryptToken(password));
         user.setJiraConnected(true);
         return userRepository.save(user);
+    }
+
+    private String normalizeBaseUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+        String normalized = trimTrailingSlash(url.trim());
+        if (normalized.endsWith("/agile")) {
+            normalized = normalized.substring(0, normalized.length() - 6);
+        }
+        if (normalized.endsWith("/rest")) {
+            normalized = normalized.substring(0, normalized.length() - 5);
+        }
+        return normalized;
     }
 
     /**

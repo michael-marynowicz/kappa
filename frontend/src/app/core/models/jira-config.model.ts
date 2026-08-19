@@ -58,10 +58,12 @@ export interface JiraDashboard {
 export interface MyJiraCredentials {
   connected: boolean;
   username?: string;
+  baseUrl?: string;
 }
 
 /** Body for PUT /api/v1/jira/my-credentials */
 export interface SaveMyJiraCredentialsRequest {
+  baseUrl: string;
   username: string;
   password: string;
 }

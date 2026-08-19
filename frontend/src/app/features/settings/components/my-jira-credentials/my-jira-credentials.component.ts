@@ -20,12 +20,14 @@ export class MyJiraCredentialsComponent implements OnInit {
 
   readonly connected = signal(false);
   readonly connectedUsername = signal<string | undefined>(undefined);
+  readonly connectedBaseUrl = signal<string | undefined>(undefined);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
   readonly editing = signal(false);
 
   form = {
+    baseUrl: "",
     username: "",
     password: "",
   };
@@ -46,16 +48,22 @@ export class MyJiraCredentialsComponent implements OnInit {
   private applyCredentials(creds: {
     connected: boolean;
     username?: string;
+    baseUrl?: string;
   }): void {
     this.connected.set(creds.connected);
     this.connectedUsername.set(creds.username);
+    this.connectedBaseUrl.set(creds.baseUrl);
     if (!creds.connected) {
       this.editing.set(true);
     }
   }
 
   startEditing(): void {
-    this.form = { username: this.connectedUsername() ?? "", password: "" };
+    this.form = {
+      baseUrl: this.connectedBaseUrl() ?? "",
+      username: this.connectedUsername() ?? "",
+      password: "",
+    };
     this.error.set(null);
     this.success.set(null);
     this.editing.set(true);
@@ -67,7 +75,11 @@ export class MyJiraCredentialsComponent implements OnInit {
   }
 
   submit(): void {
-    if (!this.form.username.trim() || !this.form.password.trim()) {
+    if (
+      !this.form.baseUrl.trim() ||
+      !this.form.username.trim() ||
+      !this.form.password.trim()
+    ) {
       this.error.set("my_jira.error.required");
       return;
     }
@@ -77,15 +89,17 @@ export class MyJiraCredentialsComponent implements OnInit {
 
     this.api
       .saveMyCredentials({
+        baseUrl: this.form.baseUrl.trim(),
         username: this.form.username.trim(),
         password: this.form.password,
       })
       .subscribe({
         next: (creds) => {
           this.saving.set(false);
-          this.jiraCreds.setConnected(creds.username!);
+          this.jiraCreds.setConnected(creds.username!, creds.baseUrl!);
           this.connected.set(true);
           this.connectedUsername.set(creds.username);
+          this.connectedBaseUrl.set(creds.baseUrl);
           this.editing.set(false);
           this.success.set("my_jira.success");
           this.router.navigate(["/"]);
