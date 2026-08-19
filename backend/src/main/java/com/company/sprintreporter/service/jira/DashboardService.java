@@ -40,7 +40,9 @@ public class DashboardService {
     }
 
     public List<DashboardDto> listDashboards(UUID orgId, UUID userId) {
-        return dashboardRepository.findByOrganizationIdAndUserAccess(orgId, userId)
+        // All members of the org can see all of the org's dashboards — access to the
+        // underlying Jira data is already gated by each user's own Jira credentials.
+        return dashboardRepository.findByOrganizationIdOrderByPositionAsc(orgId)
                 .stream().map(this::toDto).toList();
     }
 
