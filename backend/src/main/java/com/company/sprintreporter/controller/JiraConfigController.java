@@ -92,10 +92,11 @@ public class JiraConfigController {
         var auth = getAuth();
         AppUser user = jiraConfigService.saveMyCredentials(
                 auth.getUserId(), auth.getOrganizationId(),
-                request.getUsername(), request.getPassword());
+            request.getBaseUrl(), request.getUsername(), request.getPassword());
         return ResponseEntity.ok(Map.of(
                 "connected", user.getJiraConnected(),
-                "username", user.getJiraUsername()));
+            "username", user.getJiraUsername(),
+            "baseUrl", user.getJiraBaseUrl()));
     }
 
     /**
@@ -107,7 +108,8 @@ public class JiraConfigController {
         return jiraConfigService.findUserWithJiraCredentials(auth.getUserId())
                 .map(u -> ResponseEntity.ok(Map.<String, Object>of(
                         "connected", true,
-                        "username", u.getJiraUsername())))
+                        "username", u.getJiraUsername(),
+                        "baseUrl", u.getJiraBaseUrl())))
                 .orElse(ResponseEntity.ok(Map.of("connected", false)));
     }
 

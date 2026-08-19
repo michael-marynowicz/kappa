@@ -54,9 +54,10 @@ app:
 
 # Jira Configuration
 jira:
-  base-url: ${JIRA_BASE_URL}
-  user-email: ${JIRA_USER_EMAIL}
-  pat: ${JIRA_PAT}
+  # Optional in prod: app can run with per-org/per-user Jira credentials stored in DB.
+  base-url: ${JIRA_BASE_URL:}
+  user-email: ${JIRA_USER_EMAIL:}
+  pat: ${JIRA_PAT:}
   project-key: ${JIRA_PROJECT_KEY}
 
 # OAuth Configuration
@@ -64,9 +65,15 @@ oauth2:
   github:
     client-id: ${GITHUB_CLIENT_ID}
     client-secret: ${GITHUB_CLIENT_SECRET}
-  atlassian:
-    client-id: ${ATLASSIAN_CLIENT_ID}
-    client-secret: ${ATLASSIAN_CLIENT_SECRET}
+
+# Jira OAuth2 (used by AtlassianOAuth2Properties with prefix "atlassian.oauth2")
+atlassian:
+  oauth2:
+    client-id: ${ATLASSIAN_CLIENT_ID:}
+    client-secret: ${ATLASSIAN_CLIENT_SECRET:}
+    redirect-uri: ${ATLASSIAN_REDIRECT_URI:https://kappa-production.up.railway.app/api/v1/jira/oauth/callback}
+    frontend-success-url: ${ATLASSIAN_FRONTEND_SUCCESS_URL:https://www.kappa-app.com/settings/jira?oauth=success}
+    frontend-error-url: ${ATLASSIAN_FRONTEND_ERROR_URL:https://www.kappa-app.com/settings/jira?oauth=error}
 
 # Logging
 logging:

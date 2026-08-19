@@ -103,13 +103,16 @@
               <label class="form-label" for="authTypeProd">{{
                 "jira.form.auth_type" | translate
               }}</label>
-              <input
+              <select
                 class="form-input"
                 id="authTypeProd"
-                type="text"
-                [value]="'BASIC'"
-                disabled
-              />
+                name="authTypeProd"
+                [(ngModel)]="form.authType"
+                (change)="onAuthTypeChange()"
+              >
+                <option value="PAT">PAT</option>
+                <option value="BASIC">BASIC</option>
+              </select>
             </div>
 
             <div class="form-group">
@@ -122,7 +125,8 @@
                 type="text"
                 name="userEmailProd"
                 [(ngModel)]="form.userEmail"
-                required
+                [required]="form.authType === 'BASIC'"
+                [disabled]="form.authType !== 'BASIC'"
                 placeholder="firstname.lastname@amadeus.com"
               />
             </div>
@@ -142,6 +146,21 @@
           </div>
         } @else {
           <!-- Non-Admin: Personal credentials form -->
+          <div class="form-group">
+            <label class="form-label" for="personalBaseUrl">{{
+              "jira.form.base_url" | translate
+            }}</label>
+            <input
+              class="form-input"
+              id="personalBaseUrl"
+              type="url"
+              name="personalBaseUrl"
+              [(ngModel)]="personalForm.baseUrl"
+              required
+              placeholder="https://jira.amadeus.com/agile"
+            />
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="personalUsername">{{
               "jira.form.username" | translate
@@ -191,7 +210,7 @@
               [disabled]="
                 configuringServer() ||
                 !form.baseUrl.trim() ||
-                !form.userEmail.trim() ||
+                (form.authType === 'BASIC' && !form.userEmail.trim()) ||
                 !form.token.trim()
               "
             >
@@ -208,6 +227,7 @@
               (click)="onSavePersonalCredentials()"
               [disabled]="
                 savingPersonal() ||
+                !personalForm.baseUrl.trim() ||
                 !personalForm.username.trim() ||
                 !personalForm.password.trim()
               "

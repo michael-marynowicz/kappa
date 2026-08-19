@@ -66,6 +66,9 @@ public class AppUser {
     private String languagePreference = "en";
 
     /** Per-user Jira credentials (BASIC auth: username + password). */
+    @Column(name = "jira_base_url", length = 512)
+    private String jiraBaseUrl;
+
     @Column(name = "jira_username", length = 255)
     private String jiraUsername;
 

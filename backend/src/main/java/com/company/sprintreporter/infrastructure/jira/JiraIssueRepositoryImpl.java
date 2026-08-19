@@ -119,12 +119,13 @@ public class JiraIssueRepositoryImpl implements JiraIssueRepository {
             var userWithCreds = jiraConfigService.findUserWithJiraCredentials(jwt.getUserId());
             if (userWithCreds.isPresent()) {
                 var user = userWithCreds.get();
+                String baseUrl = user.getJiraBaseUrl();
+                if (baseUrl == null || baseUrl.isBlank()) {
+                    throw new JiraNotConnectedException();
+                }
                 String password = jiraConfigService.decryptToken(user.getJiraEncryptedPassword());
                 String credentials = user.getJiraUsername() + ":" + password;
                 String headerValue = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
-                Optional<JiraConfiguration> dbConfig = jiraConfigService.findByOrganizationId(jwt.getOrganizationId());
-                String baseUrl = dbConfig.map(JiraConfiguration::getBaseUrl).orElse(jiraProperties.getBaseUrl());
                 log.info("Using per-user Jira credentials for user [{}] on baseUrl={}", jwt.getUserId(), baseUrl);
                 return WebClient.builder()
                         .baseUrl(baseUrl)
@@ -172,11 +173,25 @@ public class JiraIssueRepositoryImpl implements JiraIssueRepository {
             log.info("No DB Jira config found, falling back to application.yml (baseUrl={})", jiraProperties.getBaseUrl());
             baseUrl = jiraProperties.getBaseUrl();
 
-            if (jiraProperties.getPat() != null && !jiraProperties.getPat().isBlank()) {
+            boolean hasBaseUrl = baseUrl != null && !baseUrl.isBlank();
+            boolean hasPat = jiraProperties.getPat() != null && !jiraProperties.getPat().isBlank();
+            boolean hasCookieToken = jiraProperties.getApiToken() != null
+                    && jiraProperties.getApiToken().contains("JSESSIONID=");
+            boolean hasBasicCredentials = jiraProperties.getUserEmail() != null
+                    && !jiraProperties.getUserEmail().isBlank()
+                    && jiraProperties.getApiToken() != null
+                    && !jiraProperties.getApiToken().isBlank()
+                    && !"mock-token".equals(jiraProperties.getApiToken());
+
+            if (!hasBaseUrl || (!hasPat && !hasCookieToken && !hasBasicCredentials)) {
+                throw new JiraNotConnectedException();
+            }
+
+            if (hasPat) {
                 headerName = "Authorization";
                 headerValue = "Bearer " + jiraProperties.getPat();
                 log.debug("YAML config: PAT authentication");
-            } else if (jiraProperties.getApiToken() != null && jiraProperties.getApiToken().contains("JSESSIONID=")) {
+            } else if (hasCookieToken) {
                 headerName = "Cookie";
                 headerValue = jiraProperties.getApiToken();
                 log.debug("YAML config: Cookie authentication");

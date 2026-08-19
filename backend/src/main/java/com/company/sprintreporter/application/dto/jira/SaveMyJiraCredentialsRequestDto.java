@@ -7,6 +7,9 @@ import lombok.Data;
 public class SaveMyJiraCredentialsRequestDto {
 
     @NotBlank
+    private String baseUrl;
+
+    @NotBlank
     private String username;
 
     @NotBlank

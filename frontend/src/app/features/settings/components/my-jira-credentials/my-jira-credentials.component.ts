@@ -26,6 +26,7 @@ export class MyJiraCredentialsComponent implements OnInit {
   readonly editing = signal(false);
 
   form = {
+    baseUrl: "https://jira.amadeus.com/agile",
     username: "",
     password: "",
   };
@@ -55,7 +56,12 @@ export class MyJiraCredentialsComponent implements OnInit {
   }
 
   startEditing(): void {
-    this.form = { username: this.connectedUsername() ?? "", password: "" };
+    const creds = this.jiraCreds.credentials();
+    this.form = {
+      baseUrl: creds?.baseUrl ?? "https://jira.amadeus.com/agile",
+      username: this.connectedUsername() ?? "",
+      password: "",
+    };
     this.error.set(null);
     this.success.set(null);
     this.editing.set(true);
@@ -77,6 +83,7 @@ export class MyJiraCredentialsComponent implements OnInit {
 
     this.api
       .saveMyCredentials({
+        baseUrl: this.form.baseUrl.trim(),
         username: this.form.username.trim(),
         password: this.form.password,
       })
